@@ -80,5 +80,3 @@ The course is divided into **lectures**, and each lecture includes:
 - 🧩 Solved problems
 - 🧭 Flowchart-based explanations
 - 💻 C++ implementations (where applicable)
-
-Example:
