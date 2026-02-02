@@ -42,6 +42,14 @@ They help in understanding the **step-by-step flow of logic** before writing act
 - Print `sum`
 - End
 
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input a, b/]
+    Input --> Process[sum = a + b]
+    Process --> Output[/Print sum/]
+    Output --> End([End])
+```
+
 ---
 
 ### 2️⃣ Simple Interest
@@ -57,6 +65,14 @@ They help in understanding the **step-by-step flow of logic** before writing act
 - Print `SI`
 - End
 
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input P, R, T/]
+    Input --> Process[SI = P × R × T / 100]
+    Process --> Output[/Print SI/]
+    Output --> End([End])
+```
+
 ---
 
 ### 3️⃣ Maximum of Two Numbers
@@ -69,6 +85,16 @@ They help in understanding the **step-by-step flow of logic** before writing act
   - If **Yes**, print `a`
   - Else, print `b`
 - End
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input a, b/]
+    Input --> Decision{a > b?}
+    Decision -->|Yes| PrintA[/Print a/]
+    Decision -->|No| PrintB[/Print b/]
+    PrintA --> End([End])
+    PrintB --> End
+```
 
 ---
 
@@ -85,6 +111,17 @@ They help in understanding the **step-by-step flow of logic** before writing act
   - If **Yes**, repeat printing
   - If **No**, End
 
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input N/]
+    Input --> Init[i = 1]
+    Init --> Print[/Print i/]
+    Print --> Increment[i = i + 1]
+    Increment --> Decision{i ≤ N?}
+    Decision -->|Yes| Print
+    Decision -->|No| End([End])
+```
+
 ---
 
 ### 5️⃣ Maximum of Three Numbers
@@ -99,6 +136,19 @@ They help in understanding the **step-by-step flow of logic** before writing act
   - If **Yes**, print `b`
   - Else, print `c`
 - End
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input a, b, c/]
+    Input --> Decision1{a > b AND<br/>a > c?}
+    Decision1 -->|Yes| PrintA[/Print a/]
+    Decision1 -->|No| Decision2{b > c?}
+    Decision2 -->|Yes| PrintB[/Print b/]
+    Decision2 -->|No| PrintC[/Print c/]
+    PrintA --> End([End])
+    PrintB --> End
+    PrintC --> End
+```
 
 ---
 
@@ -116,6 +166,18 @@ They help in understanding the **step-by-step flow of logic** before writing act
   - If **No**, print `sum`
 - End
 
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input N/]
+    Input --> Init[sum = 0, i = 1]
+    Init --> Add[sum = sum + i]
+    Add --> Increment[i = i + 1]
+    Increment --> Decision{i ≤ N?}
+    Decision -->|Yes| Add
+    Decision -->|No| Output[/Print sum/]
+    Output --> End([End])
+```
+
 ---
 
 ### 7️⃣ Check Whether a Number is Odd or Even
@@ -128,6 +190,16 @@ They help in understanding the **step-by-step flow of logic** before writing act
   - If **Yes**, print `"Even"`
   - Else, print `"Odd"`
 - End
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Input[/Input n/]
+    Input --> Decision{n % 2 == 0?}
+    Decision -->|Yes| PrintEven[/Print Even/]
+    Decision -->|No| PrintOdd[/Print Odd/]
+    PrintEven --> End([End])
+    PrintOdd --> End
+```
 
 ---
 
@@ -142,6 +214,16 @@ They help in understanding the **step-by-step flow of logic** before writing act
 - Check: `i ≤ 50`
   - If **Yes**, repeat printing
   - If **No**, End
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Init[i = 10]
+    Init --> Print[/Print i/]
+    Print --> Increment[i = i + 10]
+    Increment --> Decision{i ≤ 50?}
+    Decision -->|Yes| Print
+    Decision -->|No| End([End])
+```
 
 ---
 
