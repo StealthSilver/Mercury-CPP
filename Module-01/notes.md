@@ -1,4 +1,4 @@
-# DSA with C++ — Lecture 1 Notes
+# DSA with C++ — Module 1 Notes
 
 ---
 
@@ -233,4 +233,4 @@ flowchart TD
 - They improve understanding of **conditions, loops, and calculations**
 - These problems build the **foundation of DSA in C++**
 
-_End of Lecture 1_
+_End of Module 1_
