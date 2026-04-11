@@ -26,6 +26,8 @@ TYPECASTING
 
 conversion of data from one type to another
 
+c.cpp
+
 1. Implicit conversion(automatic / type promotion)
 
 done by the compiler to avoid data loss
@@ -34,9 +36,17 @@ bool->char->int->float->double
 
 e.g. int + char -> here the answer will be int as the char will converted into its ASCII value.
 
-2. Explicit conversion
+d.cpp 2. Explicit conversion
 
 that is done forcefully by the programmer
 
 you can define whichever data type you want the result to modify in.
 this can somehimes lead to the loss of data if you are typecasting from a bigger data type into a smaller one
+
+practice que -> e.cpp
+
+bool(0) -> 0
+bool(anything else) -> 1
+
+ASCII values -> A -> 41
+ASCII values -> a -> 91
