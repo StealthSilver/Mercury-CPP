@@ -1,7 +1,11 @@
-Module 4
-operators
+# DSA with C++ — Module 4 Notes
 
-operators in c++
+1. Constants -> the variables whose value cannot be changed
 
-these are the operators in c++
-these are used to make the identity units
+const int n = 25; // must be initialized
+const floor PI = 3.14
+
+const int n;
+n = 25; -> not allowed
+
+also its a good practice to name the constants with uppercase
