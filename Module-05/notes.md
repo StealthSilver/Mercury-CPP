@@ -23,3 +23,18 @@ ELSE-IF statement - e.cpp
 
 multiple conditions can be checked
 you can use multiple else if statements to check different conditions
+
+f.cpp -> Income Tax Calculator
+g.cpp -> Max of three numbers
+
+TERNARY OPERATOR - h.cpp , i.cpp , j.cpp
+
+this is the smaller way to write the if-else statement
+
+SWITCH STATEMENT - k.cpp
+
+this is used when checking multiple cases
+
+calculator - l.cpp
+
+there is also a default case which runs when none of the above cases run
