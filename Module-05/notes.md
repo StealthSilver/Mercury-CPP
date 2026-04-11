@@ -38,3 +38,18 @@ this is used when checking multiple cases
 calculator - l.cpp
 
 there is also a default case which runs when none of the above cases run
+
+practice questions
+
+1 : check number is positive, negative or zero
+2 : check leap year
+3 :
+4 :
+
+Macros const can be of any type. Macros can even be any code block containing
+statements, loops, function calls etc. They are expanded by the preprocessor before
+compilation takes place.
+
+const
+keyword is used to define the constant value that cannot change during
+program execution.
