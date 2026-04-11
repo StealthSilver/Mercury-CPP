@@ -26,7 +26,26 @@ e.cpp -> sum of n natural numbers , we can also use (n \* (n+1) )/ 2 -> faster
 
 WHILE LOOP -> f.cpp
 
-g.cpp ->
-h.cpp ->
-i.cpp ->
-j.cpp ->
+g.cpp -> pattern printing
+h.cpp -> printing no n to 1
+i.cpp -> sum of the digits of a number
+j.cpp -> sum of the odd digits of a number
+
+DO WHILE LOOP -> k.cpp
+
+do {
+do some work
+}
+while(consition)
+
+do while loop runs atleast one time as the consition is checked later
+
+BREAK STATEMENT -> l.cpp
+
+used to break the loop in between when it is running if some condition matches. it exits the loop
+
+m.cpp -> input until the condition matches
+
+CONTINUE STATEMENT -> n.cpp
+
+it is used to skip an iteration. if a given condition is true then the continue statement skips that iteration
