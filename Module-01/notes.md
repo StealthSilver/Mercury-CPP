@@ -229,6 +229,26 @@ flowchart TD
 
 ---
 
+## 🔹 PSEUDOCODE
+
+**Definition:**  
+Pseudocode is a **simplified, informal way of writing algorithms** using a mix of natural language and programming-like syntax. It is **not actual code** and doesn't follow strict syntax rules. Pseudocode helps programmers **plan and communicate logic** before writing actual code in any programming language.
+
+**Example – Sum of Two Numbers:**
+
+```
+Algorithm SumOfTwo(a, b)
+    Input: Two numbers a and b
+    Output: Sum of a and b
+
+    Step 1: Read a and b
+    Step 2: Set sum = a + b
+    Step 3: Print sum
+    Step 4: End
+```
+
+---
+
 ## ✅ LECTURE 1 SUMMARY
 
 - Flowcharts help in **planning logic before coding**
