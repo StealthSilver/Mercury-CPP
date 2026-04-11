@@ -8,6 +8,8 @@ Before starting Data Structures and Algorithms (DSA) using C++, ensure the follo
 
 1. **VS Code** – Code Editor
 2. **C++ Compiler** – Required to compile and run C++ programs
+3. **Check C++ Installation** – Use `clang --version` to verify C++ is installed on MAC
+4. **Install C++ on MAC** – Use `xcode-select --install` to install command line tools with Xcode
 
 ---
 
