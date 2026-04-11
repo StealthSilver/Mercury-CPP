@@ -514,36 +514,763 @@ if ((int)letter >= 65 && (int)letter <= 90)
 └──────────────────────────────────────────────────────────┘
 ```
 
-OPERATORS
+---
 
-1. Arthmatic
-2. Assignment
-3. Relational
-4. Logical
-5. Bitwise
+## 🔹 Operators in C++
 
-1 - Arthematic Operators
+**Operators** are symbols that perform operations on variables and values. C++ provides various types of operators to manipulate data and make logical decisions.
 
-they are of two types -> binary , unary
+```
+┌─────────────────────────────────────┐
+│      Types of Operators in C++       │
+├─────────────────────────────────────┤
+│ 1. Arithmetic Operators             │
+│ 2. Assignment Operators             │
+│ 3. Relational Operators             │
+│ 4. Logical Operators                │
+│ 5. Bitwise Operators                │
+└─────────────────────────────────────┘
+```
 
-binary : 2 operands are needed -> f.cpp
-addition (+)
-substraction (-)
-multipliction (\*)
-division (/)
-modulus (%)
+---
 
-unary : only one operand is needed -> g.cpp
-increment (++) -> increase the value of the variable by 1
-decrement (--) -> decrease the value of the variable by 1
+## 🔹 1. Arithmetic Operators
 
-h.cpp
-postincrement : a++ -> use and then update
-preincrement : ++a -> update and then use
+**Arithmetic operators** perform mathematical calculations on numeric values. They are divided into two categories: **binary** (require 2 operands) and **unary** (require 1 operand).
 
-2 - Assignment operators
+### Binary Arithmetic Operators
 
-## = -> assign the value at the right in teh left
+These operators work on two operands.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Binary Arithmetic Operators                     │
+├──────────┬─────────────┬──────────────────────────────┤
+│ Operator │ Name        │ Description & Example        │
+├──────────┼─────────────┼──────────────────────────────┤
+│ +        │ Addition    │ Adds two operands            │
+│          │             │ 10 + 5 = 15                  │
+├──────────┼─────────────┼──────────────────────────────┤
+│ -        │ Subtraction │ Subtracts second from first  │
+│          │             │ 10 - 5 = 5                   │
+├──────────┼─────────────┼──────────────────────────────┤
+│ *        │ Multiply    │ Multiplies two operands      │
+│          │             │ 10 * 5 = 50                  │
+├──────────┼─────────────┼──────────────────────────────┤
+│ /        │ Division    │ Divides first by second      │
+│          │             │ 10 / 5 = 2                   │
+│          │             │ Note: 10 / 3 = 3 (int div)   │
+├──────────┼─────────────┼──────────────────────────────┤
+│ %        │ Modulus     │ Remainder after division     │
+│          │             │ 10 % 3 = 1                   │
+│          │             │ Only works with integers     │
+└──────────┴─────────────┴──────────────────────────────┘
+```
+
+### Binary Arithmetic Examples
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 20, b = 8;
+
+    cout << "a + b = " << a + b << endl;  // 28
+    cout << "a - b = " << a - b << endl;  // 12
+    cout << "a * b = " << a * b << endl;  // 160
+    cout << "a / b = " << a / b << endl;  // 2 (integer division)
+    cout << "a % b = " << a % b << endl;  // 4
+
+    return 0;
+}
+```
+
+**Important Notes on Division:**
+
+- Integer division truncates (removes) the decimal part
+- `10 / 3 = 3` (not 3.33)
+- For floating-point division, use: `10.0 / 3 = 3.333...`
+- Modulus (%) only works with integers
+
+**Illustration file:** [f.cpp](f.cpp) - Binary arithmetic operators
+
+---
+
+### Unary Arithmetic Operators
+
+These operators work on a single operand: **increment (++)** and **decrement (--)**.
+
+```
+┌──────────────────────────────────────────────────────┐
+│         Unary Arithmetic Operators                   │
+├────────────┬──────────────────────────────────────┤
+│ Operator   │ Name                                 │
+├────────────┼──────────────────────────────────────┤
+│ ++         │ Increment (increases by 1)           │
+│ --         │ Decrement (decreases by 1)           │
+└────────────┴──────────────────────────────────────┘
+```
+
+### Pre-increment vs Post-increment
+
+The order matters! There are TWO ways to use increment/decrement:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Pre-increment vs Post-increment                 │
+├────────────────┬────────────────────────────────────────┤
+│ Pre-increment  │ ++a (Update FIRST, then use)           │
+│ (prefix)       │ Updates value, then returns new value  │
+├────────────────┼────────────────────────────────────────┤
+│ Post-increment │ a++ (Use FIRST, then update)           │
+│ (postfix)      │ Returns old value, then updates        │
+└────────────────┴────────────────────────────────────────┘
+```
+
+### Pre-increment vs Post-increment Examples
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 5;
+
+    // Pre-increment: ++a
+    int result1 = ++a;  // a becomes 6, then result1 = 6
+    cout << "++a: a = " << a << ", result = " << result1 << endl;
+    // Output: ++a: a = 6, result = 6
+
+    // Reset for comparison
+    a = 5;
+
+    // Post-increment: a++
+    int result2 = a++;  // result2 = 5, then a becomes 6
+    cout << "a++: a = " << a << ", result = " << result2 << endl;
+    // Output: a++: a = 6, result = 5
+
+    // Pre-decrement: --a
+    int b = 10;
+    int result3 = --b;  // b becomes 9, then result3 = 9
+    cout << "--b: b = " << b << ", result = " << result3 << endl;
+    // Output: --b: b = 9, result = 9
+
+    // Post-decrement: b--
+    b = 10;
+    int result4 = b--;  // result4 = 10, then b becomes 9
+    cout << "b--: b = " << b << ", result = " << result4 << endl;
+    // Output: b--: b = 9, result = 10
+
+    return 0;
+}
+```
+
+### Key Difference Summary
+
+```cpp
+int x = 5;
+cout << ++x << endl;  // Output: 6  (x is incremented first)
+cout << x << endl;    // Output: 6
+
+int y = 5;
+cout << y++ << endl;  // Output: 5  (uses old value first)
+cout << y << endl;    // Output: 6  (now it's incremented)
+```
+
+**Performance Note:** In loops, prefer `++i` over `i++` as post-increment creates a temporary copy:
+
+```cpp
+// Preferred (slightly faster)
+for (int i = 0; i < 10; ++i) { }
+
+// Less efficient (creates temporary)
+for (int i = 0; i < 10; i++) { }
+```
+
+**Illustration files:** [g.cpp](g.cpp) - Basic unary operators | [h.cpp](h.cpp) - Pre vs Post increment/decrement
+
+---
+
+## 🔹 2. Assignment Operators
+
+**Assignment operators** assign values to variables. The basic assignment operator is `=`, and there are compound assignment operators that combine assignment with other operations.
+
+### Assignment Operators Table
+
+```
+┌────────────┬──────────────────┬──────────────────────────┐
+│ Operator   │ Equivalent To     │ Example                  │
+├────────────┼──────────────────┼──────────────────────────┤
+│ =          │ Assign directly   │ a = 10;  // a = 10       │
+├────────────┼──────────────────┼──────────────────────────┤
+│ +=         │ a = a + b         │ a += 5;  // a = a + 5    │
+├────────────┼──────────────────┼──────────────────────────┤
+│ -=         │ a = a - b         │ a -= 5;  // a = a - 5    │
+├────────────┼──────────────────┼──────────────────────────┤
+│ *=         │ a = a * b         │ a *= 5;  // a = a * 5    │
+├────────────┼──────────────────┼──────────────────────────┤
+│ /=         │ a = a / b         │ a /= 5;  // a = a / 5    │
+├────────────┼──────────────────┼──────────────────────────┤
+│ %=         │ a = a % b         │ a %= 5;  // a = a % 5    │
+└────────────┴──────────────────┴──────────────────────────┘
+```
+
+### Assignment Operators Examples
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10;
+
+    // Simple assignment
+    a = 5;
+    cout << "a = 5; // a = " << a << endl;  // 5
+
+    // Compound addition
+    a += 3;              // a = a + 3
+    cout << "a += 3; // a = " << a << endl;  // 8
+
+    // Compound subtraction
+    a -= 2;              // a = a - 2
+    cout << "a -= 2; // a = " << a << endl;  // 6
+
+    // Compound multiplication
+    a *= 2;              // a = a * 2
+    cout << "a *= 2; // a = " << a << endl;  // 12
+
+    // Compound division
+    a /= 3;              // a = a / 3
+    cout << "a /= 3; // a = " << a << endl;  // 4
+
+    // Compound modulus
+    a %= 3;              // a = a % 3
+    cout << "a %= 3; // a = " << a << endl;  // 1
+
+    return 0;
+}
+```
+
+### Advantages of Compound Assignment
+
+```cpp
+// Less efficient (longer to write)
+count = count + 1;
+total = total + amount;
+product = product * factor;
+
+// More efficient (cleaner and faster to write)
+count += 1;
+total += amount;
+product *= factor;
+```
+
+**Illustration file:** [i.cpp](i.cpp) - Assignment operators
+
+---
+
+## 🔹 3. Relational Operators
+
+**Relational operators** compare two values and return a **boolean result** (true or false, represented as 1 or 0 in C++).
+
+### Relational Operators Table
+
+```
+┌────────────┬────────────────────────┬──────────────────────┐
+│ Operator   │ Name                   │ Example              │
+├────────────┼────────────────────────┼──────────────────────┤
+│ >          │ Greater than           │ a > b                │
+├────────────┼────────────────────────┼──────────────────────┤
+│ <          │ Less than              │ a < b                │
+├────────────┼────────────────────────┼──────────────────────┤
+│ >=         │ Greater than or equal  │ a >= b               │
+├────────────┼────────────────────────┼──────────────────────┤
+│ <=         │ Less than or equal     │ a <= b               │
+├────────────┼────────────────────────┼──────────────────────┤
+│ ==         │ Equal to               │ a == b               │
+├────────────┼────────────────────────┼──────────────────────┤
+│ !=         │ Not equal to           │ a != b               │
+└────────────┴────────────────────────┴──────────────────────┘
+```
+
+### Relational Operators Examples
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 10, b = 5;
+
+    cout << boolalpha;  // Display true/false instead of 1/0
+
+    cout << "a > b:  " << (a > b) << endl;   // true
+    cout << "a < b:  " << (a < b) << endl;   // false
+    cout << "a >= 10: " << (a >= 10) << endl; // true
+    cout << "a <= b:  " << (a <= b) << endl;  // false
+    cout << "a == 10: " << (a == 10) << endl; // true
+    cout << "a != b:  " << (a != b) << endl;  // true
+
+    return 0;
+}
+```
+
+### Important Note: == vs =
+
+```cpp
+❌ COMMON MISTAKE:
+if (a = 5)      // This ASSIGNS 5 to a, doesn't compare!
+{
+    cout << "This will always execute";
+}
+
+✓ CORRECT:
+if (a == 5)     // This COMPARES a with 5
+{
+    cout << "Executes only if a equals 5";
+}
+```
+
+**Key Rules:**
+
+- Single `=` is assignment (changes value)
+- Double `==` is comparison (checks if values are equal)
+- Relational operators always return boolean (0 for false, 1 for true)
+- Use `boolalpha` to display true/false instead of 1/0
+
+**Illustration file:** [j.cpp](j.cpp) - Relational operators
+
+---
+
+## 🔹 4. Logical Operators
+
+**Logical operators** combine boolean expressions and create more complex conditions. They return a **boolean result** (true or false).
+
+### Logical Operators Table
+
+```
+┌────────────┬─────────────┬────────────────┬────────────────────┐
+│ Operator   │ Name        │ Type           │ Description        │
+├────────────┼─────────────┼────────────────┼────────────────────┤
+│ &&         │ AND         │ Binary         │ ALL conditions     │
+│            │             │ (2 operands)   │ must be true       │
+├────────────┼─────────────┼────────────────┼────────────────────┤
+│ ||         │ OR          │ Binary         │ At least ONE       │
+│            │             │ (2 operands)   │ condition must     │
+│            │             │                │ be true            │
+├────────────┼─────────────┼────────────────┼────────────────────┤
+│ !          │ NOT         │ Unary          │ Reverses the       │
+│            │             │ (1 operand)    │ boolean value      │
+└────────────┴─────────────┴────────────────┴────────────────────┘
+```
+
+### Logical AND (&&)
+
+Returns **true** only if BOTH conditions are true.
+
+```
+┌──────────┬──────────┬─────────────┐
+│ Cond 1   │ Cond 2   │ Cond1 && Cond2 │
+├──────────┼──────────┼─────────────┤
+│ true     │ true     │ true            │
+│ true     │ false    │ false           │
+│ false    │ true     │ false           │
+│ false    │ false    │ false           │
+└──────────┴──────────┴─────────────┘
+```
+
+**Example:**
+
+```cpp
+int age = 25;
+bool hasLicense = true;
+
+if (age >= 18 && hasLicense) {
+    cout << "Can drive" << endl;  // Executes: both true
+}
+
+if (age >= 30 && hasLicense) {
+    cout << "Can rent a car" << endl;  // Doesn't execute: first false
+}
+```
+
+### Logical OR (||)
+
+Returns **true** if AT LEAST ONE condition is true.
+
+```
+┌──────────┬──────────┬─────────────┐
+│ Cond 1   │ Cond 2   │ Cond1 || Cond2 │
+├──────────┼──────────┼─────────────┤
+│ true     │ true     │ true            │
+│ true     │ false    │ true            │
+│ false    │ true     │ true            │
+│ false    │ false    │ false           │
+└──────────┴──────────┴─────────────┘
+```
+
+**Example:**
+
+```cpp
+int marks = 45;
+bool isDisabled = true;
+
+if (marks >= 40 || isDisabled) {
+    cout << "Pass" << endl;  // Executes: second condition true
+}
+
+if (marks >= 90 || marks >= 80) {
+    cout << "Grade A or B" << endl;  // Doesn't execute: both false
+}
+```
+
+### Logical NOT (!)
+
+Reverses the boolean value.
+
+```
+┌──────────┬────────────┐
+│ Condition│ !Condition │
+├──────────┼────────────┤
+│ true     │ false      │
+│ false    │ true       │
+└──────────┴────────────┘
+```
+
+**Example:**
+
+```cpp
+bool flag = true;
+cout << !flag << endl;  // Output: false
+
+int x = 5;
+if (!(x > 10)) {
+    cout << "x is not greater than 10" << endl;  // Executes
+}
+
+bool isEmpty = false;
+if (!isEmpty) {
+    cout << "Container has items" << endl;  // Executes
+}
+```
+
+### Logical Operators Complete Example
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int marks = 75;
+    int attendance = 85;
+
+    cout << boolalpha;
+
+    // AND - both conditions must be true
+    cout << (marks >= 50 && attendance >= 75) << endl;  // true
+    cout << (marks >= 50 && attendance >= 90) << endl;  // false
+
+    // OR - at least one condition must be true
+    cout << (marks >= 90 || attendance >= 75) << endl;  // true
+    cout << (marks >= 90 || attendance >= 90) << endl;  // false
+
+    // NOT - reverses the condition
+    cout << !(marks < 50) << endl;   // true
+    cout << !(marks > 100) << endl;  // true
+
+    // Complex expression
+    if ((marks >= 60 && attendance >= 75) || marks >= 90) {
+        cout << "Student passes" << endl;  // Executes
+    }
+
+    return 0;
+}
+```
+
+**Short-circuit Evaluation:**
+
+```cpp
+// AND (&&): Stops evaluating if first condition is false
+if (false && expensiveFunction()) {
+    // expensiveFunction() is NOT called (short-circuit)
+}
+
+// OR (||): Stops evaluating if first condition is true
+if (true || expensiveFunction()) {
+    // expensiveFunction() is NOT called (short-circuit)
+}
+```
+
+**Illustration file:** [k.cpp](k.cpp) - Logical operators
+
+---
+
+## 🔹 5. Bitwise Operators
+
+**Bitwise operators** perform operations on individual bits of integers. They work at the binary level and are useful for optimization and low-level programming.
+
+### Bitwise Operators Table
+
+```
+┌──────────┬──────────────────┬────────────────┬─────────────────┐
+│ Operator │ Name             │ Type           │ Description     │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ &        │ AND              │ Binary         │ Both bits = 1   │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ |        │ OR               │ Binary         │ Any bit = 1     │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ ^        │ XOR              │ Binary         │ Different bits  │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ ~        │ NOT              │ Unary          │ Flip all bits   │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ <<       │ Left shift       │ Binary         │ Shift bits left │
+├──────────┼──────────────────┼────────────────┼─────────────────┤
+│ >>       │ Right shift      │ Binary         │ Shift bits right│
+└──────────┴──────────────────┴────────────────┴─────────────────┘
+```
+
+### Bitwise AND (&)
+
+Compares each bit; result is 1 only if BOTH bits are 1.
+
+```cpp
+  5:     0101
+  3:     0011
+     -------
+   &:     0001   (= 1)
+```
+
+### Bitwise OR (|)
+
+Compares each bit; result is 1 if ANY bit is 1.
+
+```cpp
+  5:     0101
+  3:     0011
+     -------
+   |:     0111   (= 7)
+```
+
+### Bitwise XOR (^)
+
+Compares each bit; result is 1 if bits are DIFFERENT.
+
+```cpp
+  5:     0101
+  3:     0011
+     -------
+   ^:     0110   (= 6)
+```
+
+### Bitwise NOT (~)
+
+Flips all bits (1 becomes 0, 0 becomes 1).
+
+```cpp
+  5:     00000101
+     -----------
+  ~:     11111010   (for 8-bit: = 250 or -6 in signed)
+```
+
+### Bitwise Shift Operators
+
+**Left Shift (<<):** Shifts bits left, fills right with 0s. Each shift multiplies by 2.
+
+```cpp
+  5:         00000101
+  5 << 1:    00001010   (= 10)
+  5 << 2:    00010100   (= 20)
+```
+
+**Right Shift (>>):** Shifts bits right, fills left with 0s or sign bit. Each shift divides by 2.
+
+```cpp
+  5:         00000101
+  5 >> 1:    00000010   (= 2)
+  5 >> 2:    00000001   (= 1)
+```
+
+### Bitwise Operators Examples
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 5;      // 0101 in binary
+    int b = 3;      // 0011 in binary
+
+    cout << "a = " << a << ", b = " << b << endl;
+    cout << "a & b = " << (a & b) << endl;   // 0001 = 1
+    cout << "a | b = " << (a | b) << endl;   // 0111 = 7
+    cout << "a ^ b = " << (a ^ b) << endl;   // 0110 = 6
+    cout << "~a = " << (~a) << endl;         // Flips all bits
+    cout << "a << 1 = " << (a << 1) << endl; // 1010 = 10
+    cout << "a >> 1 = " << (a >> 1) << endl; // 0010 = 2
+
+    return 0;
+}
+```
+
+### Common Bitwise Use Cases
+
+```cpp
+// Check if a number is power of 2
+bool isPowerOf2(int n) {
+    return (n > 0) && ((n & (n - 1)) == 0);
+}
+
+// Check if bit at position i is set
+bool isBitSet(int num, int i) {
+    return (num & (1 << i)) != 0;
+}
+
+// Set bit at position i
+int setBit(int num, int i) {
+    return num | (1 << i);
+}
+
+// Clear bit at position i
+int clearBit(int num, int i) {
+    return num & ~(1 << i);
+}
+
+// Toggle bit at position i
+int toggleBit(int num, int i) {
+    return num ^ (1 << i);
+}
+```
+
+**Note:** Bitwise operators are primarily used in:
+
+- Low-level system programming
+- Competitive programming optimization
+- Graphics and game development
+- Set operations and flags
+- Performance-critical code
+
+---
+
+## 🔹 Operator Precedence and Associativity
+
+When multiple operators appear in an expression, the order of evaluation matters.
+
+### Precedence Order (High to Low)
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Precedence │ Operators                                  │
+├────────────┼────────────────────────────────────────────┤
+│ Highest    │ () [] -> .  (Parentheses, Brackets, etc)   │
+│            │ ++ --  (Post-increment/decrement)          │
+│            │ ! ~ + -  (Logical NOT, Bitwise NOT)        │
+│            │ ++ --  (Pre-increment/decrement)           │
+│            │ * / %  (Multiply, Divide, Modulus)         │
+│            │ + -  (Add, Subtract)                       │
+│            │ << >>  (Bitwise shifts)                    │
+│            │ < <= > >=  (Relational)                    │
+│            │ == !=  (Equality)                          │
+│            │ &  (Bitwise AND)                           │
+│            │ ^  (Bitwise XOR)                           │
+│            │ |  (Bitwise OR)                            │
+│            │ &&  (Logical AND)                          │
+│            │ ||  (Logical OR)                           │
+│            │ ?:  (Ternary conditional)                  │
+│ Lowest     │ = += -= *= /= %=  (Assignment)             │
+└────────────┴────────────────────────────────────────────┘
+```
+
+### Precedence Examples
+
+```cpp
+int result1 = 5 + 3 * 2;      // 11 (multiply first: 3*2=6, then 5+6=11)
+int result2 = (5 + 3) * 2;    // 16 (parentheses first: 5+3=8, then 8*2=16)
+
+bool check1 = true || false && false;  // true (&& before ||)
+bool check2 = (true || false) && false; // false (parentheses force order)
+```
+
+**Best Practice:** Use parentheses to make operator precedence explicit, even if not strictly necessary. It improves code readability and prevents mistakes.
+
+---
+
+## 🔹 Best Practices for Operators
+
+```
+┌──────────────────────────────────────────────────────────┐
+│           Operators Best Practices                       │
+├──────────────────────────────────────────────────────────┤
+│ ARITHMETIC:                                              │
+│ ✓ Use ++ and -- for incrementing/decrementing           │
+│ ✓ Prefer ++i over i++ in loops                          │
+│ ✓ Check for division by zero                            │
+│ ✓ Be careful with modulus on negative numbers           │
+│                                                          │
+│ ASSIGNMENT:                                              │
+│ ✓ Use compound operators (+=, -=) for clarity           │
+│ ✓ Remember: = is assignment, == is comparison           │
+│                                                          │
+│ RELATIONAL:                                              │
+│ ✓ Always use == for comparison, never = in conditions   │
+│ ✓ Use parentheses for complex conditions                │
+│                                                          │
+│ LOGICAL:                                                 │
+│ ✓ Understand short-circuit evaluation                   │
+│ ✓ Place most likely true conditions first               │
+│ ✓ Use !isEmpty() instead of isEmpty == false            │
+│                                                          │
+│ BITWISE:                                                 │
+│ ✓ Use only when necessary for optimization              │
+│ ✓ Add comments explaining bit operations                │
+│ ✗ Don't use for beginners without clear reason          │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔹 Key Takeaways
+
+**Arithmetic Operators:**
+
+- Binary: +, -, \*, /, %
+- Unary: ++, -- (pre- and post-increment/decrement)
+- Pre-increment more efficient in loops
+
+**Assignment Operators:**
+
+- Simple: `=`
+- Compound: `+=`, `-=`, `*=`, `/=`, `%=`
+- Remember: `=` assigns, `==` compares
+
+**Relational Operators:**
+
+- Return boolean (true/false)
+- Used in conditions: >, <, >=, <=, ==, !=
+
+**Logical Operators:**
+
+- AND (&&): Both true
+- OR (||): At least one true
+- NOT (!): Reverses boolean
+- Short-circuit evaluation for efficiency
+
+**Bitwise Operators:**
+
+- Work on individual bits
+- &, |, ^, ~, <<, >>
+- Used for low-level optimization and competitive programming
+
+**General:**
+
+- Use parentheses to clarify operator precedence
+- Understand operator precedence to avoid mistakes
+- Different context requires different operator types
+
+---
+
+---
 
 ## 🔹 Key Takeaways
 
