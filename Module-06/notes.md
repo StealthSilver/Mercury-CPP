@@ -23,3 +23,10 @@ if the condition of the loop is always true then the loop keeps on running. this
 c.cpp -> multiple times priniting
 d.cpp -> print no 1 to n
 e.cpp -> sum of n natural numbers , we can also use (n \* (n+1) )/ 2 -> faster
+
+WHILE LOOP -> f.cpp
+
+g.cpp ->
+h.cpp ->
+i.cpp ->
+j.cpp ->
