@@ -384,6 +384,80 @@ Use **`cin`** (console input) with extraction operator **`>>`** to take user inp
 
 **Syntax:** `cin >> variableName;`
 
+**Limitation of cin:**
+
+- Stops reading at whitespace (spaces, tabs, newlines)
+- Cannot read entire lines with spaces
+
+**Example:** If user inputs "John Doe", `cin >> name;` only reads "John"
+
+**Illustration file:** [e.cpp](e.cpp)
+
+---
+
+### Getting Complete Line Input with getline()
+
+Use **`getline()`** function to read an entire line including spaces until newline character is encountered.
+
+**Syntax:** `getline(cin, stringVariable);`
+
+**Key Features:**
+
+- Reads entire line including spaces
+- Stops at newline character (`\n`)
+- Better for reading sentences or names with spaces
+- Requires `#include <string>` header
+
+**Comparison: cin vs getline()**
+
+```
+┌─────────────┬──────────────────────────────┬──────────────────────────────┐
+│ Input Type  │ cin >> variable              │ getline(cin, variable)       │
+├─────────────┼──────────────────────────────┼──────────────────────────────┤
+│ User Input  │ "John Doe"                   │ "John Doe"                   │
+│ Reads       │ "John" only                  │ "John Doe" (entire line)     │
+│ Stops At    │ First whitespace             │ Newline character            │
+│ Spaces      │ NOT included                 │ Included in string           │
+│ Use Case    │ Single words, numbers        │ Full names, sentences        │
+└─────────────┴──────────────────────────────┴──────────────────────────────┘
+```
+
+**Example Program Using getline():**
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main()
+{
+    string fullName;
+    string address;
+
+    cout << "Enter your full name: ";
+    getline(cin, fullName);  // Reads entire line including spaces
+
+    cout << "Enter your address: ";
+    getline(cin, address);   // Reads entire line including spaces
+
+    cout << "\nYou entered:" << endl;
+    cout << "Name: " << fullName << endl;
+    cout << "Address: " << address << endl;
+
+    return 0;
+}
+```
+
+**Sample Execution:**
+
+```
+Enter your full name: Rajat Saraswat
+Enter your address: 123 Main Street, New York
+You entered:
+Name: Rajat Saraswat
+Address: 123 Main Street, New York
+```
+
 **Illustration file:** [e.cpp](e.cpp)
 
 ---
