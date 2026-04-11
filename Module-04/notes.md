@@ -514,7 +514,36 @@ if ((int)letter >= 65 && (int)letter <= 90)
 └──────────────────────────────────────────────────────────┘
 ```
 
----
+OPERATORS
+
+1. Arthmatic
+2. Assignment
+3. Relational
+4. Logical
+5. Bitwise
+
+1 - Arthematic Operators
+
+they are of two types -> binary , unary
+
+binary : 2 operands are needed -> f.cpp
+addition (+)
+substraction (-)
+multipliction (\*)
+division (/)
+modulus (%)
+
+unary : only one operand is needed -> g.cpp
+increment (++) -> increase the value of the variable by 1
+decrement (--) -> decrease the value of the variable by 1
+
+h.cpp
+postincrement : a++ -> use and then update
+preincrement : ++a -> update and then use
+
+2 - Assignment operators
+
+## = -> assign the value at the right in teh left
 
 ## 🔹 Key Takeaways
 
