@@ -1,4 +1,4 @@
-# DSA with C++ — Module 4 Notes - for shaurya
+# DSA with C++ — Module 4 Notes
 
 ---
 
