@@ -1155,44 +1155,194 @@ int toggleBit(int num, int i) {
 
 ## 🔹 Operator Precedence and Associativity
 
-When multiple operators appear in an expression, the order of evaluation matters.
+**Operator precedence** determines the order in which operators are evaluated in an expression. **Associativity** determines the direction of evaluation when operators have the same precedence (left-to-right or right-to-left).
 
-### Precedence Order (High to Low)
+### Complete Operator Precedence Table
 
 ```
-┌────────────────────────────────────────────────────────┐
-│ Precedence │ Operators                                  │
-├────────────┼────────────────────────────────────────────┤
-│ Highest    │ () [] -> .  (Parentheses, Brackets, etc)   │
-│            │ ++ --  (Post-increment/decrement)          │
-│            │ ! ~ + -  (Logical NOT, Bitwise NOT)        │
-│            │ ++ --  (Pre-increment/decrement)           │
-│            │ * / %  (Multiply, Divide, Modulus)         │
-│            │ + -  (Add, Subtract)                       │
-│            │ << >>  (Bitwise shifts)                    │
-│            │ < <= > >=  (Relational)                    │
-│            │ == !=  (Equality)                          │
-│            │ &  (Bitwise AND)                           │
-│            │ ^  (Bitwise XOR)                           │
-│            │ |  (Bitwise OR)                            │
-│            │ &&  (Logical AND)                          │
-│            │ ||  (Logical OR)                           │
-│            │ ?:  (Ternary conditional)                  │
-│ Lowest     │ = += -= *= /= %=  (Assignment)             │
-└────────────┴────────────────────────────────────────────┘
+┌─────┬──────────────────────────┬────────────────┬────────────────────────┐
+│ Lvl │ Operators                │ Type           │ Associativity          │
+├─────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  1  │ :: (scope resolution)    │ Left-to-Right  │ Not used in basics      │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  2  │ ()  [] . -> ++ --        │ Left-to-Right  │ Parentheses, brackets, │
+│     │ (Parentheses, Brackets)  │                │ postfix ++/--          │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  3  │ ! ~ + - ++ -- (unary)    │ Right-to-Left  │ NOT, Bitwise NOT,      │
+│     │ & * (unary) sizeof       │                │ unary +/-, prefix ++/--│
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  4  │ * / %                    │ Left-to-Right  │ Multiply, Divide,      │
+│     │ (Multiply, Divide, Mod)  │                │ Modulus                │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  5  │ + -                      │ Left-to-Right  │ Addition, Subtraction  │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  6  │ << >>                    │ Left-to-Right  │ Bitwise Left/Right     │
+│     │ (Bitwise shifts)         │                │ Shift                  │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  7  │ < <= > >=                │ Left-to-Right  │ Relational operators   │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  8  │ == !=                    │ Left-to-Right  │ Equality operators     │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│  9  │ &                        │ Left-to-Right  │ Bitwise AND            │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 10  │ ^                        │ Left-to-Right  │ Bitwise XOR            │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 11  │ |                        │ Left-to-Right  │ Bitwise OR             │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 12  │ &&                       │ Left-to-Right  │ Logical AND            │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 13  │ ||                       │ Left-to-Right  │ Logical OR             │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 14  │ ?:                       │ Right-to-Left  │ Ternary conditional    │
+│ ────┼──────────────────────────┼────────────────┼────────────────────────┤
+│ 15  │ = += -= *= /= %=         │ Right-to-Left  │ Assignment operators   │
+│     │ &= ^= |= <<= >>=         │                │ (lowest priority)      │
+└─────┴──────────────────────────┴────────────────┴────────────────────────┘
 ```
 
-### Precedence Examples
+**Legend:** Level 1 = Highest Priority | Level 15 = Lowest Priority
+
+### Understanding Associativity
+
+**Left-to-Right Associativity** (most operators):
 
 ```cpp
-int result1 = 5 + 3 * 2;      // 11 (multiply first: 3*2=6, then 5+6=11)
-int result2 = (5 + 3) * 2;    // 16 (parentheses first: 5+3=8, then 8*2=16)
-
-bool check1 = true || false && false;  // true (&& before ||)
-bool check2 = (true || false) && false; // false (parentheses force order)
+// Evaluated LEFT to RIGHT
+int a = 10 - 5 - 2;
+// (10 - 5) - 2 = 5 - 2 = 3 ✓ Correct
+// NOT: 10 - (5 - 2) = 10 - 3 = 7 ✗ Wrong
 ```
 
-**Best Practice:** Use parentheses to make operator precedence explicit, even if not strictly necessary. It improves code readability and prevents mistakes.
+**Right-to-Left Associativity** (assignment, unary, ternary):
+
+```cpp
+// Evaluated RIGHT to LEFT
+int a = 5, b = 3, c = 1;
+a = b = c;
+// Evaluated as: a = (b = c)
+// First: b = 1
+// Then: a = 1
+// Result: a = 1, b = 1, c = 1 ✓ Correct
+```
+
+### Comprehensive Precedence Examples
+
+**Example 1: Arithmetic Operators**
+
+```cpp
+int result = 5 + 3 * 2 - 8 / 4;
+//            5 + (3*2) - (8/4)   [* and / first, left-to-right]
+//            5 + 6 - 2            [+ and - next, left-to-right]
+//            11 - 2
+//            = 9
+```
+
+**Example 2: Relational and Logical**
+
+```cpp
+bool check = 5 > 3 && 2 < 4 || 1 == 1;
+//           (5 > 3) && (2 < 4) || (1 == 1)   [relational first]
+//           true && true || true              [&& before ||]
+//           true || true
+//           = true
+```
+
+**Example 3: Bitwise vs Logical**
+
+```cpp
+int a = 5 | 3 ^ 2 & 1;
+//       5 | (3 ^ (2 & 1))   [& has higher precedence than ^ and |]
+//       5 | (3 ^ 0)
+//       5 | 3
+//       = 7
+```
+
+**Example 4: Assignment Associativity**
+
+```cpp
+int x, y, z;
+x = y = z = 10;  // Right-to-Left
+// Evaluated as: x = (y = (z = 10))
+// z = 10
+// y = 10
+// x = 10
+// All three variables are now 10
+```
+
+**Example 5: Mix of Operators**
+
+```cpp
+int result = 2 + 3 * 4 - 5 / 2 % 3;
+//            2 + (3*4) - ((5/2)%3)  [*,/,% first]
+//            2 + 12 - (2%3)
+//            2 + 12 - 2
+//            14 - 2
+//            = 12
+```
+
+### Operator Precedence Quick Reference
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Operator Precedence Shortcuts                  │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Parentheses: () always evaluated first                  │
+│ 2. Unary: ! ~ + - ++ -- (right-to-left)                   │
+│ 3. Multiply/Divide: * / % (left-to-right)                 │
+│ 4. Add/Subtract: + - (left-to-right)                      │
+│ 5. Bitwise Shifts: << >> (left-to-right)                  │
+│ 6. Relational: < <= > >= (left-to-right)                  │
+│ 7. Equality: == != (left-to-right)                        │
+│ 8. Bitwise: & then ^ then | (left-to-right)               │
+│ 9. Logical: && then || (left-to-right)                    │
+│ 10. Ternary: ?: (right-to-left)                           │
+│ 11. Assignment: = += -= etc (right-to-left)               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Common Precedence Mistakes
+
+```cpp
+// ❌ MISTAKE 1: Forgetting logical AND has higher precedence than OR
+bool result = false || true && false;  // true (not false!)
+// Evaluated as: false || (true && false) = false || false = false
+// BUT looks like it should be (false || true) && false = true && false = false
+
+// ✓ CORRECT: Use parentheses to be explicit
+bool result = (false || true) && false;  // false
+
+// ❌ MISTAKE 2: Relational operators bind tighter than might seem
+int a = 5;
+if (a > 3 == true) { }  // Works but confusing!
+// Evaluated as: (a > 3) == true = true == true = true
+
+// ✓ CORRECT: Use parentheses
+if ((a > 3) == true) { }
+
+// ❌ MISTAKE 3: Bitwise operators have lower precedence than relational
+int x = 5 & 3 < 2;  // true & 3 = 1 (not what intended!)
+// Evaluated as: 5 & (3 < 2) = 5 & 0 = 0
+
+// ✓ CORRECT: Use parentheses
+int x = (5 & 3) < 2;  // (1) < 2 = true
+```
+
+### Best Practice: Use Parentheses
+
+```cpp
+// Without parentheses (hard to read, easy to make mistakes)
+bool check = x > 5 && y < 10 || z == 0;
+
+// With parentheses (clear intent and precedence)
+bool check = ((x > 5) && (y < 10)) || (z == 0);
+
+// Very clear (though slightly verbose)
+bool hasGoodScore = (x > 5) && (y < 10);
+bool isReset = (z == 0);
+bool check = hasGoodScore || isReset;
+```
+
+**Golden Rule:** When in doubt, use parentheses! They make code self-documenting and prevent subtle bugs.
 
 ---
 
