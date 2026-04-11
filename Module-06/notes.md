@@ -49,3 +49,8 @@ m.cpp -> input until the condition matches
 CONTINUE STATEMENT -> n.cpp
 
 it is used to skip an iteration. if a given condition is true then the continue statement skips that iteration
+
+o.cpp -> program where all the multiples entered by the user are visible except mult of 10
+
+checking is a numebr is prime or not -> p.cpp
+optimised way to check for primes -> is to check until sqrt(n), you need not check until n
