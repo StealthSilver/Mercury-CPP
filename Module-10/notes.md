@@ -25,3 +25,29 @@ pointers can be of any data type
 the size of pointers in always 8 bytes.
 
 also when the pointer is created it takes 8 bytes in memory. so a new address of 8 bytes is given to the pointer as a variable and the address of hte original variable is stored in the memory location assigned to the pointer
+
+we can also make pointers of pointer -> c.cpp
+int \*\*pptr = &ptr;
+
+DEREFRENCE OPERATOR -> d.cpp
+
+gets the value of the variable pointed by any pointer;
+
+\* operator lets us directly access & modify the value of variable.
+
+int a =10;
+int \*ptr = &a
+
+\*ptr will be equal to 10
+
+NULL POINTER -> e.cpp
+
+we assign NULL value to apointer to show that it dosen't point to any location.
+
+int \*ptr = NULL;
+
+derefrencing null prt is not possible as it'll result in an error
+
+we use this when we dont want to store any value currently.
+
+0 address is stored at the null pointer and derefrencing it gives a special type of error called the segmentation fault
