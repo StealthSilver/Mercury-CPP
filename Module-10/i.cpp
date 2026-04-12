@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-void changeA(int &a)
+void changeA(int &a) // reference variable
 {
     a = 20;
     cout << a << endl;

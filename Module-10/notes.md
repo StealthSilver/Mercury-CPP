@@ -91,3 +91,9 @@ note : float\* a, b;
 here only a is the float pointer and b is a normal float variable -> can check by hovering over the variables in the code file
 
 note : we can even initialise the pointer as 0, this will be a null pointer with the address 0x0 -> k.cpp
+
+l.cpp -> practice problems
+m.cpp -> practice problems
+n.cpp -> practice problems
+
+Dangling Pointers
