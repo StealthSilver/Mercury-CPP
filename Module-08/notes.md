@@ -44,3 +44,23 @@ we can never make the first parameter as the dafault parameter
 f.cpp -> function for product of 2 numbers
 g.cpp -> function for even odd checking
 h.cpp -> factorial of a number
+
+FUNCTIONS IN THE MEMORY
+
+there are two kind of memories, stack (for static memory) , heap (dynamic memory)
+stack is the stack (one ontop of other addreses). when a function is executed then a layer is created in the stack called stack frame. all the variables and the parameters of the function are stored in stack frame.
+
+even for main function stack frame is allocated
+other functions are created over the main functions stack frame.
+
+when the function retrurs then that stack frame is deleted. the current function is always at the top
+
+SCOPE : this is the region where the variable can be used
+
+there are local and global scope
+
+if a variable is defined in a function can only be used inside the function
+
+there are local scopes, for functions, loops, if-else, or general {}
+
+you can define variables in the global scope outside any funciton in the top of the file
