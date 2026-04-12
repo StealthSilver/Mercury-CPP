@@ -40,3 +40,7 @@ default parameter -> e.cpp
 we can give a default value to the parameters that if any value is not passed then it will take the default value
 
 we can never make the first parameter as the dafault parameter
+
+f.cpp -> function for product of 2 numbers
+g.cpp -> function for even odd checking
+h.cpp -> factorial of a number
