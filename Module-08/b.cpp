@@ -6,15 +6,14 @@ void sayHello()
     cout << "Hello" << endl;
 }
 
-void sayBye()
+void assistant()
 {
-    cout << "Bye" << endl;
+    sayHello();
+    cout << "work done" << endl;
 }
 
 int main()
 {
-    sayHello(); // function call
-    sayHello();
-    sayBye();
+    assistant();
     return 0;
 }
