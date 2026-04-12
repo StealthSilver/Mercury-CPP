@@ -61,12 +61,33 @@ PASSING ARGUMENTS
 
    here the value does not changes as the passed variable is a copy of original
 
-2. pass by refrence (pass by address) -> g.cpp
+2. pass by refrence (pass by address)
    when we pass the reference of argument to the function
 
    there are two ways to pass by reference
 
-   a. pass by pointers
-   b. pass by referece variable
+   a. pass by pointers -> g.cpp
 
-the changes in the copy are reflected as the changes are directly made on the address in the memory
+   the changes in the copy are reflected as the changes are directly made on the address in the memory
+
+the pointer is passed instead of the variable
+teh pointer is derefrenced in the function
+
+b. pass by referece variable -> h.cpp , i.cpp
+
+reference variable is an alternate name (alias) of already existing variable;
+
+int a =5;
+int &b =a;
+
+a & b refer to the same location in the memory
+
+reference variables are deleted as the function leaves the stack
+reference variable always need to be initialised
+
+j.cpp -> illustration of pointers
+
+note : float\* a, b;
+here only a is the float pointer and b is a normal float variable -> can check by hovering over the variables in the code file
+
+note : we can even initialise the pointer as 0, this will be a null pointer with the address 0x0 -> k.cpp
