@@ -64,3 +64,29 @@ if a variable is defined in a function can only be used inside the function
 there are local scopes, for functions, loops, if-else, or general {}
 
 you can define variables in the global scope outside any funciton in the top of the file
+
+i.cpp -> prime no checker
+j.cpp -> binomial coefficient
+
+FUNCTION OVERLOADING
+
+when we have multiple funcitons with the same name but different parameters
+k.cpp -> why overloading is necessaey
+
+different parameters can be in two ways : 1 - the type is different , 2 - no. of parameters
+
+for both of them we can just use the same function names. the complier will itself detect which funciton to use when
+
+there cannot be differece in the return type
+
+m.cpp -> printing primes in range 2 to n
+
+n.cpp -> pallindrome checker
+
+o.cpp -> sum of hte digits
+
+p.cpp -> printing character after the given character
+
+q.cpp -> max of three numbers
+
+r.cpp -> finding the whole square
