@@ -50,4 +50,23 @@ derefrencing null prt is not possible as it'll result in an error
 
 we use this when we dont want to store any value currently.
 
-0 address is stored at the null pointer and derefrencing it gives a special type of error called the segmentation fault
+0 address is stored at the null pointer and derefrencing it gives a special type of error called the segmentation fault and code execution stops here
+
+we can store values in null pointer later is we want to
+
+PASSING ARGUMENTS
+
+1. pass by value -> f.cpp
+   when parameter is a copy of actual argument variable in memory
+
+   here the value does not changes as the passed variable is a copy of original
+
+2. pass by refrence (pass by address) -> g.cpp
+   when we pass the reference of argument to the function
+
+   there are two ways to pass by reference
+
+   a. pass by pointers
+   b. pass by referece variable
+
+the changes in the copy are reflected as the changes are directly made on the address in the memory
