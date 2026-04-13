@@ -10,18 +10,22 @@ void printArr(int *arr, int n)
     cout << endl;
 }
 
-void bubbleSort(int *arr, int n)
+void selectionSort(int *arr, int n)
 {
+
     for (int i = 0; i < n - 1; i++)
     {
-        for (int j = 0; j < n - i - 1; j++)
+        int minIdx = i;
+        // loop to find min
+        for (int j = i + 1; j < n; j++)
         {
-            if (arr[j] > arr[j + 1]) // ascending order
-            // if (arr[j] < arr[j + 1]) // descending order
+            if (arr[j] < arr[minIdx]) // -> ascending order;
+            // if (arr[j] > arr[minIdx]) // descending order
             {
-                swap(arr[j], arr[j + 1]);
+                minIdx = j;
             }
         }
+        swap(arr[i], arr[minIdx]);
     }
 }
 
@@ -33,7 +37,7 @@ int main()
     cout << "Unsorted array: ";
     printArr(arr, n);
 
-    bubbleSort(arr, n);
+    selectionSort(arr, n);
 
     cout << "Sorted array: ";
     printArr(arr, n);
