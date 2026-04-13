@@ -60,3 +60,12 @@ find the best buy price for each days and store them in another array then find 
 
 time complxity -> O(n)
 space complexity -> O(n)
+
+TRAPPING RAINWATER
+
+there is an array with the heights given. we have to find the total amount of water trapped. given all the heights greater than zero.
+
+f.cpp -> the bar needs a valley to trap water i.e. larger bars on both sides.
+min of (left largest and right largest) bars gives the trapped water.
+also min size n >=3
+water cannot trap in ascending, descending or equal bars
