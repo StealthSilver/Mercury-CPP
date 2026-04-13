@@ -51,4 +51,14 @@ use a frequency count of elements from min to max
 
 time complexity -> O(n + k)
 space complexity -> O(k)
-here k is a constant
+here k is a constant range
+
+INBUILT SORT
+
+C++ has an inbuilt sort function with the time complexity of O(nlogn)
+
+Ascending Order
+sort(start,end)
+
+Descending Order
+sort(start, end, greater<int>)
