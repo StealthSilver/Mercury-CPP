@@ -93,3 +93,14 @@ time complexity -> O(n)
 space complexity -> O(n)
 
 we can solve this and the BUY AND SELL STOCKS with stacks also, time complexity will be same.
+
+PROBLEM 1 : g.cpp
+Given an integer array nums, return true if any value appears at least
+twice in the array, and return false if every element is distinct.
+
+Brute force approach
+time comeplexity -> O(n^2)
+space complexity -> O(1)
+
+it can also be done by sorting which decreses the time complexity by O(nlogn)
+and hashset which decreases the time complexity by O(n);
