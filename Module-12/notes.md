@@ -23,3 +23,11 @@ time complexity -> O(n^3) -> as three loops are used
 this can be optimised using strings to O(n^2);
 
 space complexity -> O(1) -> no extra space is used
+
+MAX SUBARRAY SUM
+
+find the maximum of the sum of all subarrays for any array -> this is tricky for arrays having negative elements
+
+1. brute force approach -> b.cpp
+2. optimised approach -> c.cpp
+3. Kadane's algorithm -> d.cpp
