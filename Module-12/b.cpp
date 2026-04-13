@@ -1,9 +1,10 @@
 #include <iostream>
+#include <climits>
 using namespace std;
 
 void MaxSubarraySum(int *arr, int n)
 {
-    int maxSum = INT32_MIN;
+    int maxSum = INT_MIN;
 
     for (int start = 0; start < n; start++)
     {
