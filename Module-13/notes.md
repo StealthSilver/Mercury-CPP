@@ -42,3 +42,13 @@ pick an element from the unsorted part and place it correctly in sorted part
 
 time complexity -> O(n^2)
 space complexity -> O(1)
+
+COUNTING SORT -> e.cpp
+
+we use it when the range of numbers in the array is low
+
+use a frequency count of elements from min to max
+
+time complexity -> O(n + k)
+space complexity -> O(k)
+here k is a constant
