@@ -69,3 +69,27 @@ f.cpp -> the bar needs a valley to trap water i.e. larger bars on both sides.
 min of (left largest and right largest) bars gives the trapped water.
 also min size n >=3
 water cannot trap in ascending, descending or equal bars
+
+amount of water = height \* width (for this case)
+
+find the trapped water for all the bars and then add then to get the total amount
+
+create two new auxiliary arrays (helper arrays crated for hte problem) , leftMax , rightMax
+
+to get left max for ith index = max(leftmax[i-1] , height[i-1]);
+to get right max for ith index = max(rightmax[i+1] , height[i+1]);
+
+get the min of left max and right max for every index
+to get the amount of water for every height find the min - height[i]
+ignore the negative values, set them to 0. Then finally add the individual amounts to get the total water trapped
+
+also initialise the heights like this
+leftMax[0] = height[0];
+rightMax[n - 1] = heights[n - 1];
+
+    as if initialised as INT_MAX and INT_MIN then adding or subtracting will take to negative or positive values and the values in the int are circular
+
+time complexity -> O(n)
+space complexity -> O(n)
+
+we can solve this and the BUY AND SELL STOCKS with stacks also, time complexity will be same.
