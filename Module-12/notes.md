@@ -104,3 +104,19 @@ space complexity -> O(1)
 
 it can also be done by sorting which decreses the time complexity by O(nlogn)
 and hashset which decreases the time complexity by O(n);
+
+PROBLEM 2 : h.cpp
+Question 2 : There is an integer array nums sorted in ascending order (with distinct values)
+
+Prior to being passed to your function, nums is possibly rotated at an unknown pivot
+index k (1 <= k < nums.length) such that the resulting array is [nums[k], nums[k+1], ...,
+nums[n-1], nums[0], nums[1], ..., nums[k-1]] (0-indexed). For example, [0,1,2,4,5,6,7]
+might be rotated at pivot index 3 and become [4,5,6,7,0,1,2].
+Given the array nums after the possible rotation and an integer target, return the
+index of target if it is in nums, or -1 if it is not in nums.
+You must write an algorithm with O(log n) runtime complexity.
+
+PROBLEM 3 : i.cpp
+Question 3 : Given an integer array nums, find a subarray that has the largest
+product, and return the product. The test cases are generated so that the answer will
+fit in a 32-bit integer.
