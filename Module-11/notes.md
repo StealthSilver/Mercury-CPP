@@ -31,4 +31,10 @@ e.cpp -> input the elements in the array
 
 f.cpp -> creating the array of n size taken from user at the runtime , this was not possible in the earlier versions of c++
 
-g.cpp -> find the largest in the array
+g.cpp -> find the largest in the array and smallest in the array
+
+ARRAYS ARE PASSED BY REFERENCE -> h.cpp
+
+in c++ the array name can be converted into a pointer
+
+the name of hte array is a pointer pointing at hte 0th index
