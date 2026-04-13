@@ -82,8 +82,77 @@ we use swap for this
 
 BINARY SEARCH
 
-it works only for sorted array or sorted values
+It works only for a sorted array or sorted values.
 
-sorted array is a prerequisite
+Sorted array is a prerequisite.
 
-n.cpp
+## Number of Iterations
+
+If after each step the array size becomes half:
+
+n / 2^x = 1
+
+(when only one element remains)
+
+n = 2^x
+
+x = log₂(n)
+
+So total iterations:
+
+x + 1 = log₂(n) + 1
+
+Ignoring constants, complexity is **log n**.
+
+Complexities
+
+Time Complexity: O(log n)
+
+Space Complexity: O(1) for iterative binary search
+
+Space Complexity: O(log n) for recursive binary search (due to recursion stack)
+
+ARRAY POINTER
+
+array pointer acts like a constant pointer
+
+int arr[5];
+cout<<arr<<endl;
+int y = 25;
+arr = &y;
+
+this operation is not possible as we cannot change arr, it will always point to the 0th element of the array
+
+POINTER ARITHMETIC
+
+Increment & Decrement Operators -> o.cpp
+
+ptr ++ or ++prt
+ptr-- or --ptr
+
+any of the increment and the decrement operations will make the pointer jump the addresses same as the memory occupied by the kind of pointer.
+
+for int pointer - 4 bytes
+for char pointer - 1 byte
+
+Addition and Subtraction of constants -> p.cpp
+
+ptr + 3
+ptr - 3
+
+this will skip the address ptr + 3 \* 4 bytes (size of integer)
+
+this is mostly used in teh case of arrays -> q.cpp -> using pointer arethematics to access the integer values
+
+Addition and Subtraction of Pointers -> r.cpp
+
+ptr1 + ptr2 // invalid operation
+ptr1 - ptr2 // both must be of same types (this will give the numebr of elements lying between the pointers)
+
+s.cpp -> using the same for the arrays
+
+comparision of two pointers
+(== , < , <= ,> , >=)
+
+we can compare two pointer values -> t.cpp
+addresses will be compared
