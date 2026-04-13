@@ -10,6 +10,7 @@ int main()
     cout << (ptr2 < ptr1) << endl;
     cout << (ptr2 > ptr1) << endl;
     cout << (ptr2 == ptr1) << endl;
+    cout << (ptr2 == arr) << endl;
 
     return 0;
 }

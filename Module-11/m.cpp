@@ -9,6 +9,10 @@ void ReverseArray(int *arr, int n)
     while (start < end)
     {
         swap(arr[start], arr[end]);
+
+        // int temp = arr[start];
+        // arr[start] = arr[end];
+        // arr[end] = temp;
         start++;
         end--;
     }
