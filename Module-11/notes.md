@@ -54,3 +54,28 @@ LINEAR SEARCH -> k.cpp
 
 we can apply linear search on \sorted or unsorted array. we traverse the array until we find the key.
 if the key does not exist then -1 is returned
+
+time complexity -> O(n)
+
+space complexity -> O(1)
+
+REVERSE AN ARRAY
+
+l.cpp -> with extra space (we create a duplicate array and then reverse the array)
+
+time complexity -> O(n)
+space complexity -> O(n)
+
+m.cpp -> without extra space
+
+time complexity -> O(n)
+space complexity -> O(1)
+
+we use swap for this
+
+        int temp = arr[start];
+        arr[start] = arr[end];
+        arr[end] = temp;
+
+        or we use the inbuit swap function
+        swap(start , end);
