@@ -49,3 +49,8 @@ pasing an array in a function -> j.cpp
 
 in the function only the pointer is passed so there is no array in the other function.
 we need to manually pass the size of array in teh other function as we cannot access the size of array from the other function in any possible way
+
+LINEAR SEARCH -> k.cpp
+
+we can apply linear search on \sorted or unsorted array. we traverse the array until we find the key.
+if the key does not exist then -1 is returned
