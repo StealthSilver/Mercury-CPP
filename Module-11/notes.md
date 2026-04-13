@@ -79,3 +79,11 @@ we use swap for this
 
         or we use the inbuit swap function
         swap(start , end);
+
+BINARY SEARCH
+
+it works only for sorted array or sorted values
+
+sorted array is a prerequisite
+
+n.cpp
