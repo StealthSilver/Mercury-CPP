@@ -33,8 +33,19 @@ f.cpp -> creating the array of n size taken from user at the runtime , this was 
 
 g.cpp -> find the largest in the array and smallest in the array
 
-ARRAYS ARE PASSED BY REFERENCE -> h.cpp
+ARRAYS ARE PASSED BY REFERENCE
 
 in c++ the array name can be converted into a pointer
 
-the name of hte array is a pointer pointing at hte 0th index
+the name of the array is a pointer pointing at hte 0th index -> h.cpp
+
+passing the array name is equivalent to passing the pointer -> i.cpp
+
+void printArr(int arr[]){...}
+void printArr(int \*arr){...}
+both of the above syntax are same
+
+pasing an array in a function -> j.cpp
+
+in the function only the pointer is passed so there is no array in the other function.
+we need to manually pass the size of array in teh other function as we cannot access the size of array from the other function in any possible way
