@@ -105,7 +105,7 @@ MATRIX POINTERS -> i.cpp
 in the matrices the name of the matrix points towards the complete first row.
 so the 2d array name behaves as the row pointer
 
-passing matrix pointers to functions
+passing matrix pointers to functions -> j.cpp
 
 function(int (\*ptr)[4]){....}
 
@@ -114,3 +114,11 @@ here we pass the row pointer
 it is same as
 
 function(int mat[][4]){...}
+
+PRACTICE PROBLEMS
+
+1. Print the number of all 7’s that are in the 2d array.
+2. Print out the sum of the numbers in the second row of the “nums” array.
+3. Write a program to Find Transpose of a Matrix.
+4.
+5.
