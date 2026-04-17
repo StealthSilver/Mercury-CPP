@@ -95,4 +95,7 @@ this is the better approach
 3. Staircase Search - h.cpp
    best appraoch for multidimentional arrays
    it uses the both row sorted and column sorted unlike binary search which uses only one
-   the tiem complexity is O(m+n)
+   the time complexity is O(m+n) -> worst case
+
+if n >>> m -> O(n) -> linear time complexity
+if m >>>n -> O(m) -> linear time complexity
