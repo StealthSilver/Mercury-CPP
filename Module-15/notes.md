@@ -15,9 +15,14 @@ this is a 7 bit charset can store 128 characters
 'a' - 97
 'A' - 65
 
-CHARACTER ARRAY
+CHARACTER ARRAY -> b.cpp
 
 char arr[5] = {'a', 'b', 'c', 'd', 'e'};
 
 we can use char arrays to store strings and then the array has to end with \0
 all the char arrays storing the string are Explicitly Terminated by null character
+
+we also have string literals
+"string literal"
+
+we can create char arrays also by inputing a string literal -> c.cpp
