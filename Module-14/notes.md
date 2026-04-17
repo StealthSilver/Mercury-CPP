@@ -69,3 +69,7 @@ ecol--
 do this until
 srow <= erow
 srow < erow
+
+DIOGNAL SUM -> e.cpp
+
+for a square matrix of size n\*n find the sum of the main diognal
