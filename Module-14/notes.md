@@ -104,3 +104,13 @@ MATRIX POINTERS -> i.cpp
 
 in the matrices the name of the matrix points towards the complete first row.
 so the 2d array name behaves as the row pointer
+
+passing matrix pointers to functions
+
+function(int (\*ptr)[4]){....}
+
+here we pass the row pointer
+
+it is same as
+
+function(int mat[][4]){...}

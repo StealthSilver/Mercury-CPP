@@ -11,8 +11,10 @@ int main()
         {16, 17, 18, 19, 20},
         {21, 22, 23, 24, 25}};
 
-    cout << mat << endl;        // this is the address of the first row (which is an array of 5 ints)
-    cout << mat + 1 << endl;    // this is the address of the second row (which is an array of 5 ints)
+    cout << mat << " = " << &mat[0][0] << endl;      // this is the address of the first row (which is an array of 5 ints)
+    cout << mat + 1 << " != " << &mat[0][1] << endl; // this is the address of the second row (which is an array of 5 ints)
+    cout << mat + 1 << " != " << &mat[1][0] << endl; // this is the address of the second row (which is an array of 5 ints)
+
     cout << mat[0] << endl;     // this is the address of the first row (which is an array of 5 ints)
     cout << mat[0] + 1 << endl; // this is the address of the second element of the first row (which is an int)
 
