@@ -29,7 +29,7 @@ int main()
     case 7:
         cout << "Sunday" << endl;
         break;
-    defult:
+    default:
         cout << "Invalid Day" << endl;
     }
 
