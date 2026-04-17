@@ -115,10 +115,18 @@ it is same as
 
 function(int mat[][4]){...}
 
+whenever we pass matrices in functions we have to pass rows and columns seperately
+
 PRACTICE PROBLEMS
 
-1. Print the number of all 7’s that are in the 2d array.
-2. Print out the sum of the numbers in the second row of the “nums” array.
-3. Write a program to Find Transpose of a Matrix.
-4.
-5.
+1. Print the number of all 7’s that are in the 2d array. -> k.cpp
+2. Print out the sum of the numbers in the second row of the “nums” array. -> l.cpp
+3. Write a program to Find Transpose of a Matrix. -> m.cpp
+
+4. You are given a 0-indexed 1-dimensional (1D) integer array original, and two integers, m and n. You are tasked with creating a 2-dimensional (2D) array with m rows and n columns using all the elements from original.
+
+The elements from indices 0 to n - 1 (inclusive) of original should form the first row of the constructed 2D array, the elements from indices n to 2 \* n - 1 (inclusive) should form the second row of the constructed 2D array, and so on. -> n.cpp
+
+5. You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).
+
+You have to rotate the image in-place, which means you have to modify the input 2D matrix directly. DO NOT allocate another 2D matrix and do the rotation. -> o.cpp
