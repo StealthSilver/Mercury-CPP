@@ -39,3 +39,7 @@ delimiter is an optional argument which stops the input when that char appears
 CONVERT TO UPPERCASE -> f.cpp
 
 convert the char array to uppercase
+
+CONVERT TO LOWERCASE -> g.cpp
+
+convert the char array to lowercase
