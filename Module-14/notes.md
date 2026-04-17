@@ -75,3 +75,24 @@ DIOGNAL SUM -> e.cpp
 for a square matrix of size n\*n find the sum of the main diognal
 
 SEARCHING IN A SORTED ARRAY
+
+search for a key in row wise or col wise sorted matrix
+
+10 20 30 40
+12 25 35 45
+27 29 37 48
+32 33 39 50
+
+1. brute force approach -> f.cpp
+   go to each cell and find the key : O(n^2)
+
+2. Row or column wise binary search -> g.cpp
+   for rows -> O(n*logm)
+   for cols -> O(m*logn)
+
+this is the better approach
+
+3. Staircase Search - h.cpp
+   best appraoch for multidimentional arrays
+   it uses the both row sorted and column sorted unlike binary search which uses only one
+   the tiem complexity is O(m+n)

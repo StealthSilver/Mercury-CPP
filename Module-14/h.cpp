@@ -1,34 +1,28 @@
 #include <iostream>
 using namespace std;
 
-pair<int, int> binarySearchMatrix(int mat[][5], int rows, int cols)
+pair<int, int> staircaseSearch(int mat[][5], int rows, int cols)
 {
     int key;
     cout << "Enter the key to search: ";
     cin >> key;
 
-    int low = 0;
-    int high = rows * cols - 1;
+    int i = 0;        // start row
+    int j = cols - 1; // start at top-right
 
-    while (low <= high)
+    while (i < rows && j >= 0)
     {
-        int mid = (low + high) / 2;
-
-        // Convert 1D index to 2D
-        int r = mid / cols;
-        int c = mid % cols;
-
-        if (mat[r][c] == key)
+        if (mat[i][j] == key)
         {
-            return {r, c};
+            return {i, j};
         }
-        else if (mat[r][c] < key)
+        else if (mat[i][j] > key)
         {
-            low = mid + 1;
+            j--; // move left
         }
         else
         {
-            high = mid - 1;
+            i++; // move down
         }
     }
 
@@ -44,7 +38,7 @@ int main()
         {16, 17, 18, 19, 20},
         {21, 22, 23, 24, 25}};
 
-    pair<int, int> result = binarySearchMatrix(mat, 5, 5);
+    pair<int, int> result = staircaseSearch(mat, 5, 5);
 
     if (result.first != -1)
     {
