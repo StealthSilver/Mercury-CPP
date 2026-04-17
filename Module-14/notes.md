@@ -30,3 +30,29 @@ there are 2 ways to store the data martrix[3][3]
 
 2. Column Major
    1 4 7 2 5 8 3 6 9
+
+SPIRAL MATRIX -> d.cpp
+
+problem : you are given a n x m matrix. we have to print the matrix in a spiral way
+
+you have to keep track of these 4 variables
+strting row
+starting col
+ending row
+ending col
+
+top
+for (scol to ecol)
+mat[srow][j]
+
+right
+for(srow+1 to erow)
+mat[i][erow]
+
+bottom
+for(ecol-1 to scol)
+mat[erow][j]
+
+left
+for(erow-1 to srow +1)
+mat[i][scol]
