@@ -26,3 +26,16 @@ we also have string literals
 "string literal"
 
 we can create char arrays also by inputing a string literal -> c.cpp
+
+INPUT THE CHAR ARRAY -> d.cpp
+
+you can input the strings in the char array
+to input the string with the spaces we need to use the cin.getline() function -> e.cpp
+
+cin.getline(name of array, no of chars, delimiter)
+
+delimiter is an optional argument which stops the input when that char appears
+
+CONVERT TO UPPERCASE -> f.cpp
+
+convert the char array to uppercase
