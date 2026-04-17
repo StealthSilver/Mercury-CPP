@@ -43,3 +43,9 @@ convert the char array to uppercase
 CONVERT TO LOWERCASE -> g.cpp
 
 convert the char array to lowercase
+
+REVERSE A CHAR ARRAY -> h.cpp
+reverse without any external memory
+
+take two pointers one at start and one at end and swap the variables
+time complexity -> O(n/2) -> O(n)
