@@ -99,3 +99,8 @@ this is the better approach
 
 if n >>> m -> O(n) -> linear time complexity
 if m >>>n -> O(m) -> linear time complexity
+
+MATRIX POINTERS -> i.cpp
+
+in the matrices the name of the matrix points towards the complete first row.
+so the 2d array name behaves as the row pointer
