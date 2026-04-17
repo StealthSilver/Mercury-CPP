@@ -41,6 +41,8 @@ starting col
 ending row
 ending col
 
+for the outer spiral
+
 top
 for (scol to ecol)
 mat[srow][j]
@@ -56,3 +58,14 @@ mat[erow][j]
 left
 for(erow-1 to srow +1)
 mat[i][scol]
+
+for the inner spiral
+
+srow ++
+scol++
+erow--
+ecol--
+
+do this until
+srow <= erow
+srow < erow
