@@ -77,3 +77,19 @@ C++ Strings have useful member functions.
 C++ Strings are dynamic (their size can change at run time).
 C++ Strings support operators like +, ==, ›, ‹ etc.
 C++ Strings are stored contiguously in memory.
+
+all member functions of the string class are called by the dot (.) operator
+
+FOR EACH LOOP -> l.cpp
+
+for(char ch : str){
+...
+}
+
+STRING MEMBER FUNCTIONS -> m.cpp
+
+Member Functions
+• str.length( ) -> length of the string
+• str.at( idx) -> char at perticular index
+• str.substr( startldx, size )
+• str.find( word )
