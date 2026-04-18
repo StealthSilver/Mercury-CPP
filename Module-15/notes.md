@@ -114,4 +114,8 @@ we have been given two strings, we have to tell if they are anagrams or not
    time complexity -> O(n), space complexity -> O(1), as auxillary array will have size 26 always
 
 we can compare strings using operators -> p.cpp
+
 PRACTICE PROBLEMS
+
+1. Count how many times lowercase vowels occurred in a String entered
+   by the user. -> q.cpp
