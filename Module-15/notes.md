@@ -45,7 +45,22 @@ CONVERT TO LOWERCASE -> g.cpp
 convert the char array to lowercase
 
 REVERSE A CHAR ARRAY -> h.cpp
-reverse without any external memory
 
 take two pointers one at start and one at end and swap the variables
 time complexity -> O(n/2) -> O(n)
+
+VALID PALLINDROME -> i.cpp
+
+pallindromes are words same from both the sides
+
+make two pointers one at start and one at end and then check the chars
+
+time complexity -> O(n)
+
+CSTRING FUNCTIONS -> j.cpp
+
+these functions exist in the <cstring> header file
+
+• strcpy( dest, src) : to copy string from src to dest
+• strcat( str1, str2) : to concatenate/join str1 with str2
+• strcmp( str1, str2) : compares 2 strings based on values (-ve, 0,+ve)
