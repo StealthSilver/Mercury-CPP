@@ -39,3 +39,14 @@ It is a library (collection) of container classes, algorithms & iterators.
 It contains the implementation of common data structures like vectors, stacks, maps stc.
 
 in java the STL is called collection framework
+
+VECTORS -> e.cpp
+
+Like Dynamic arrays that can resize dynamically at runtime.
+They are stored contiguously in memory.
+
+1. vector<int> vec1;
+2. vector<int> vec2 = {1, 2, 3, 4};
+3. vector<int> vec3(5, -1); -> init a vector of size 5 and values -1
+
+VECTOR IMPLEMENTATION IN MEMORY
