@@ -24,6 +24,6 @@ Dynamic Memory Allocation
 • uses heap memory
 • needs to be freed explicitly (delete operator)
 
-Memory Leak
+Memory Leak -> c.cpp
 A memory leak occurs when programmers create a memory in a heap and forget to delete it.
 Leads to reduced performance due to depletion of available memory.
