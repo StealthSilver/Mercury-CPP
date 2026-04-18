@@ -308,77 +308,519 @@ Reference: [STL official documentation](https://en.cppreference.com/w/cpp/contai
 
 ## 🔹 Vectors
 
-PAIR SUM -> Leetcode 167
-Find if any pair in sorted vector has target sum
+## 🔹 Vectors
 
-input : arr = [2,7,11,15], target = 9
-output: [0,1] // vector of indices
+**Vectors** are dynamic arrays that automatically resize themselves as elements are added or removed. They are part of the STL and provide a powerful alternative to traditional arrays.
 
-1. brute force approach -> g.cpp
-   this does not use the info that the array is sorted
-   time complexity -> O(n^2)
-2. two pointer approach -> h.cpp
-   Start one pointer at the beginning (left = 0)
-   Start another at the end (right = n - 1)
-   Compute sum:
-   If sum == target → return indices
-   If sum < target → move left++
-   If sum > target → move right--
+### Vector Declaration and Initialization
 
-the time complexity is O(n)
+```
+┌────────────────────────────────────────────────────────┐
+│        Vector Declaration Methods                      │
+├────────────────────────────────────────────────────────┤
+│ BASIC DECLARATION:                                     │
+│ #include <vector>                                      │
+│ using namespace std;                                   │
+│                                                        │
+│ 1. Empty vector:                                       │
+│    vector<int> vec;                                    │
+│    // Size = 0, Capacity = 0                           │
+│                                                        │
+│ 2. Vector with size and default values:                │
+│    vector<int> vec(5, 0);  // 5 elements, all 0        │
+│    // Creates: [0, 0, 0, 0, 0]                         │
+│                                                        │
+│ 3. Vector with initializer list:                       │
+│    vector<int> vec = {1, 2, 3, 4, 5};                  │
+│    // Creates: [1, 2, 3, 4, 5]                         │
+│                                                        │
+│ 4. Copy constructor:                                   │
+│    vector<int> vec1 = {1, 2, 3};                       │
+│    vector<int> vec2 = vec1;  // Copy all elements      │
+│                                                        │
+│ DATA TYPES:                                            │
+│ • vector<int> - integers                               │
+│ • vector<double> - floating point                      │
+│ • vector<string> - strings                             │
+│ • vector<vector<int>> - 2D arrays                       │
+│ • vector<pair<int,int>> - pairs                        │
+│ • Any type that can be stored                          │
+│                                                        │
+│ MEMORY LAYOUT:                                         │
+│ Vector stores all elements contiguously in memory      │
+│ vec: [1] [2] [3] [4] [5]  ← All adjacent in heap      │
+└────────────────────────────────────────────────────────┘
+```
 
-2D VECTORS
-A 2D vector is basically a vector of vectors
-Think of it like a matrix (rows × columns)
-Each element is itself a vector<int>
-vector<vector<int>> matrix;
+### Vector Member Functions
 
-Structure
-matrix[i] → represents a row
-matrix[i][j] → represents an element in row i, column j
+```
+┌────────────────────────────────────────────────────────┐
+│      Essential Vector Member Functions                 │
+├────────────────────────────────────────────────────────┤
+│ 1. push_back(value) - Add element at end               │
+│    Syntax: vec.push_back(10);                          │
+│    Time: O(1) amortized                                │
+│    Resizes vector if necessary                         │
+│                                                        │
+│ 2. pop_back() - Remove element from end                │
+│    Syntax: vec.pop_back();                             │
+│    Time: O(1)                                          │
+│    Doesn't return value; access before removing        │
+│                                                        │
+│ 3. size() - Get number of elements                     │
+│    Syntax: int n = vec.size();                         │
+│    Time: O(1)                                          │
+│    Returns: Number of actual elements                  │
+│                                                        │
+│ 4. capacity() - Max elements before resize             │
+│    Syntax: int c = vec.capacity();                     │
+│    Time: O(1)                                          │
+│    Returns: Total capacity (≥ size)                    │
+│                                                        │
+│ 5. at(index) - Access element with bounds check       │
+│    Syntax: int val = vec.at(i);                        │
+│    Time: O(1)                                          │
+│    Throws: out_of_range if invalid index               │
+│                                                        │
+│ 6. operator[] - Direct access (no bounds check)        │
+│    Syntax: int val = vec[i];                           │
+│    Time: O(1)                                          │
+│    Faster but unsafe                                   │
+│                                                        │
+│ 7. clear() - Remove all elements                       │
+│    Syntax: vec.clear();                                │
+│    Time: O(n)                                          │
+│    Size becomes 0, capacity unchanged                  │
+│                                                        │
+│ 8. empty() - Check if vector is empty                  │
+│    Syntax: if (vec.empty()) { ... }                    │
+│    Time: O(1)                                          │
+│    Returns: true if size == 0                          │
+│                                                        │
+│ 9. insert(position, value) - Insert at position        │
+│    Syntax: vec.insert(vec.begin() + 2, 99);            │
+│    Time: O(n) - elements shift                         │
+│    Expensive operation for large vectors               │
+│                                                        │
+│ 10. erase(position) - Remove element at position       │
+│     Syntax: vec.erase(vec.begin() + 2);                │
+│     Time: O(n) - elements shift                        │
+└────────────────────────────────────────────────────────┘
+```
 
-Initialization Methods -> i.cpp
+Reference: [e.cpp](e.cpp) - Vector basics and operations
 
-1. Empty matrix
+---
 
-vector<vector<int>> matrix;
+## 🔹 Vector Internals: Capacity and Size
 
-2. Fixed size (n rows, m columns)
+Understanding how vectors manage memory is crucial for writing efficient code.
 
-vector<vector<int>> matrix(n, vector<int>(m, 0));
+### Capacity and Size Management
 
-3. With values
+```
+┌────────────────────────────────────────────────────────┐
+│      Vector Size vs Capacity                           │
+├────────────────────────────────────────────────────────┤
+│ SIZE:                                                  │
+│ • Number of actual elements currently in vector        │
+│ • Changed by: push_back(), pop_back(), clear()         │
+│ • Accessed by: vec.size()                              │
+│ • Example: vec = {1, 2, 3} → size = 3                  │
+│                                                        │
+│ CAPACITY:                                              │
+│ • Maximum number of elements vector can hold           │
+│ • Before needing to reallocate memory                  │
+│ • Always: capacity ≥ size                              │
+│ • Accessed by: vec.capacity()                          │
+│ • Example: vec = {1, 2, 3}, cap might be 4 or 8        │
+│                                                        │
+│ REALLOCATION STRATEGY:                                 │
+│ • When size exceeds capacity, vector reallocates       │
+│ • Typically doubles capacity (2x growth)               │
+│ • Example growth:                                      │
+│   Step 1: {1}       size=1, cap=1                      │
+│   Step 2: {1,2}     size=2, cap=2 (doubled)            │
+│   Step 3: {1,2,3}   size=3, cap=4 (doubled)            │
+│   Step 4: {1,2,3,4} size=4, cap=4                      │
+│   Step 5: Add 5th   size=5, cap=8 (doubled)            │
+│                                                        │
+│ TIME COMPLEXITY:                                       │
+│ • Typical push_back(): O(1) - constant                 │
+│ • Occasional resize: O(n) - copy all elements          │
+│ • Amortized: O(1) - averaged over many operations      │
+│                                                        │
+│ WHY AMORTIZED O(1)?                                    │
+│ n operations cost n + 2n = 3n (worst case resize)     │
+│ Divided by n operations = 3 per operation = O(1)       │
+│                                                        │
+│ MEMORY VISUALIZATION:                                  │
+│ Vector after 5 push_backs with doubling:               │
+│ ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐      │
+│ │ 1   │ 2   │ 3   │ 4   │ 5   │ ??? │ ??? │ ??? │      │
+│ └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘      │
+│ Size = 5, Capacity = 8 (3 empty slots)                 │
+└────────────────────────────────────────────────────────┘
+```
 
-vector<vector<int>> matrix = {
-{1, 2, 3},
-{4, 5, 6}
-};
+Reference: [f.cpp](f.cpp) - Vector memory management demonstration
 
-traversing the 2d vectors -> j.cpp
+---
 
-we can have no of columns in 2d vectors different unline 2d arrays
+## 🔹 Two Pointer Approach: Pair Sum (LeetCode 1)
 
-PRACTICE QUESTION -> getting the size and capacity -> k.cpp
-PRACTICE QUESTION -> l.cpp -> leetcode 645
-You have a set of integers, which originally contains all the numbers
-from 1 to n. Unfortunately, due to some error, one of the numbers in s got duplicated
-to another number in the set, which results in repetition of one number and loss of
-another number.
-You are given an integer array nums representing the data status of this set after the
-error.
-Find the number that occurs twice and the number that is missing and return them in
-the form of an array.
+**Problem**: Given a sorted array and a target sum, find two numbers that add up to the target.
 
-PRACTICE QUESTION -> m.cpp -> leetcode 11
-You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]).
+### Algorithm and Complexity Analysis
 
-Find two lines that together with the x-axis form a container, such that the container contains the most water.
+```
+┌────────────────────────────────────────────────────────┐
+│         Two Sum II (Sorted Array) - LeetCode 167      │
+├────────────────────────────────────────────────────────┤
+│ PROBLEM STATEMENT:                                     │
+│ Input:  arr = [2, 7, 11, 15], target = 9              │
+│ Output: [1, 2]  // 1-indexed (arr[0]+arr[1]=9)         │
+│         or [0, 1] (0-indexed)                          │
+│                                                        │
+│ KEY INSIGHT:                                           │
+│ Array is sorted! Use two pointers from opposite ends   │
+│                                                        │
+│ ALGORITHM (Two Pointer):                               │
+│ 1. left = 0 (start), right = n-1 (end)                 │
+│ 2. Calculate sum = arr[left] + arr[right]              │
+│ 3. If sum == target: FOUND! Return indices             │
+│ 4. If sum < target: Move left++ (need bigger sum)      │
+│ 5. If sum > target: Move right-- (need smaller sum)    │
+│ 6. Repeat until found or pointers meet                 │
+│                                                        │
+│ EXAMPLE WALKTHROUGH:                                   │
+│ arr = [2, 7, 11, 15], target = 9                       │
+│                                                        │
+│ Iteration 1: left=0, right=3                           │
+│   sum = 2 + 15 = 17 > 9 → move right--                 │
+│                                                        │
+│ Iteration 2: left=0, right=2                           │
+│   sum = 2 + 11 = 13 > 9 → move right--                 │
+│                                                        │
+│ Iteration 3: left=0, right=1                           │
+│   sum = 2 + 7 = 9 == 9 → FOUND!                        │
+│   Return [0, 1] (0-indexed) or [1, 2] (1-indexed)      │
+│                                                        │
+│ COMPLEXITY ANALYSIS:                                   │
+│ Time: O(n) - each pointer moves at most n steps        │
+│ Space: O(1) - only two pointers, no extra space        │
+│                                                        │
+│ COMPARISON WITH BRUTE FORCE:                           │
+│ Brute Force (nested loops): O(n²) - check all pairs    │
+│ Two Pointer: O(n) - single pass with smart pointers    │
+│ Improvement: 100x faster for large arrays!             │
+└────────────────────────────────────────────────────────┘
+```
 
-Return the maximum amount of water a container can store.
+Reference: [g.cpp](g.cpp) - Brute force O(n²) approach, [h.cpp](h.cpp) - Two pointer O(n) approach
 
-Notice that you may not slant the container.
+---
 
-PRACTICE QUESTION -> n.cpp -> leetcode 15
-Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0.
+## 🔹 2D Vectors
 
-Notice that the solution set must not contain duplicate triplets.
+A **2D vector** is a vector of vectors, representing a dynamic matrix with potentially different row lengths.
+
+### 2D Vector Basics
+
+```
+┌────────────────────────────────────────────────────────┐
+│          2D Vector Fundamentals                        │
+├────────────────────────────────────────────────────────┤
+│ DEFINITION:                                            │
+│ vector<vector<int>> matrix;                            │
+│ Each element is itself a vector                        │
+│ Flexible row and column dimensions                     │
+│                                                        │
+│ STRUCTURE:                                             │
+│ matrix[i] → represents row i (vector<int>)             │
+│ matrix[i][j] → represents element at row i, col j      │
+│                                                        │
+│ ADVANTAGES OVER 2D ARRAYS:                             │
+│ ✓ Dynamic row lengths (jagged arrays)                  │
+│ ✓ Automatic memory management                         │
+│ ✓ Easy resizing                                        │
+│ ✓ No manual deallocation needed                        │
+│ ✓ Compatible with STL algorithms                       │
+│                                                        │
+│ COMPARISON:                                            │
+│ 2D Array:                                              │
+│ int arr[3][3];  // Fixed 3×3                           │
+│ Size known at compile time                             │
+│                                                        │
+│ 2D Vector:                                             │
+│ vector<vector<int>> vec;  // Dynamic                   │
+│ Size determined at runtime                             │
+│ Can have different column counts per row               │
+│                                                        │
+│ COMMON USES:                                           │
+│ • Image processing (pixel matrices)                    │
+│ • Game grids (chess, sudoku, maze)                     │
+│ • Graph adjacency matrices                             │
+│ • Dynamic programming tables                          │
+│ • Matrix operations (multiply, transpose)              │
+└────────────────────────────────────────────────────────┘
+```
+
+### 2D Vector Initialization
+
+```
+┌────────────────────────────────────────────────────────┐
+│      2D Vector Initialization Methods                  │
+├────────────────────────────────────────────────────────┤
+│ 1. EMPTY 2D VECTOR:                                    │
+│    vector<vector<int>> matrix;                         │
+│    // No rows or columns allocated                     │
+│                                                        │
+│ 2. FIXED SIZE WITH DEFAULTS:                           │
+│    vector<vector<int>> mat(3, vector<int>(4, 0));      │
+│    Creates 3 rows × 4 columns, all 0s                  │
+│    └─ Outer vector: 3 rows                             │
+│    └─ Inner vector: 4 columns, init to 0               │
+│                                                        │
+│    Result:                                             │
+│    ┌─────┬─────┬─────┬─────┐                           │
+│    │ 0   │ 0   │ 0   │ 0   │ Row 0                     │
+│    ├─────┼─────┼─────┼─────┤                           │
+│    │ 0   │ 0   │ 0   │ 0   │ Row 1                     │
+│    ├─────┼─────┼─────┼─────┤                           │
+│    │ 0   │ 0   │ 0   │ 0   │ Row 2                     │
+│    └─────┴─────┴─────┴─────┘                           │
+│                                                        │
+│ 3. WITH INITIAL VALUES:                                │
+│    vector<vector<int>> mat = {                         │
+│      {1, 2, 3},                                        │
+│      {4, 5, 6},                                        │
+│      {7, 8, 9}                                         │
+│    };                                                  │
+│    Creates: 3×3 matrix with specified values           │
+│                                                        │
+│ 4. JAGGED ARRAY (Different row lengths):               │
+│    vector<vector<int>> jagged;                         │
+│    jagged.push_back({1, 2});                           │
+│    jagged.push_back({3, 4, 5});                        │
+│    jagged.push_back({6});                              │
+│    Row 0: {1, 2} (2 elements)                          │
+│    Row 1: {3, 4, 5} (3 elements)                       │
+│    Row 2: {6} (1 element)                              │
+│                                                        │
+│ ACCESSING ELEMENTS:                                    │
+│ mat[0][0]      // Element at row 0, col 0              │
+│ mat[i][j]      // Element at row i, col j              │
+│ mat[i].size()  // Number of columns in row i           │
+│ mat.size()     // Number of rows                       │
+└────────────────────────────────────────────────────────┘
+```
+
+### 2D Vector Traversal
+
+```
+┌────────────────────────────────────────────────────────┐
+│      Traversing 2D Vectors                             │
+├────────────────────────────────────────────────────────┤
+│ NESTED LOOPS:                                          │
+│ for (int i = 0; i < matrix.size(); i++)                │
+│   for (int j = 0; j < matrix[i].size(); j++)           │
+│     cout << matrix[i][j] << " ";                       │
+│                                                        │
+│ RANGE-BASED FOR LOOP (Modern C++):                     │
+│ for (auto& row : matrix)                               │
+│   for (int val : row)                                  │
+│     cout << val << " ";                                │
+│                                                        │
+│ COMPLEXITY:                                            │
+│ Time: O(rows × cols) - visit each element              │
+│ Space: O(1) - no extra space                           │
+│                                                        │
+│ NOTE: matrix[i].size() can differ for each row         │
+└────────────────────────────────────────────────────────┘
+```
+
+Reference: [i.cpp](i.cpp) - 2D vector initialization, [j.cpp](j.cpp) - 2D vector traversal
+
+---
+
+## 🔹 Vector Practice Problems
+
+### Problem 1: Find Duplicate (LeetCode 645)
+
+**Problem**: You have a set of integers from 1 to n. One number got duplicated, causing one number to be missing. Find both the duplicate and missing number.
+
+```
+┌────────────────────────────────────────────────────────┐
+│   Find the Duplicate and Missing Number - LeetCode 645 │
+├────────────────────────────────────────────────────────┤
+│ EXAMPLE:                                               │
+│ Input: {1, 2, 2, 2}  (should have 1, 2, 3, 4)          │
+│ Output: Duplicate = 2, Missing = 3                     │
+│                                                        │
+│ APPROACH 1: Frequency Array                            │
+│ • Create array to track which numbers appear           │
+│ • Mark each number as seen                             │
+│ • Find duplicate (appears twice)                       │
+│ • Find missing (never appeared)                        │
+│ Time: O(n), Space: O(n)                                │
+│                                                        │
+│ APPROACH 2: Math using Formulas                        │
+│ • Sum of 1 to n: n*(n+1)/2                             │
+│ • Actual sum: sum of all array elements                │
+│ • Difference: (sum of squares)                         │
+│ • Solve two equations for the values                   │
+│ Time: O(n), Space: O(1)                                │
+│                                                        │
+│ KEY INSIGHT:                                           │
+│ Each number 1 to n should appear exactly once          │
+│ Use mathematical property to identify mismatch         │
+└────────────────────────────────────────────────────────┘
+```
+
+Reference: [k.cpp](k.cpp) - Size and capacity demonstration, [l.cpp](l.cpp) - Find duplicate solution
+
+### Problem 2: Container With Most Water (LeetCode 11)
+
+**Problem**: Given an array of heights, find two lines that form a container holding the maximum amount of water.
+
+```
+┌────────────────────────────────────────────────────────┐
+│      Container With Most Water - LeetCode 11           │
+├────────────────────────────────────────────────────────┤
+│ CONCEPT:                                               │
+│ • Two vertical lines at positions i and j              │
+│ • Height of smaller line limits water level            │
+│ • Width: distance between lines = j - i                │
+│ • Area = min(height[i], height[j]) × (j - i)           │
+│                                                        │
+│ EXAMPLE:                                               │
+│ heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]                  │
+│                ↑           ↑                            │
+│ Maximum area with lines at index 1 and 8               │
+│ Area = min(8, 7) × (8 - 1) = 7 × 7 = 49                │
+│                                                        │
+│ APPROACH: Two Pointer                                  │
+│ 1. Start with leftmost and rightmost lines             │
+│ 2. Calculate current area                              │
+│ 3. Move the pointer pointing to shorter line inward    │
+│   (to potentially find taller line)                    │
+│ 4. Track maximum area seen                             │
+│ 5. Stop when pointers meet                             │
+│                                                        │
+│ WHY THIS WORKS:                                        │
+│ • Moving the taller pointer inward can only decrease   │
+│  area (width decreases, height can't increase enough)  │
+│ • Moving shorter pointer might find taller line        │
+│  (could increase area despite smaller width)           │
+│                                                        │
+│ COMPLEXITY:                                            │
+│ Time: O(n) - single pass with two pointers             │
+│ Space: O(1) - only variables                           │
+└────────────────────────────────────────────────────────┘
+```
+
+Reference: [m.cpp](m.cpp) - Container with most water solution
+
+### Problem 3: 3Sum (LeetCode 15)
+
+**Problem**: Find all unique triplets in array that sum to zero.
+
+```
+┌────────────────────────────────────────────────────────┐
+│         3Sum - LeetCode 15                             │
+├────────────────────────────────────────────────────────┤
+│ PROBLEM:                                               │
+│ Input: nums = [-1, 0, 1, 2, -1, -4]                    │
+│ Output: [[-1, -1, 2], [-1, 0, 1]]                      │
+│ Find all triplets that sum to 0 (no duplicates)        │
+│                                                        │
+│ APPROACH:                                              │
+│ 1. SORT array first                                    │
+│ 2. FIX first element                                   │
+│ 3. Use two pointers on remaining elements              │
+│ 4. Skip duplicates to avoid repeated triplets          │
+│                                                        │
+│ ALGORITHM:                                             │
+│ • For each element i (fix it)                          │
+│ • Find two elements in rest that sum to -nums[i]       │
+│ • Use two pointers from i+1 and end                    │
+│ • If sum too small: move left++                        │
+│ • If sum too large: move right--                       │
+│ • If sum correct: add to result, skip duplicates       │
+│                                                        │
+│ DUPLICATE HANDLING:                                    │
+│ • Must skip same outer element to avoid triplet repeat │
+│ • Must skip same left/right elements for pairs         │
+│ • Sort helps: identical elements are adjacent          │
+│                                                        │
+│ EXAMPLE:                                               │
+│ [-1, 0, 1, 2, -1, -4] → sorted → [-4, -1, -1, 0, 1, 2]│
+│                                                        │
+│ i=-4: Need two elements summing to 4 (no solution)     │
+│ i=-1: Find 0 + 1 = 1, so -1+0+1=0 ✓                    │
+│ i=0:  Find -1 + 1 = 0, so 0-1+1=0 ✓                    │
+│                                                        │
+│ COMPLEXITY:                                            │
+│ Time: O(n²) - outer loop + inner two pointers          │
+│ Space: O(1) or O(n) depending on sort implementation   │
+│                                                        │
+│ KEY INSIGHT:                                           │
+│ Sorting enables efficient duplicate handling and       │
+│ allows two-pointer optimization instead of brute force │
+└────────────────────────────────────────────────────────┘
+```
+
+Reference: [n.cpp](n.cpp) - 3Sum solution
+
+---
+
+## 🔹 Best Practices and Summary
+
+```
+┌────────────────────────────────────────────────────────┐
+│       Module 16 Key Takeaways                          │
+├────────────────────────────────────────────────────────┤
+│ MEMORY MANAGEMENT:                                     │
+│ ✓ Always delete dynamically allocated memory           │
+│ ✓ Use smart pointers (unique_ptr, shared_ptr)          │
+│ ✓ Never trust manual memory management in large code   │
+│ ✓ Modern C++ prefers containers over raw pointers      │
+│                                                        │
+│ VECTORS ARE SUPERIOR TO ARRAYS:                        │
+│ ✓ Dynamic resizing                                     │
+│ ✓ Automatic memory management                          │
+│ ✓ Rich set of member functions                         │
+│ ✓ Compatible with STL algorithms                       │
+│ ✓ Type-safe operations                                 │
+│                                                        │
+│ TWO-POINTER TECHNIQUE:                                 │
+│ ✓ Powerful for sorted arrays                           │
+│ ✓ Converts O(n²) to O(n) solutions                     │
+│ ✓ Works when moving one pointer eliminates cases       │
+│ ✓ Think about invariants to maintain                   │
+│                                                        │
+│ VECTOR COMPLEXITY CHEAT SHEET:                         │
+│ Operation      │ Time      │ Note                      │
+│ ──────────────┼───────────┼─────────────────          │
+│ push_back()    │ O(1)      │ Amortized                 │
+│ pop_back()     │ O(1)      │ Always constant           │
+│ access [i]     │ O(1)      │ Direct access             │
+│ insert()       │ O(n)      │ Elements shift            │
+│ erase()        │ O(n)      │ Elements shift            │
+│ search         │ O(n)      │ Unsorted data             │
+│ sort()         │ O(n log n)│ STL sort                  │
+│                                                        │
+│ STL MINDSET:                                           │
+│ ✓ Use STL containers instead of manual management     │
+│ ✓ Know time complexity of operations                   │
+│ ✓ Leverage STL algorithms (sort, find, reverse, etc)   │
+│ ✓ Use iterators for generic code                       │
+│ ✓ Combine algorithms with lambda functions             │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+**Module 16 Complete!** You now understand dynamic memory, vectors, and efficient array techniques essential for competitive programming and real-world applications.
