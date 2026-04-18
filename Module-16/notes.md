@@ -78,3 +78,34 @@ output: [0,1] // vector of indices
    If sum > target → move right--
 
 the time complexity is O(n)
+
+2D VECTORS
+A 2D vector is basically a vector of vectors
+Think of it like a matrix (rows × columns)
+Each element is itself a vector<int>
+vector<vector<int>> matrix;
+
+Structure
+matrix[i] → represents a row
+matrix[i][j] → represents an element in row i, column j
+
+Initialization Methods -> i.cpp
+
+1. Empty matrix
+
+vector<vector<int>> matrix;
+
+2. Fixed size (n rows, m columns)
+
+vector<vector<int>> matrix(n, vector<int>(m, 0));
+
+3. With values
+
+vector<vector<int>> matrix = {
+{1, 2, 3},
+{4, 5, 6}
+};
+
+traversing the 2d vectors -> j.cpp
+
+we can have no of columns in 2d vectors different unline 2d arrays
