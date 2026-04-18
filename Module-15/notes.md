@@ -91,5 +91,8 @@ STRING MEMBER FUNCTIONS -> m.cpp
 Member Functions
 • str.length( ) -> length of the string
 • str.at( idx) -> char at perticular index
-• str.substr( startldx, size )
-• str.find( word )
+• str.substr( startldx, size ) -> substrings, continuous part of a string
+• str.find( word ) -> searches the word in the string, passes the index of first occourance and if not found returns -1 (returns the string equivalent of -1)
+
+we can also pass another argument that will be the starting index
+str.find("abc" , 20) -> start searching for abc after the 20th index
