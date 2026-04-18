@@ -50,3 +50,7 @@ They are stored contiguously in memory.
 3. vector<int> vec3(5, -1); -> init a vector of size 5 and values -1
 
 VECTOR IMPLEMENTATION IN MEMORY
+
+vectors have :
+capacity -> this is the max no of elements that the vector can store
+size -> no. of elements present in the vector
