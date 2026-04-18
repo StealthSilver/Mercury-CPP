@@ -64,3 +64,9 @@ these functions exist in the <cstring> header file
 • strcpy( dest, src) : to copy string from src to dest
 • strcat( str1, str2) : to concatenate/join str1 with str2
 • strcmp( str1, str2) : compares 2 strings based on values (-ve, 0,+ve)
+
+STRINGS in C++
+
+strings use OOPs in c++
+
+there is a string class in C++, we can make objects from the string class
