@@ -112,3 +112,6 @@ we have been given two strings, we have to tell if they are anagrams or not
    make array of length 26 and add the count of each alphabet as they occour in hte string.
    then for the second string we decrease the count.
    time complexity -> O(n), space complexity -> O(1), as auxillary array will have size 26 always
+
+we can compare strings using operators -> p.cpp
+PRACTICE PROBLEMS
