@@ -32,3 +32,10 @@ CREATING 2D ARRAYS DYNAMICALLY -> d.cpp
 A 2D array is basically an array of arrays (rows × columns).
 In dynamic allocation, memory is created at runtime in the heap using new.
 You typically use a pointer to pointer (int\*\*) to represent a 2D array.
+
+STL
+Standard Template Library of C++
+It is a library (collection) of container classes, algorithms & iterators.
+It contains the implementation of common data structures like vectors, stacks, maps stc.
+
+in java the STL is called collection framework
