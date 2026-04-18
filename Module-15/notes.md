@@ -96,3 +96,12 @@ Member Functions
 
 we can also pass another argument that will be the starting index
 str.find("abc" , 20) -> start searching for abc after the 20th index
+
+VALID ANAGRAM
+
+anagrams are words that have same number of characters and are rerranged
+
+we have been given two strings, we have to tell if they are anagrams or not
+
+1. we can sort both the strigns and compare them -> n.cpp
+   time complexity -> O(nlogn), we will be using merge sort
