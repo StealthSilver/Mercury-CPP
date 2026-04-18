@@ -49,8 +49,32 @@ They are stored contiguously in memory.
 2. vector<int> vec2 = {1, 2, 3, 4};
 3. vector<int> vec3(5, -1); -> init a vector of size 5 and values -1
 
-VECTOR IMPLEMENTATION IN MEMORY
+VECTOR IMPLEMENTATION IN MEMORY -> f.cpp
 
 vectors have :
 capacity -> this is the max no of elements that the vector can store
 size -> no. of elements present in the vector
+
+new element add -> O(1) constant
+but in some operations -> O(n)
+
+for this we calculate the amotized time (average time) -> O(1)
+
+PAIR SUM -> Leetcode 167
+Find if any pair in sorted vector has target sum
+
+input : arr = [2,7,11,15], target = 9
+output: [0,1] // vector of indices
+
+1. brute force approach -> g.cpp
+   this does not use the info that the array is sorted
+   time complexity -> O(n^2)
+2. two pointer approach -> h.cpp
+   Start one pointer at the beginning (left = 0)
+   Start another at the end (right = n - 1)
+   Compute sum:
+   If sum == target → return indices
+   If sum < target → move left++
+   If sum > target → move right--
+
+the time complexity is O(n)
