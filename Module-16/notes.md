@@ -13,3 +13,17 @@ the pointer is created in the main which is pointing in the heap
 
 memory inside the heap is not automatically allocated, this leads to memory leak problem.
 we have to manually delete the memory from the heap
+
+Static Memory Allocation
+• allocation at compile time
+• uses stack memory
+• gets freed automatically
+
+Dynamic Memory Allocation
+• allocation at run time (new operator)
+• uses heap memory
+• needs to be freed explicitly (delete operator)
+
+Memory Leak
+A memory leak occurs when programmers create a memory in a heap and forget to delete it.
+Leads to reduced performance due to depletion of available memory.
