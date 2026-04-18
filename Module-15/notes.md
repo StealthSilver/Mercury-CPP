@@ -94,6 +94,8 @@ Member Functions
 • str.substr( startldx, size ) -> substrings, continuous part of a string
 • str.find( word ) -> searches the word in the string, passes the index of first occourance and if not found returns -1 (returns the string equivalent of -1)
 
+string names are not pointers so while passing as function arguments we need not pass the size
+
 we can also pass another argument that will be the starting index
 str.find("abc" , 20) -> start searching for abc after the 20th index
 
@@ -107,3 +109,5 @@ we have been given two strings, we have to tell if they are anagrams or not
    time complexity -> O(nlogn), we will be using merge sort
 
 2. we will track the chars and make an auxillary array -> o.cpp
+   make array of length 26 and add the count of each alphabet as they occour in hte string.
+   then for the second string we decrease the count.
