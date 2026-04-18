@@ -65,8 +65,15 @@ these functions exist in the <cstring> header file
 • strcat( str1, str2) : to concatenate/join str1 with str2
 • strcmp( str1, str2) : compares 2 strings based on values (-ve, 0,+ve)
 
-STRINGS in C++
+STRINGS in C++ -> k.cpp
 
 strings use OOPs in c++
 
 there is a string class in C++, we can make objects from the string class
+also there are methods from the string class
+
+C++ Strings are objects of pre-defined string class in STL (Standard Template Library).
+C++ Strings have useful member functions.
+C++ Strings are dynamic (their size can change at run time).
+C++ Strings support operators like +, ==, ›, ‹ etc.
+C++ Strings are stored contiguously in memory.
