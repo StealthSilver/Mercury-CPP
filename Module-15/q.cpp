@@ -20,7 +20,7 @@ int main()
 {
     string input;
 
-    string input = "poUUAaubfhj";
+    input = "poUUAaubfhj";
 
     int result = countLowercaseVowels(input);
 

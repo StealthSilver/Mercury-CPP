@@ -119,3 +119,34 @@ PRACTICE PROBLEMS
 
 1. Count how many times lowercase vowels occurred in a String entered
    by the user. -> q.cpp
+2. -> r.cpp
+   You are given two strings s1 and s2 of equal length. A string swap is an
+   operation where you choose two indices in a string (not necessarily different) and
+   swap the characters at these indices.
+   Return true if it is possible to make both strings equal by performing at most one
+   string swap on exactly one of the strings. Otherwise, return false.
+   Example :
+   Input: s1 = "bank", s2 = "kanb" Output:
+   true
+   make "bank".
+   Explanation: For example, swap the first character with the last character of s2 to
+3. -> s.cpp -> Leetcode 1657
+   Determine if Two Strings Are Close
+   Two strings are considered close if you can attain one from the other using the following operations:
+
+Operation 1: Swap any two existing characters.
+For example, abcde -> aecdb
+Operation 2: Transform every occurrence of one existing character into another existing character, and do the same with the other character.
+For example, aacabb -> bbcbaa (all a's turn into b's, and all b's turn into a's)
+You can use the operations on either string as many times as necessary.
+
+Given two strings, word1 and word2, return true if word1 and word2 are close, and false otherwise.
+
+4. -> t.cpp -> Leetcode 20
+   Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
+
+An input string is valid if:
+
+Open brackets must be closed by the same type of brackets.
+Open brackets must be closed in the correct order.
+Every close bracket has a corresponding open bracket of the same type.
