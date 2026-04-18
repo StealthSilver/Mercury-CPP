@@ -23,7 +23,7 @@ int main()
     string str1, str2;
 
     str1 = "abcghi";
-    str2 = "ghiabc";
+    str2 = "ghiabce";
 
     if (validAnagram(str1, str2))
     {

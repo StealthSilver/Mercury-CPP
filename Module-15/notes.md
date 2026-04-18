@@ -105,3 +105,5 @@ we have been given two strings, we have to tell if they are anagrams or not
 
 1. we can sort both the strigns and compare them -> n.cpp
    time complexity -> O(nlogn), we will be using merge sort
+
+2. we will track the chars and make an auxillary array -> o.cpp
