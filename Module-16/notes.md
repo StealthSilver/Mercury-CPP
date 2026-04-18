@@ -27,3 +27,8 @@ Dynamic Memory Allocation
 Memory Leak -> c.cpp
 A memory leak occurs when programmers create a memory in a heap and forget to delete it.
 Leads to reduced performance due to depletion of available memory.
+
+CREATING 2D ARRAYS DYNAMICALLY -> d.cpp
+A 2D array is basically an array of arrays (rows × columns).
+In dynamic allocation, memory is created at runtime in the heap using new.
+You typically use a pointer to pointer (int\*\*) to represent a 2D array.
