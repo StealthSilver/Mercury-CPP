@@ -94,3 +94,11 @@ CLEAR THE ith BIT -> j.cpp
 
 bitMask will be ~(1<<i)
 and the operation will be num & mask
+
+CHECK for Power of 2 -> k.cpp
+
+a. all the powers of 2 have only one 1 -> 1 set bit
+
+b. also all the num which are 2^n - 1 are all 1s at every bit
+
+c. also (2^n) & (2^n - 1 ) = 0
