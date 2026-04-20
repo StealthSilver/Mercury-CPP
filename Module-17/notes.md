@@ -144,8 +144,47 @@ multiply x to itself again and again
 this will happen in O(n)
 
 method 2 -> q.cpp
-convert n in binary form
 
-now we will loop throught the binary form of pow(n)
-also any n will have at max -> log2n bits
-this will have the time complexity of O(logn)
+Convert exponent n into binary form
+Example:
+n = 13 → (1101)₂
+
+1. Initialize:
+   result = 1
+   base = x
+2. Loop while n > 0:
+3. If last bit of n is 1 (n & 1)
+   → multiply: result = result \* base
+4. Square the base: base = base \* base
+5. Right shift n: n = n >> 1
+6. Repeat until n = 0
+
+PRACTICE QUESTION ->
+
+Question 1 : r.cpp
+Write a Function to clear the range of bits from i to j in a given number. (i
+& j are counted backwards from the right end of the number)
+
+build a mask that:
+
+keeps bits left of j → 1s
+keeps bits right of i → 1s
+makes bits from i to j → 0
+
+Question 2 : s.cpp -> leetcode 136
+Given a non-empty array of integers nums, every element appears twice
+except for one. Find that single one.
+You must implement a solution with a linear runtime complexity and use only
+constant extra space.
+
+Question 3 : t.cpp -> Leetocde 2527
+You are given a 0-indexed integer array nums.
+The effective value of three indices i, j, and k is defined as ((nums[i] | nums[j]) &
+nums[k]).
+The xor-beauty of the array is the XORing of the effective values of all the possible triplets
+of indices (i, j, k) where 0 <= i, j, k < n.
+Return the xor-beauty of nums
+
+Question 4 -> u.cpp -> leetcode 29
+Given two integers dividend and divisor, divide two integers without using
+multiplication, division, and mod operator.
