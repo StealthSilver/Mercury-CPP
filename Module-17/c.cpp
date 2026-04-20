@@ -1,4 +1,4 @@
-// a.cpp
+// xor.cpp
 #include <iostream>
 using namespace std;
 
@@ -6,9 +6,8 @@ int main()
 {
     int a, b;
 
-    cout << "Bitwise AND Demonstration\n";
+    cout << "Bitwise XOR Demonstration\n";
 
-    // Testing all combinations
     int values[2] = {0, 1};
 
     for (int i = 0; i < 2; i++)
@@ -18,7 +17,7 @@ int main()
             a = values[i];
             b = values[j];
 
-            cout << a << " & " << b << " = " << (a & b) << endl;
+            cout << a << " ^ " << b << " = " << (a ^ b) << endl;
         }
     }
 
