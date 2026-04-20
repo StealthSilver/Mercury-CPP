@@ -1,19 +1,30 @@
 #include <iostream>
 using namespace std;
 
-void updateIthBit(int num, int i, int val)
+int countSetBits(int num)
 {
-    num = num & ~(1 << i);
-    num = num | (val << i);
+    int count = 0;
 
-    cout << num << endl;
+    while (num > 0)
+    {
+        if (num & 1)
+        { // check last bit
+            count++;
+        }
+        num = num >> 1; // shift right
+    }
+
+    return count;
 }
 
 int main()
 {
-    int num, i, val;
-    updateIthBit(7, 2, 0);
-    updateIthBit(7, 3, 1);
+    int num;
+
+    cout << "Enter number: ";
+    cin >> num;
+
+    cout << "Set bits: " << countSetBits(num) << endl;
 
     return 0;
 }

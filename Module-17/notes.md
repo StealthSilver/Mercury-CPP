@@ -122,3 +122,30 @@ Create a mask that has:
 0s in last i positions
 1s everywhere else
 Then AND it with the number
+
+PRACTICE QUESTION
+
+Count the set bits in a number
+
+method 1 -> n.cpp
+Check last bit, then shift right
+do count ++
+
+method 2 -> o.cpp
+Brian Kernighan’s Algorithm (Faster)
+remove the last set bit each time
+
+FAST EXPONENTIATION
+
+X^n = x*x*x\*x... n times
+
+method 1 -> p.cpp
+multiply x to itself again and again
+this will happen in O(n)
+
+method 2 -> q.cpp
+convert n in binary form
+
+now we will loop throught the binary form of pow(n)
+also any n will have at max -> log2n bits
+this will have the time complexity of O(logn)

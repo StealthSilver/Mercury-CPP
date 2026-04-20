@@ -1,24 +1,27 @@
 #include <iostream>
 using namespace std;
 
-int clearLastIBits(int num, int i)
+int countSetBits(int num)
 {
-    int mask = (~0) << i;
-    return num & mask;
+    int count = 0;
+
+    while (num > 0)
+    {
+        num = num & (num - 1); // removes last set bit
+        count++;
+    }
+
+    return count;
 }
 
 int main()
 {
-    int num, i;
+    int num;
 
     cout << "Enter number: ";
     cin >> num;
 
-    cout << "Enter i: ";
-    cin >> i;
-
-    cout << "Result after clearing last " << i << " bits: "
-         << clearLastIBits(num, i) << endl;
+    cout << "Set bits: " << countSetBits(num) << endl;
 
     return 0;
 }
