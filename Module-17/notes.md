@@ -73,5 +73,16 @@ for that we take the bitwise & with 1
 Bit masks are used to access specific bits in a byte of data
 
 Get ith Bit -> h.cpp
-
 we have to find the bit at the ith position for any binary number
+
+mask = 1<<i
+(num & mask) -> 0 -> 0 , >0 -> 1
+
+SET THE ith BIT -> i.cpp
+
+0 -> 1
+1 -> 1 do this for the its bit
+
+we need 1 on the ith position
+thereforce the bitmask will be 1<<i
+and the operation will be num | mask
