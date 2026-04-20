@@ -61,3 +61,17 @@ PRACTICE QUESTIONS -> f.cpp
 
 Qs. Predict the output for ~4
 Qs. Predict the output for 8 >>
+
+CHECK IF ODD or EVEN -> g.cpp
+
+is all the binary form of odd numbers the rightmost bit is 1
+in the even numbers its 0
+
+we perform the bitmask operation to get the
+for that we take the bitwise & with 1
+
+Bit masks are used to access specific bits in a byte of data
+
+Get ith Bit -> h.cpp
+
+we have to find the bit at the ith position for any binary number
