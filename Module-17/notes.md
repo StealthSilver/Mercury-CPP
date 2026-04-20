@@ -86,3 +86,11 @@ SET THE ith BIT -> i.cpp
 we need 1 on the ith position
 thereforce the bitmask will be 1<<i
 and the operation will be num | mask
+
+CLEAR THE ith BIT -> j.cpp
+
+0 -> 0
+1 -> 0 do this for the ith bit
+
+bitMask will be ~(1<<i)
+and the operation will be num & mask
