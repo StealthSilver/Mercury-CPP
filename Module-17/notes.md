@@ -55,3 +55,9 @@ right shift >>
 num >> i pos (shift bits i positions towards the right) -> fill the empty spaces with 0
 
 a << b = a\*2^b
+a >> b = a / 2^b
+
+PRACTICE QUESTIONS -> f.cpp
+
+Qs. Predict the output for ~4
+Qs. Predict the output for 8 >>
