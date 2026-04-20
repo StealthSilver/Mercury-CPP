@@ -108,3 +108,17 @@ PRACTICE QUESTION -> n.cpp
 Qs. WAF to update the ith bit in a number according to given value (0 or 1).
 num = 7, i = 2, val = O
 num = 7, i = 3, val =1
+
+this is basically updating the ith bit for this we will
+
+1. make the bit as 0
+2. num | (val << i)
+
+PRACTICE QUESTION -> o.cpp
+Qs. WAF to clear last i bits of a number.
+num = 15, i = 2
+
+Create a mask that has:
+0s in last i positions
+1s everywhere else
+Then AND it with the number
