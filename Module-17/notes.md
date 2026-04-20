@@ -177,7 +177,10 @@ except for one. Find that single one.
 You must implement a solution with a linear runtime complexity and use only
 constant extra space.
 
-Question 3 : t.cpp -> Leetocde 2527
+a ^ a = 0
+a ^ 0 = a
+
+Question 3 : t.cpp -> leetocde 2527
 You are given a 0-indexed integer array nums.
 The effective value of three indices i, j, and k is defined as ((nums[i] | nums[j]) &
 nums[k]).
@@ -185,6 +188,14 @@ The xor-beauty of the array is the XORing of the effective values of all the pos
 of indices (i, j, k) where 0 <= i, j, k < n.
 Return the xor-beauty of nums
 
+All triplet interactions cancel out—only the XOR of the array remains.
+time -> O(n)
+
 Question 4 -> u.cpp -> leetcode 29
 Given two integers dividend and divisor, divide two integers without using
 multiplication, division, and mod operator.
+
+Repeated subtraction is too slow → O(n)
+Instead, subtract largest possible multiples of divisor using shifts
+
+time -> O(logn)
