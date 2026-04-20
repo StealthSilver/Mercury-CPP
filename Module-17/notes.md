@@ -102,3 +102,9 @@ a. all the powers of 2 have only one 1 -> 1 set bit
 b. also all the num which are 2^n - 1 are all 1s at every bit
 
 c. also (2^n) & (2^n - 1 ) = 0
+
+PRACTICE QUESTION -> n.cpp
+
+Qs. WAF to update the ith bit in a number according to given value (0 or 1).
+num = 7, i = 2, val = O
+num = 7, i = 3, val =1
