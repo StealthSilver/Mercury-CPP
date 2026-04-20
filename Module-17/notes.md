@@ -103,7 +103,7 @@ b. also all the num which are 2^n - 1 are all 1s at every bit
 
 c. also (2^n) & (2^n - 1 ) = 0
 
-PRACTICE QUESTION -> n.cpp
+PRACTICE QUESTION -> l.cpp
 
 Qs. WAF to update the ith bit in a number according to given value (0 or 1).
 num = 7, i = 2, val = O
@@ -114,7 +114,7 @@ this is basically updating the ith bit for this we will
 1. make the bit as 0
 2. num | (val << i)
 
-PRACTICE QUESTION -> o.cpp
+PRACTICE QUESTION -> m.cpp
 Qs. WAF to clear last i bits of a number.
 num = 15, i = 2
 
