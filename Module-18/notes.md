@@ -12,6 +12,12 @@ also there are Functions / Member functions / methods also associated with them
 
 Classes are the blueprints to create objects -> a.cpp , b.cpp
 
+four major concepts in OOPs are 
+1. Encaptulation
+2. Inheritance
+3. Abstraction
+4. Polymorphism
+
 ACCESS MODIFIERS : c.cpp
 
 private
@@ -33,3 +39,8 @@ GETTERS AND SETTERS -> d.cpp
 they are the special methods 
 
 as we cannot access the properties directly so we get and set them using these funcitons
+
+ENCAPTULATION 
+
+Encapsulation is wrapping up of data & member functions (methods) in a single unit.
+It also implements data hiding
