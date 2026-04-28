@@ -15,7 +15,7 @@ Classes are the blueprints to create objects -> a.cpp , b.cpp
 ACCESS MODIFIERS : c.cpp
 
 private
-data & methods accessible inside class
+data & methods accessible inside class and the friend functions
 sensitive properties are stored here 
 
 • public
@@ -24,6 +24,6 @@ data & methods accessible to everyone
 
 • protected
 data & methods accessible inside class & to its derived class
-
+this is used when we inherit a class
 
 by default all the methods and properties are private and can only be accessed inside the class
