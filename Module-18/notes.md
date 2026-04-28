@@ -16,7 +16,14 @@ ACCESS MODIFIERS : c.cpp
 
 private
 data & methods accessible inside class
+sensitive properties are stored here 
+
 • public
 data & methods accessible to everyone
+
+
 • protected
 data & methods accessible inside class & to its derived class
+
+
+by default all the methods and properties are private and can only be accessed inside the class
