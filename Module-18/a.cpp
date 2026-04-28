@@ -16,5 +16,10 @@ class Student {
 
 int main() {
 
+    Student s1; // object is created
+    s1.name = "John";
+    s1.cgpa = 9.5;
+    s1.getPercentage();
+
     return 0;
 }
