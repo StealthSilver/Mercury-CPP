@@ -27,3 +27,8 @@ data & methods accessible inside class & to its derived class
 this is used when we inherit a class
 
 by default all the methods and properties are private and can only be accessed inside the class
+
+GETTERS AND SETTERS -> d.cpp
+
+they are the special methods 
+
