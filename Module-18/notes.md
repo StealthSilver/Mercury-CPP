@@ -40,7 +40,17 @@ they are the special methods
 
 as we cannot access the properties directly so we get and set them using these funcitons
 
-ENCAPTULATION 
+ENCAPTULATION -> d.cpp
 
 Encapsulation is wrapping up of data & member functions (methods) in a single unit.
-It also implements data hiding
+It also implements data hiding 
+
+we use access modifiers for hiding the data
+
+CONSTRUCTORS -> e.cpp
+
+Special method invoked automatically at time of object creation. Used for Initialisation.
+• Same name as class
+• Constructor doesn't have a return type
+• Only called once (automatically), at object creation
+• Memory allocation happens when constructor is called
