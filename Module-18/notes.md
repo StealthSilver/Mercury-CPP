@@ -49,7 +49,7 @@ we use access modifiers for hiding the data
 
 CONSTRUCTORS -> e.cpp
 
-Special method invoked automatically at time of object creation. Used for Initialisation.
+Special method invoked automatically at time of object creation. Used for Initialisation. The compiler automatically makes the constructor.
 • Same name as class
 • Constructor doesn't have a return type
 • Only called once (automatically), at object creation
