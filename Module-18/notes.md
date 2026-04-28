@@ -77,9 +77,18 @@ Special Constructor (default) used to copy properties of one object into another
 
 complier automatiocally creates a copy constructor, in java this is not possible
 
-SHALLOW AND DEEP COY -> j.cpp
+SHALLOW AND DEEP COPY -> j.cpp
 
 Shallow copy copies references to original array. But array remains same.
 Deep copy created a brand new copy of the array.
 Compiler generally creates a shallow copy for array.
 We need to define own copy constructor when deep copy is needed i.e. when class contains pointers to dynamically allocated memory
+
+DESTRUCTOR -> k.cpp
+
+they are the opposite of constructor. they are used to destroy the memory associated to the properties and funcitons. tehy are called by defualt by the compiler when memory deallocation is required
+
+when we create memory dynamically them it cannot be deallocated automatically, here we have to use the custom destructor explicitly 
+
+INHERITANCE -> l.cpp
+
