@@ -71,3 +71,8 @@ PRACTICE PROBLEMS -> h.cpp
 Create a User class with properties: id (private), username(public) & password (private).
 Its id should be initialized in a parameterised constructor.
 It should have a Getter & Setter for password.
+
+COPY CONSTRUCTOR -> i.cpp
+Special Constructor (default) used to copy properties of one object into another 
+
+complier automatiocally creates a copy constructor, in java this is not possible
