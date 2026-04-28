@@ -54,3 +54,10 @@ Special method invoked automatically at time of object creation. Used for Initia
 • Constructor doesn't have a return type
 • Only called once (automatically), at object creation
 • Memory allocation happens when constructor is called
+
+these can be parameterised and non parameterised constructors, by default the constructors are non parameterised
+
+THIS POINTER -> f.cpp
+
+this is a special pointer
+this->prop is same as *(this).prop
