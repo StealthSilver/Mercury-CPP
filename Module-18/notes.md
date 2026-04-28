@@ -32,3 +32,4 @@ GETTERS AND SETTERS -> d.cpp
 
 they are the special methods 
 
+as we cannot access the properties directly so we get and set them using these funcitons
