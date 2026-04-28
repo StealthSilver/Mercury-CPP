@@ -10,5 +10,5 @@ Objects : perticular entities from the group
 Object have different properties / attributes associated with them
 also there are Functions / Member functions / methods also associated with them
 
-Classes are the blueprints to create objects -> a.cpp
+Classes are the blueprints to create objects -> a.cpp , b.cpp
 

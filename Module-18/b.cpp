@@ -1,8 +1,9 @@
-#incldue <isotream>
+#include <iostream>
+#include <string>
 using namespace std;
 
-
 class User {
+public:
     // properties
     string name;
     int age;
@@ -10,12 +11,12 @@ class User {
     string password;
 
     // methods
-    void login(){
+    void login() {
         cout << "Login successful" << endl;
     }
-}
+};
 
-int main(){
+int main() {
 
     User u1; // object is created
     u1.name = "John";

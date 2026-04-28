@@ -1,9 +1,10 @@
 #include <iostream>
+#include <string>
 using namespace std;
 
 class Student {
-   
-    // properties 
+public:
+    // properties
     string name;
     float cgpa;
 
