@@ -12,3 +12,11 @@ also there are Functions / Member functions / methods also associated with them
 
 Classes are the blueprints to create objects -> a.cpp , b.cpp
 
+ACCESS MODIFIERS : c.cpp
+
+private
+data & methods accessible inside class
+• public
+data & methods accessible to everyone
+• protected
+data & methods accessible inside class & to its derived class
