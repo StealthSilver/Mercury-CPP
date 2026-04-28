@@ -76,3 +76,10 @@ COPY CONSTRUCTOR -> i.cpp
 Special Constructor (default) used to copy properties of one object into another 
 
 complier automatiocally creates a copy constructor, in java this is not possible
+
+SHALLOW AND DEEP COY -> j.cpp
+
+Shallow copy copies references to original array. But array remains same.
+Deep copy created a brand new copy of the array.
+Compiler generally creates a shallow copy for array.
+We need to define own copy constructor when deep copy is needed i.e. when class contains pointers to dynamically allocated memory
