@@ -61,3 +61,13 @@ THIS POINTER -> f.cpp
 
 this is a special pointer
 this->prop is same as *(this).prop
+
+CONSTRUCTOR OVERLOADING -> g.cpp
+
+writing multiple constructors in the same class, the compiler automatically detects weatehr to call a parameterised constructor or non parameterised one
+
+PRACTICE PROBLEMS -> h.cpp
+
+Create a User class with properties: id (private), username(public) & password (private).
+Its id should be initialized in a parameterised constructor.
+It should have a Getter & Setter for password.
