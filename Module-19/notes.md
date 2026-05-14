@@ -13,6 +13,7 @@ there are two types
 2. run time polymorphism
 
 COMPILE TIME POLYMORPHISM
+decided ont eh compile time
 
 1. function overloading  -> a.cpp
 the parameter inside the function decides which function will be called even if the functions have same name
@@ -23,3 +24,10 @@ the operator name will be same but it will be defined and used in different ways
 complex numbers can be created this way
 
 returnType operator opSymbol(){....}
+
+RUN TIME POLYMORPHISM 
+decided on the rintime
+
+1. Function Overriding -> c.cpp
+Parent & Child both contain the same function with different implementation.
+The parent class function is said to be ovverridden
