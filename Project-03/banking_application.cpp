@@ -33,7 +33,6 @@
 
 #include <chrono>
 #include <deque>
-#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -181,6 +180,12 @@ protected:
         recordUnderLock(TxKind::Withdraw, amount, "Withdraw by " + actor);
     }
 
+    // Derived types (e.g. current account) reuse one locked entry point.
+    void withdrawImpl(double amount, const string& actor, double overdraftAllowance) {
+        lock_guard<mutex> lock(mtx_);
+        withdrawWithLimit(amount, actor, overdraftAllowance);
+    }
+
 public:
     Account(string id, int pin, double opening) : id_(std::move(id)), pin_(pin), balance_(0.0) {
         lock_guard<mutex> lock(mtx_);
@@ -225,10 +230,7 @@ public:
         recordUnderLock(TxKind::Deposit, amount, "Deposit by " + actor);
     }
 
-    virtual void withdraw(double amount, const string& actor) {
-        lock_guard<mutex> lock(mtx_);
-        withdrawWithLimit(amount, actor, 0.0);
-    }
+    virtual void withdraw(double amount, const string& actor) { withdrawImpl(amount, actor, 0.0); }
 
     void applyMonthlyInterest() {
         lock_guard<mutex> lock(mtx_);
@@ -306,12 +308,105 @@ public:
     string productName() const override { return "Current"; }
 
     void withdraw(double amount, const string& actor) override {
-        lock_guard<mutex> lock(const_cast<mutex&>(static_cast<const Account&>(*this).id().empty() ? mtx_unused() : mtx_unused()));
-    }
-
-private:
-    mutex mtx_unused() {
-        static mutex dummy;
-        return dummy;
+        withdrawImpl(amount, actor, overdraftLimit_);
     }
 };
+
+// -----------------------------------------------------------------------------
+// Demo — polymorphic collection + exceptions + threaded “users”.
+// -----------------------------------------------------------------------------
+static void tryAuth(Account& acc, int pin) {
+    try {
+        acc.authenticate(pin);
+        cout << "  PIN OK for " << acc.id() << "\n";
+    } catch (const AuthError& e) {
+        cout << "  Auth: " << e.what() << "\n";
+    } catch (const FraudError& e) {
+        cout << "  Fraud: " << e.what() << "\n";
+    }
+}
+
+static void tryDeposit(Account& acc, double amt, const string& who) {
+    try {
+        acc.deposit(amt, who);
+        cout << "  " << who << " deposited " << amt << " -> balance " << acc.snapshotBalance() << "\n";
+    } catch (const BankingError& e) {
+        cout << "  Deposit failed: " << e.what() << "\n";
+    }
+}
+
+static void tryWithdraw(Account& acc, double amt, const string& who) {
+    try {
+        acc.withdraw(amt, who);
+        cout << "  " << who << " withdrew " << amt << " -> balance " << acc.snapshotBalance() << "\n";
+    } catch (const BankingError& e) {
+        cout << "  Withdraw failed: " << e.what() << "\n";
+    }
+}
+
+static void concurrencyDemo(Account& shared) {
+    cout << "\n--- Multi-user concurrency simulation (3 threads, small deposits) ---\n";
+    auto worker = [&](const string& name) {
+        for (int i = 0; i < 6; ++i) {
+            try {
+                shared.deposit(5.0, name);
+            } catch (const BankingError& e) {
+                cout << "  [" << name << "] " << e.what() << "\n";
+            }
+            this_thread::sleep_for(chrono::milliseconds(2));
+        }
+    };
+    thread t1([&] { worker("t1"); });
+    thread t2([&] { worker("t2"); });
+    thread t3([&] { worker("t3"); });
+    t1.join();
+    t2.join();
+    t3.join();
+    cout << "  Final balance after concurrent deposits: " << shared.snapshotBalance() << "\n";
+}
+
+int main() {
+    cout << "=================================================================\n";
+    cout << " Banking Application — concept walkthrough (see file header )\n";
+    cout << "=================================================================\n";
+
+    vector<unique_ptr<Account>> bank;
+    bank.emplace_back(make_unique<SavingsAccount>("SV-1001", 4242, 1000.0, 0.06));
+    bank.emplace_back(make_unique<CurrentAccount>("CH-2002", 1313, 500.0, 200.0));
+
+    cout << "\n--- Polymorphism: treat every product as Account* ---\n";
+    for (const auto& a : bank) {
+        a->printSummary();
+    }
+
+    Account& savings = *bank[0];
+    Account& current = *bank[1];
+
+    cout << "\n--- PIN authentication ---\n";
+    tryAuth(savings, 1111);
+    tryAuth(savings, 4242);
+
+    cout << "\n--- Deposits / withdrawals / interest ---\n";
+    tryDeposit(savings, 250.0, "ATM");
+    tryWithdraw(savings, 100.0, "ATM");
+    savings.applyMonthlyInterest();
+    cout << "  Savings after interest: " << savings.snapshotBalance() << "\n";
+
+    tryWithdraw(current, 600.0, "POS");
+    cout << "  Current (used overdraft): " << current.snapshotBalance() << "\n";
+
+    cout << "\n--- Fraud rules demo (large tx) ---\n";
+    tryDeposit(savings, 6000.0, "suspicious");
+
+    concurrencyDemo(savings);
+
+    cout << "\n--- Transaction history (tail) ---\n";
+    savings.printHistory(12);
+
+    cout << "\n--- Summaries ---\n";
+    for (const auto& a : bank) {
+        a->printSummary();
+    }
+
+    return 0;
+}
