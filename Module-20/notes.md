@@ -62,3 +62,7 @@ this happens when there is infinite recursion
 
 1. local variable : if a lot of local variables are created then all of the stack memory is filled so stack overflows
 2. if the base case is missing -> recursion will not stop and the function calls will exceed the memory
+
+stack oevrflow gives segmentation fault
+
+sum of n natural numebrs using recursion -> e.cpp
