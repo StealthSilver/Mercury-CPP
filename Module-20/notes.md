@@ -10,3 +10,14 @@ main -> func -> func -> func -> base case
 then it returns
 
 the base case is really imprortant
+
+recursion - mathematical understanding
+
+f(x) = x^2
+f(f(x)) = (x^2)^2
+
+the composite funcitoans are way of recursion 
+
+for factorial - f(n) = n!
+f(n) = n * f(n-1) -> this is a reccurence relation
+
