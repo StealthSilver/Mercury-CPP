@@ -97,9 +97,10 @@ this is used to reduce code re-usability
 
 by default the inheritance is private inheritance in C++
 
-By providing the access modifier we are telling the mode of inheritance
+By providing the access modifier we are telling the mode of inheritance -> m.cpp
 
-base class member access specifier -> public              protected     private
+base class member access specifier -> types of inheritance
+                                        public              protected     private
 
 public                                public              protected     private
 
@@ -108,3 +109,15 @@ protected                               protected           protected     privat
 pricate                             not accessible   not accessible  not accessible 
                                        (hidden)           (hidden)      (hidden)
                                       
+
+TYPES OF INHEIRITANCE  -> n.cpp
+
+1. Single Inheritance : single base class and single derived class
+
+2. Multi Level Inheritance : single base class -> derived class 1 -> derived class 2 ...
+
+3. Multiple Inheritance : properties of two or more base classes are derived by a single base class
+
+4. Hierarchial : single base class , but multiple base classes
+
+5. Hybrid Inheritance : it is a combination of different inheritances
