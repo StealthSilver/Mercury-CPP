@@ -82,3 +82,20 @@ A friend class or a friend function can access private and protected members of 
 
 PRACTICE QUESTION -> j.cpp
 PRACTICE QUESTION -> k.cpp
+PRACTICE QUESTION -> l.cpp
+Create a class to store Complex numbers. Using operator overloading,
+create the logic to subtract one complex number from another.
+Note - In Complex numbers, the real part of 1st gets subtracted from the real part of
+2nd number. Same goes for the imaginary part.
+
+PRACTICE QUESTION -> m.cpp
+Create a class BankAccount with private attributes accountNumber and
+balance. Implement public methods deposit(), withdraw(), and getBalance() to
+manage the account.
+
+PRACTICE QUESTION -> n.cpp
+Create a base class Person with attributes name and age.
+Derive a class Student from Person and add an additional attribute studentID.
+Implement a method displayStudentInfo( ) in the Student class to display all details.
+In main function Student class object will be created in this format:
+Student student("Alice", 20, "S12345");

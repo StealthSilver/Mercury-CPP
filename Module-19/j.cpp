@@ -28,7 +28,7 @@ class B : public A {
 
 int main() {
     B obj;
-    return 0;
+    return 0;ß
 }
 
 // --- Answer (predict first, then compile: c++ -std=c++17 -o j j.cpp && ./j) ---
