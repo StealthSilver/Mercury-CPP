@@ -74,3 +74,9 @@ Variables declared as static in a function are created & initialised once for th
 Static variables in a class are created & initialised once. They are shared by all the objects of the class. //in Class
 
 Static Objects -> h.cpp
+
+static Example eg1
+
+FRIEND CLASS AND FRIEND FUNCTIONS -> i.cpp
+A friend class or a friend function can access private and protected members of other classes in which it is declared as a friend.
+
