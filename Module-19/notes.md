@@ -68,8 +68,9 @@ virtual void fucntion() = 0;
 
 STATIC KEYWORD
 
-Static Variables
+Static Variables -> g.cpp
 Variables declared as static in a function are created & initialised once for the lifetime of the program. //in Function
+
 Static variables in a class are created & initialised once. They are shared by all the objects of the class. //in Class
 
-Static Objects
+Static Objects -> h.cpp
