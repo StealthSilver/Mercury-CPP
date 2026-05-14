@@ -13,7 +13,7 @@ there are two types
 2. run time polymorphism
 
 COMPILE TIME POLYMORPHISM
-decided ont eh compile time
+decided at the compile time
 
 1. function overloading  -> a.cpp
 the parameter inside the function decides which function will be called even if the functions have same name
@@ -26,8 +26,13 @@ complex numbers can be created this way
 returnType operator opSymbol(){....}
 
 RUN TIME POLYMORPHISM 
-decided on the rintime
+decided on the runtime
 
 1. Function Overriding -> c.cpp
 Parent & Child both contain the same function with different implementation.
 The parent class function is said to be ovverridden
+
+2. Virtual Funcions -> d.cpp
+A virtual function is a member function that you expect to be redefined in derived classes.
+
+virtual void hello(){}
