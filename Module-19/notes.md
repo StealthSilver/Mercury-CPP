@@ -36,3 +36,28 @@ The parent class function is said to be ovverridden
 A virtual function is a member function that you expect to be redefined in derived classes.
 
 virtual void hello(){}
+
+child function >> inheritance 
+
+1. Virtual functions are Dynamic in nature.
+2. Defined by the keyword "virtual" inside a base class and are always declared with a base class and overridden in a child class.
+3. A virtual function is called during Runtime
+
+4. ABSTRACTION
+
+Hiding all unnecessary details & showing only the important parts
+
+
+Abstract Classes & Pure Virtual Functions & access specifieers are a type of implementing abstraction 
+
+ABSTRACT CLASS -> e.cpp
+this class's only job is to do inheritaqnce it does not crete its own objects but jsut crates a blueprrint for the child class 
+
+it has at least one pure virtual function
+
+1. Abstract classes are used to provide a base class from which other classes can be derived.
+2. They cannot be instantiated (create own objects) and are meant to be inherited.
+3. Abstract classes are typically used to define an interface for derived classes
+
+PURE VIRTUAL FUNCTIONS -> f.cpp
+
