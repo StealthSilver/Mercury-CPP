@@ -1,6 +1,6 @@
 # DSA with C++ — Module 18 Notes
 
-**Topic:** Object-Oriented Programming (OOP) in C++  
+**Topic:** Object-Oriented Programming (OOP) part 1 in C++  
 **Companion code:** See the linked `.cpp` files in this folder for runnable examples. These notes focus on concepts and wording; the programs demonstrate behavior.
 
 ---

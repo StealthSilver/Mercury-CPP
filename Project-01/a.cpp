@@ -1,4 +1,4 @@
-// SCIENTIFIC CALCULATOR
+// SCIENTIFIC CALCULATOR -> after basics (after module 8)
 #include <iostream>
 #include <cmath>
 using namespace std;
