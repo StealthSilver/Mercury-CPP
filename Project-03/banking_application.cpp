@@ -1,18 +1,16 @@
 /*
  * =============================================================================
- * PROJECT TITLE: Banking Application (Educational Demo)
+ * PROJECT TITLE: 2. Banking Application 💳
  * =============================================================================
  *
  * Single-file teaching project: OOP + exceptions + basic concurrency.
  *
  * Concepts
  * --------
- *   Encapsulation        — balances, PIN, fraud counters, and history are not
- *                          public fields; the class exposes a small, safe API.
- *   Polymorphism         — `SavingsAccount` / `CurrentAccount` share `Account*`;
- *                          virtual hooks (`productName`, interest policy, withdraw
- *                          policy) behave differently per runtime type.
- *   Exception handling — typed errors for bad input, auth, funds, fraud rules.
+ *   Encapsulation        — private balances, PIN, fraud counters, history; small public API
+ *   Polymorphism         — `SavingsAccount` / `CurrentAccount` via `Account*`; `virtual`
+ *                          `productName`, interest hook, and `withdraw` policy differ by type
+ *   Exception handling — typed errors for bad input, auth, funds, fraud rules
  *
  * Classes
  * -------
@@ -20,7 +18,7 @@
  *
  * Features
  * --------
- *   Deposit / withdraw, interest (savings), history, PIN auth
+ *   Deposit / withdraw, interest (savings), transaction history, PIN authentication
  *
  * Advanced twists
  * ---------------
@@ -367,7 +365,7 @@ static void concurrencyDemo(Account& shared) {
 
 int main() {
     cout << "=================================================================\n";
-    cout << " Banking Application — concept walkthrough (see file header )\n";
+    cout << " 2. Banking Application — concept walkthrough (see file header)\n";
     cout << "=================================================================\n";
 
     vector<unique_ptr<Account>> bank;
