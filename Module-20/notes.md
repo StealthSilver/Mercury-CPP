@@ -48,3 +48,17 @@ factorial(2) , returns 2 * 1 , removes from the stack frame
 factorial(3) , returns 3 * 2 , removes from the stack frame 
 factorial(4) , returns 4 * 6 , removes from the stack frame 
 factorial(5) , returns 5 * 24 , removes from the stack frame 
+
+Print numbers is decreasing order -> c.cpp
+
+print (n) -> prints dec order for n
+assume print(n-1) works
+
+print numbers in ascending order -> d.cpp
+
+STACK OVERFLOW
+
+this happens when there is infinite recursion
+
+1. local variable : if a lot of local variables are created then all of the stack memory is filled so stack overflows
+2. if the base case is missing -> recursion will not stop and the function calls will exceed the memory
