@@ -61,3 +61,15 @@ it has at least one pure virtual function
 
 PURE VIRTUAL FUNCTIONS -> f.cpp
 
+A pure virtual function (or abstract function) is a virtual function with no definition/ logic.
+It is declared by assigning O at the time of decleration
+
+virtual void fucntion() = 0;
+
+STATIC KEYWORD
+
+Static Variables
+Variables declared as static in a function are created & initialised once for the lifetime of the program. //in Function
+Static variables in a class are created & initialised once. They are shared by all the objects of the class. //in Class
+
+Static Objects
