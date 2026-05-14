@@ -92,3 +92,19 @@ when we create memory dynamically them it cannot be deallocated automatically, h
 
 INHERITANCE -> l.cpp
 
+When properties & member functions of base/super/parent class are passed on to the derived class.
+this is used to reduce code re-usability
+
+by default the inheritance is private inheritance in C++
+
+By providing the access modifier we are telling the mode of inheritance
+
+base class member access specifier -> public              protected     private
+
+public                                public              protected     private
+
+protected                               protected           protected     private
+
+pricate                             not accessible   not accessible  not accessible 
+                                       (hidden)           (hidden)      (hidden)
+                                      
