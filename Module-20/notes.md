@@ -1,82 +1,125 @@
-# DSA with C++ — Module 19 Notes
+# DSA with C++ — Module 20 Notes
 
-RECURSION -> a.cpp
+**Topic:** Recursion — definition, recurrence relations, call stack, classic patterns, array problems, and time-complexity trade-offs.  
+**Companion code:** Each section links to a runnable `.cpp` in this folder. These notes explain *what* and *why*; open the files to see behavior.
 
-When a function repeatedly calls itself then its recursion
+---
 
-all the recursion questions can be done by iterations (loops) but they are generally easier with recursion
+## What is recursion?
 
-It is a method of solving computational problems where the solution depends on solutions to smaller instances of the same problem
+**Recursion** is when a function **calls itself** to solve a problem by breaking it into **smaller instances of the same problem**.
 
-1. base case is required
-2. logic of the function call
-3. inner function must be known
+A useful formal view: recursion is a method where the solution at size `n` depends on solutions at smaller sizes (`n-1`, `n/2`, etc.) until you reach a size you can answer directly.
 
-main -> func -> func -> func -> base case 
-then it returns
+| Idea | Detail |
+|------|--------|
+| **Same problem, smaller input** | Each call works on a reduced version (e.g. `factorial(n-1)`, `fib(n-1)`). |
+| **Loops are often equivalent** | Almost every recursive solution can be rewritten with iteration (`for` / `while`). Some problems feel more natural with recursion (trees, divide-and-conquer). |
+| **Call chain** | `main` → `f` → `f` → … → **base case**, then each call **returns** to its caller in reverse order. |
 
-the base case is really imprortant
+### Three parts every recursive function needs
 
-recursion - mathematical understanding -> b.cpp
+1. **Base case** — the smallest input you can answer **without** another recursive call (stops infinite recursion).
+2. **Recursive call** — the function invokes itself on a **strictly smaller** or **progressing** subproblem.
+3. **Work / combine step** — what you do at the current level (print, add, multiply, compare, etc.) and how you use the result from the deeper call.
 
-f(x) = x^2
-f(f(x)) = (x^2)^2
+If the base case is missing or never reached, recursion never stops.
 
-the composite funcitoans are way of recursion 
+**Reference:** [a.cpp](a.cpp) — introduction and simple recursive examples.
 
-for factorial - f(n) = n!
-f(n) = n * f(n-1) -> this is a reccurence relation
+---
 
-f(5) = 5*f(4)
-         f(4) = 4*f(3)
-                  f(3) = 3*f(2)
-                           f(2) = 2*f(1)
-                                    f(1) = 1*f(0) and f(0) is the base case so it returns 1
+## Recursion and mathematics
 
+### Composition of functions
 
-recursion in memory
+If `f(x) = x²`, then `f(f(x)) = (x²)²`. Applying a function to the **result of the same function** is the same “use the answer to get the next answer” idea as recursion.
 
-factorial(5)
+### Recurrence relations
 
-new stack frame creates for n=5 -> calls factorial 4 
-new stack frame creates for n=4-> calls factorial 3
-new stack frame creates for n=3-> calls factorial 2
-new stack frame creates for n=2-> calls factorial 1 
-new stack frame creates for n=1-> calls factorial 0 -> factorial(0) , returns 1 , removes from the stack frame 
-factorial(1) , returns 1 * 1 , removes from the stack frame 
-factorial(2) , returns 2 * 1 , removes from the stack frame 
-factorial(3) , returns 3 * 2 , removes from the stack frame 
-factorial(4) , returns 4 * 6 , removes from the stack frame 
-factorial(5) , returns 5 * 24 , removes from the stack frame 
+A **recurrence relation** defines a sequence (or function) in terms of **previous values**.
 
-Print numbers is decreasing order -> c.cpp
+**Factorial example:**
 
-print (n) -> prints dec order for n
-assume print(n-1) works
+- `f(n) = n!`
+- `f(n) = n × f(n-1)` for `n > 0`
+- **Base case:** `f(0) = 1`
 
-print numbers in ascending order -> d.cpp
+Expanding `f(5)`:
 
-STACK OVERFLOW
+- `f(5) = 5 × f(4)`
+- `f(4) = 4 × f(3)`
+- … down to `f(0) = 1`, then values bubble back up: `f(1)=1`, `f(2)=2`, `f(3)=6`, `f(4)=24`, `f(5)=120`.
 
-this happens when there is infinite recursion
+**Reference:** [b.cpp](b.cpp) — mathematical / recurrence view of recursion.
 
-1. local variable : if a lot of local variables are created then all of the stack memory is filled so stack overflows
-2. if the base case is missing -> recursion will not stop and the function calls will exceed the memory
+---
 
-stack oevrflow gives segmentation fault
+## Recursion and memory (the call stack)
 
-sum of n natural numbers using recursion -> e.cpp
+Each recursive call gets a new **stack frame** on the **call stack**: space for parameters, local variables, and where to return when the call finishes.
 
-print the Nth Fibonacci Number -> f.cpp
+**Example: `factorial(5)`**
 
-0, 1, 1, 2, 3, 5, 8, 13, 21 ...
+| Phase | What happens |
+|-------|----------------|
+| **Going down** | Frames for `n=5,4,3,2,1` are pushed; each waits for the next call. |
+| **Base hit** | `factorial(0)` returns `1`; its frame is popped. |
+| **Coming back up** | `factorial(1)` returns `1×1`, `factorial(2)` returns `2×1`, … until `factorial(5)` returns `120`. |
 
-recurrance relation = fib(n) = fib(n-1) + fib(n-2)
-base case -> fib(0) = 0, fib(1) = 1
+So recursion uses **stack space** proportional to **recursion depth** (how many nested calls are active at once).
 
-### Recursion tree for fib(5)
+---
 
-Each node splits into `fib(n-1)` (left) and `fib(n-2)` (right). Leaves are base cases `fib(0)=0` and `fib(1)=1`.
+## Print numbers: decreasing vs ascending order
+
+Both problems print `1` through `n`, but **when** you print relative to the recursive call changes the order.
+
+| Order | Strategy | Intuition |
+|-------|----------|-----------|
+| **Decreasing** (`n, n-1, …, 1`) | **Work first**, then recurse on `n-1`. | Print current number, then trust `print(n-1)` for the rest. |
+| **Ascending** (`1, 2, …, n`) | **Recurse first** on `n-1`, then **work** (print `n`). | Trust `print(n-1)` to finish the smaller range; print `n` on the way back up. |
+
+**Base case (both):** `n == 0` → return (nothing left to print).
+
+**References:** [c.cpp](c.cpp) — decreasing order · [d.cpp](d.cpp) — ascending order.
+
+---
+
+## Stack overflow
+
+**Stack overflow** happens when the call stack runs out of space. In C++, this often shows up as a **segmentation fault** or abnormal termination.
+
+Common causes:
+
+1. **Missing or wrong base case** — recursion never stops; frames keep piling up until the stack is exhausted.
+2. **Too much work per frame** — many large local variables or very deep recursion (e.g. `fib(n)` without optimization for large `n`).
+
+Always ensure the recursive argument **moves toward** the base case every time.
+
+---
+
+## Sum of first n natural numbers
+
+**Recurrence:** `sum(n) = n + sum(n-1)`  
+**Base case:** `sum(0) = 0`
+
+At each step you do a little **work** (`+ n`) and combine it with the result of the smaller subproblem.
+
+**Reference:** [e.cpp](e.cpp)
+
+---
+
+## Nth Fibonacci number
+
+**Sequence:** `0, 1, 1, 2, 3, 5, 8, 13, 21, …`
+
+**Recurrence:** `fib(n) = fib(n-1) + fib(n-2)`  
+**Base cases:** `fib(0) = 0`, `fib(1) = 1`
+
+### Recursion tree for `fib(5)`
+
+Each call splits into `fib(n-1)` (left) and `fib(n-2)` (right). Leaves are base cases returning `0` or `1`.
 
 ```
                               fib(5)
@@ -91,34 +134,96 @@ Each node splits into `fib(n-1)` (left) and `fib(n-2)` (right). Leaves are base 
         →1     →0
 ```
 
-**Bubble values up (each node = left + right):**
+**Bubble values up** (each parent = left child + right child):
 
-- `fib(2)` appears many times: each time `1 + 0 = 1`.
-- `fib(3)` = `fib(2)+fib(1)` = `1+1 = 2` (twice in the tree for the two `fib(3)` nodes under `fib(5)` and `fib(4)`).
-- `fib(4)` = `2 + 1 = 3`.
-- `fib(5)` = `3 + 2 = 5`.
+- Every `fib(2)` subtree evaluates to `1 + 0 = 1`.
+- `fib(3) = 2`, `fib(4) = 3`, **`fib(5) = 5`**.
 
-So **fib(5) = 5**. The wide tree and repeated `fib(2)`, `fib(3)`, … nodes show why naive recursion is slow (exponential work); memoization or iteration fixes that.
+**Why this matters:** The same subproblems (`fib(2)`, `fib(3)`, …) are solved **many times**. Naive recursion is **exponential** in `n`. **Memoization** (caching results) or an **iterative** loop reduces this to **O(n)** time.
 
-check if the array is sorted or not -> g.cpp
+**Reference:** [f.cpp](f.cpp)
 
-this can be done by loops with checking arr[i] <= arr[i+1]
+---
 
-for recursion to check if arr[n] is sorted check arr[n-1] is sorted and arr[i] <= arr[i+1]
+## Check if an array is sorted
 
-1. work arr[i] > arr[i+1] -> false
-2. isSorted(arr, n, i) -> recursive function
-3. base case -> iff(i == n-1) -> return true
+**Iterative idea:** For each adjacent pair, check `arr[i] <= arr[i+1]`.
 
-First occurance of an element in a vector -> h.cpp
+**Recursive idea:** From index `i`, check the current pair; if OK, assume the suffix starting at `i+1` is sorted if the recursive call says so.
 
-[1,2,3,4,5,6] -> first occurance of 3 -> 2
+| Step | Role |
+|------|------|
+| **Base case** | `i == n-1` → only one element left in the suffix → **sorted** (`true`). |
+| **Work** | If `arr[i] > arr[i+1]` → **not sorted** (`false`). |
+| **Recursive call** | `isSorted(arr, n, i+1)` |
 
+**Reference:** [g.cpp](g.cpp)
 
-1. work -> if(arr[i] == target){
-    return i;
-}
+---
 
-2. recursive function -> FO(arr, i+1);
+## First occurrence of an element
 
-3. base case -> i==n , return -1
+**Example:** In `[1, 2, 3, 4, 5, 6]`, first occurrence of `3` is index **2** (0-based).
+
+Search **left to right**: at index `i`, if you find the target, return immediately; otherwise search the rest.
+
+| Step | Role |
+|------|------|
+| **Base case** | `i == n` → element not found → return `-1`. |
+| **Work** | If `arr[i] == target` → return `i`. |
+| **Recursive call** | Search from `i+1`. |
+
+**Reference:** [h.cpp](h.cpp)
+
+---
+
+## Last occurrence of an element
+
+**Example:** In `[1, 2, 3, 2, 5, 6]`, last occurrence of `2` is index **3**.
+
+Here you must prefer a match **to the right** of the current index. So you **do not** return as soon as you see `arr[i] == target` at the current index.
+
+| Step | Role |
+|------|------|
+| **Base case** | `i == n` → not found → return `-1`. |
+| **Recursive call first** | `ans = lastOccurrence(arr, n, i+1, target)`. |
+| **Work** | If `ans != -1`, return `ans` (a later index already found). Else if `arr[i] == target`, return `i`; else return `-1`. |
+
+**Key difference from first occurrence:** recurse on the **suffix first**, then decide whether the current index is the answer.
+
+**Reference:** [i.cpp](i.cpp)
+
+---
+
+## Print x to the power n (xⁿ)
+
+**Definition:** `x⁰ = 1`; for `n > 0`, `xⁿ = x × x × … × x` (`n` times).
+
+The same problem can be solved in two time complexities:
+
+| Approach | Idea | Time (typical) | File |
+|----------|------|----------------|------|
+| **Linear recursion** | `xⁿ = x × xⁿ⁻¹` — reduce `n` by 1 each call | **O(n)** recursive depth | [j.cpp](j.cpp) |
+| **Binary / fast exponentiation** | If `n` is even: `xⁿ = (xⁿ/²)²`; if odd: `xⁿ = x × (xⁿ/²)²` — halve `n` each step | **O(log n)** recursive depth | [k.cpp](k.cpp) |
+
+**Intuition for O(log n):** Each step cuts the exponent roughly in half (e.g. `10 → 5 → 2 → 1 → 0`), so the number of calls grows like **log₂ n**, not like `n`.
+
+Both versions in this module use non-negative integer `n` as in the course examples.
+
+---
+
+## Quick reference (files in this module)
+
+| File | Concept |
+|------|---------|
+| [a.cpp](a.cpp) | Introduction to recursion |
+| [b.cpp](b.cpp) | Recursion and recurrence relations |
+| [c.cpp](c.cpp) | Print numbers in decreasing order |
+| [d.cpp](d.cpp) | Print numbers in ascending order |
+| [e.cpp](e.cpp) | Sum of first n natural numbers |
+| [f.cpp](f.cpp) | Nth Fibonacci number |
+| [g.cpp](g.cpp) | Check if array is sorted |
+| [h.cpp](h.cpp) | First occurrence in array |
+| [i.cpp](i.cpp) | Last occurrence in array |
+| [j.cpp](j.cpp) | xⁿ — O(n) |
+| [k.cpp](k.cpp) | xⁿ — O(log n) |
