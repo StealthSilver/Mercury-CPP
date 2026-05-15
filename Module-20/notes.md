@@ -109,3 +109,16 @@ for recursion to check if arr[n] is sorted check arr[n-1] is sorted and arr[i] <
 1. work arr[i] > arr[i+1] -> false
 2. isSorted(arr, n, i) -> recursive function
 3. base case -> iff(i == n-1) -> return true
+
+First occurance of an element in a vector -> h.cpp
+
+[1,2,3,4,5,6] -> first occurance of 3 -> 2
+
+
+1. work -> if(arr[i] == target){
+    return i;
+}
+
+2. recursive function -> FO(arr, i+1);
+
+3. base case -> i==n , return -1
