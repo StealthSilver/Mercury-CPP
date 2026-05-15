@@ -212,6 +212,66 @@ Both versions in this module use non-negative integer `n` as in the course examp
 
 ---
 
+## Tiling problem (2×n floor with 2×1 tiles)
+
+**Problem:** Count how many ways you can tile a floor of size **2×n** using tiles of size **2×1** (no gaps, no overlap).
+
+Think of the floor as **2 rows** and **n columns**. Each tile covers exactly **2 unit squares** (either stacked in one column or side by side across two columns).
+
+### Two choices at each step
+
+| Placement | What it looks like | Remaining floor |
+|-----------|-------------------|-----------------|
+| **Vertical** | One tile in a single column (covers both rows in that column) | **2×(n−1)** |
+| **Horizontal** | Two tiles, each spanning one row, placed in **two adjacent columns** | **2×(n−2)** |
+
+So the number of ways for width `n` depends on how you tile the rest after the first move:
+
+**Recurrence:** `f(n) = f(n−1) + f(n−2)`
+
+| Step | Role |
+|------|------|
+| **Base case** | `n = 0` → **1** way (empty floor, no tile placed). `n = 1` → **1** way (one vertical tile). |
+| **Recursive calls** | Ways with first move vertical → `f(n−1)`; with first horizontal pair → `f(n−2)`. |
+| **Work** | Add both counts: `f(n−1) + f(n−2)`. |
+
+**Example:** `n = 4` → **5** ways (sequence 1, 2, 3, 5, … — same pattern as Fibonacci).
+
+This problem can also be solved with **dynamic programming** (store `f(0)…f(n)` in a table) to avoid recomputing the same `n` many times, like naive `fib(n)`.
+
+**Reference:** [l.cpp](l.cpp)
+
+---
+
+## Remove duplicates from a string
+
+**Problem:** You are given a string made of lowercase letters (`a`–`z`). Some characters repeat. Build a new string that contains **each character at most once**, keeping the **first occurrence** of every letter and dropping later copies. **Order must stay the same** as in the original string.
+
+**Example:** `"abbccd"` → `"abcd"` (second `b`, second `c`, and second `d` are removed).
+
+### Recursive idea (process index `i` from left to right)
+
+Trust that `removeDuplicates(s, i+1)` already returns the correct answer for the **suffix** starting at `i+1`. Then decide what to do with `s[i]`:
+
+| Step | Role |
+|------|------|
+| **Base case** | `i == s.length()` → empty suffix → return `""`. |
+| **Recursive call** | `rest = removeDuplicates(s, i+1)` — answer for `s[i+1 … n-1]`. |
+| **Work** | If `s[i]` already appears in `rest`, it is a **duplicate** (a later copy was kept in the suffix step) → return `rest` only. Otherwise `s[i]` is the **first** time this letter appears → return `s[i] + rest`. |
+
+**Why “check in `rest`” works:** `rest` is built only from characters to the **right** of `i`. If `s[i]` shows up there, a copy of that letter still exists later, so the first occurrence will be handled when that later position is processed—or `s[i]` is the first occurrence and `rest` does not contain it, so we prepend `s[i]`.
+
+**Example trace (short):** `"aab"`  
+- Suffix `"ab"` → `"ab"`.  
+- At first `a`, `rest` is `"ab"` which contains `a` → skip this `a`.  
+- At second `a`, `rest` is `"b"` → no `a` → `"a" + "b"` = `"ab"`.
+
+Same problem can be solved with a loop and a `bool seen[26]` array; recursion here matches the module’s pattern.
+
+**Reference:** [m.cpp](m.cpp)
+
+---
+
 ## Quick reference (files in this module)
 
 | File | Concept |
@@ -227,22 +287,5 @@ Both versions in this module use non-negative integer `n` as in the course examp
 | [i.cpp](i.cpp) | Last occurrence in array |
 | [j.cpp](j.cpp) | xⁿ — O(n) |
 | [k.cpp](k.cpp) | xⁿ — O(log n) |
-
-TILING PROBLEM -> l.cpp
-count the total ways to tile a floor of size (2xn) with tiles of size (2x1). 
-
-this can be done by recursion and DP  
-
-for every level we have a choice to place the tile vertically or horizontally 
-
-for [2 * n] floor 
-if vertically placed -> 2 * (n-1)
-if horizontally placed-> 2*(n-2)
-
-recurrence relation -> f(n) = f(n-1) + f(n-2)
-
-we will check for both of them
-
-1. work -> t[2*(n-1)] + t[2*(n-2)]
-2. recursive call -> vertical tp(n-1) , horizontal tp(n-2)
-3. base case -> n=0 -> ways =1 (not tile is placed) , n=1 -> ways =1 (tile is vertically placed)
+| [l.cpp](l.cpp) | Tiling 2×n floor with 2×1 tiles |
+| [m.cpp](m.cpp) | Remove duplicates from string |
