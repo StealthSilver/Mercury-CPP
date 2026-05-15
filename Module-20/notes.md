@@ -99,3 +99,13 @@ Each node splits into `fib(n-1)` (left) and `fib(n-2)` (right). Leaves are base 
 - `fib(5)` = `3 + 2 = 5`.
 
 So **fib(5) = 5**. The wide tree and repeated `fib(2)`, `fib(3)`, … nodes show why naive recursion is slow (exponential work); memoization or iteration fixes that.
+
+check if the array is sorted or not -> g.cpp
+
+this can be done by loops with checking arr[i] <= arr[i+1]
+
+for recursion to check if arr[n] is sorted check arr[n-1] is sorted and arr[i] <= arr[i+1]
+
+1. work arr[i] > arr[i+1] -> false
+2. isSorted(arr, n, i) -> recursive function
+3. base case -> iff(i == n-1) -> return true
