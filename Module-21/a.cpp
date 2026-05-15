@@ -38,10 +38,13 @@ void mergeSort(int *arr, int si, int ei) {
     if (si >= ei)
         return;
 
-    int mid = si + (ei - si) / 2;
+    int mid = si + (ei - si) / 2; // (si + ei) / 2
 
+    // divide
     mergeSort(arr, si, mid);
     mergeSort(arr, mid + 1, ei);
+
+    // conquer
     merge(arr, si, mid, ei);
 }
 

@@ -72,3 +72,64 @@ Array: `[38, 27, 43, 3, 9, 82, 10]`
 Bubble, selection, and insertion sort are O(n²). Merge sort is one of the standard **efficient** comparison sorts and is stable (equal elements keep their relative order) when implemented as above.
 
 **Reference:** [a.cpp](a.cpp) — full merge sort with `mergeSort` and `merge`.
+
+---
+
+## Quick Sort → [b.cpp](b.cpp)
+
+**Goal:** Sort an array in **ascending** order using divide and conquer, but **without** a temporary merge array.
+
+**Space complexity:** **O(1) extra space** (in-place partitioning). Recursion still uses **O(log n)** stack space on average, **O(n)** in the worst case — but we do **not** allocate another array of size n like merge sort.
+
+| Case | Time complexity | When |
+|------|-----------------|------|
+| **Average** | O(n log n) | Pivot splits the range roughly in half |
+| **Worst** | O(n²) | Pivot is always the smallest or largest (e.g. already sorted array with last-element pivot) |
+
+### Idea (divide and conquer)
+
+| Step | What happens |
+|------|----------------|
+| **Choose pivot** | Pick one element (here: **last** element `arr[ei]`). |
+| **Partition** | Rearrange `[si, ei]` so elements **≤ pivot** are on the **left**, and elements **> pivot** are on the **right**. Pivot ends at its final sorted position `p`. |
+| **Conquer** | Recursively sort `[si, p-1]` and `[p+1, ei]`. No separate **combine** step — partitioning already places the pivot correctly. |
+
+### Base case
+
+If `si >= ei`, the subarray has 0 or 1 element — already sorted.
+
+### Partition (Lomuto, pivot = `arr[ei]`)
+
+Use index `i` for the boundary of the “≤ pivot” region (starts at `si - 1`). Scan `j` from `si` to `ei - 1`:
+
+- If `arr[j] <= pivot`, increment `i` and swap `arr[i]` with `arr[j]`.
+- After the loop, swap `arr[i+1]` with `arr[ei]` so the pivot sits between the two parts.
+- Return `p = i + 1` (pivot’s final index).
+
+After partition:
+
+```
+[  elements ≤ pivot  | pivot |  elements > pivot  ]
+```
+
+### Example
+
+Array: `[38, 27, 43, 3, 9, 82, 10]`, pivot = `10` (last)
+
+After partition (one possible outcome): smaller values left of `10`, larger right — then recurse on each side.
+
+### Merge sort vs quick sort
+
+| | Merge sort | Quick sort |
+|---|------------|------------|
+| **Extra array** | Yes, O(n) for merge | No, in-place partition |
+| **Combine step** | Explicit merge | Done during partition |
+| **Average time** | O(n log n) | O(n log n) |
+| **Worst time** | O(n log n) | O(n²) |
+| **Stability** | Stable (with `<=` in merge) | Not stable (swaps) |
+
+### Why worst case is O(n²)
+
+If every partition is **unbalanced** (e.g. pivot is always min or max), one side has `n-1` elements and the other has `0`. You get **n** levels of recursion and **O(n)** work per level → **O(n²)**.
+
+**Reference:** [b.cpp](b.cpp) — `quickSort` and `partition`.
