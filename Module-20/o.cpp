@@ -23,3 +23,4 @@ int main() {
     printBinary(n, 0, "");
     return 0;
 }
+ 

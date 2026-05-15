@@ -12,9 +12,7 @@ void print(int n){{
     print(n-1);
 
     // logic for the function call
-    cout<<n<<" ";
-
-    
+    cout<<n<<" "; 
     }
 }
 

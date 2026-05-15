@@ -22,5 +22,3 @@ int main() {
 }
 
 
-TILING PROBLEM -> 
-count the total ways to tile a floor of size (2xn) with tiles of size (2x1).
