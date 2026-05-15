@@ -65,4 +65,37 @@ this happens when there is infinite recursion
 
 stack oevrflow gives segmentation fault
 
-sum of n natural numebrs using recursion -> e.cpp
+sum of n natural numbers using recursion -> e.cpp
+
+print the Nth Fibonacci Number -> f.cpp
+
+0, 1, 1, 2, 3, 5, 8, 13, 21 ...
+
+recurrance relation = fib(n) = fib(n-1) + fib(n-2)
+base case -> fib(0) = 0, fib(1) = 1
+
+### Recursion tree for fib(5)
+
+Each node splits into `fib(n-1)` (left) and `fib(n-2)` (right). Leaves are base cases `fib(0)=0` and `fib(1)=1`.
+
+```
+                              fib(5)
+                             /      \
+                        fib(4)      fib(3)
+                       /    \       /    \
+                  fib(3)  fib(2) fib(2) fib(1)→1
+                 /   \   /   \   /   \
+            fib(2) fib(1) fib(1) fib(0) fib(1) fib(0)
+           /   \    →1     →1     →0     →1     →0
+      fib(1) fib(0)
+        →1     →0
+```
+
+**Bubble values up (each node = left + right):**
+
+- `fib(2)` appears many times: each time `1 + 0 = 1`.
+- `fib(3)` = `fib(2)+fib(1)` = `1+1 = 2` (twice in the tree for the two `fib(3)` nodes under `fib(5)` and `fib(4)`).
+- `fib(4)` = `2 + 1 = 3`.
+- `fib(5)` = `3 + 2 = 5`.
+
+So **fib(5) = 5**. The wide tree and repeated `fib(2)`, `fib(3)`, … nodes show why naive recursion is slow (exponential work); memoization or iteration fixes that.
