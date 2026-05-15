@@ -227,3 +227,22 @@ Both versions in this module use non-negative integer `n` as in the course examp
 | [i.cpp](i.cpp) | Last occurrence in array |
 | [j.cpp](j.cpp) | xⁿ — O(n) |
 | [k.cpp](k.cpp) | xⁿ — O(log n) |
+
+TILING PROBLEM -> l.cpp
+count the total ways to tile a floor of size (2xn) with tiles of size (2x1). 
+
+this can be done by recursion and DP  
+
+for every level we have a choice to place the tile vertically or horizontally 
+
+for [2 * n] floor 
+if vertically placed -> 2 * (n-1)
+if horizontally placed-> 2*(n-2)
+
+recurrence relation -> f(n) = f(n-1) + f(n-2)
+
+we will check for both of them
+
+1. work -> t[2*(n-1)] + t[2*(n-2)]
+2. recursive call -> vertical tp(n-1) , horizontal tp(n-2)
+3. base case -> n=0 -> ways =1 (not tile is placed) , n=1 -> ways =1 (tile is vertically placed)
