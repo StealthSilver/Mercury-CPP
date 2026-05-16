@@ -75,6 +75,8 @@ flowchart LR
 
 **Example:** Merge sort needs a temporary array of size about `n` → **O(n)** auxiliary space. Quick sort’s partition step uses **O(1)** extra variables, but recursion stack can be **O(log n)** or **O(n)** depending on splits (see Module 21).
 
+**More detail:** [Space complexity in practice](#space-complexity-in-practice) (heap vs stack, input vs auxiliary, merge sort trade-off).
+
 ---
 
 ## Asymptotic notation: Big O, Big Ω, and Big Θ
@@ -478,6 +480,8 @@ work
 
 **Example:** Binary search on a sorted array of size `n` — halve the search range each time → about **log₂ n** iterations → **O(log n)**. (Module 11.)
 
+**Full derivation:** [Deriving O(log n) — binary search walkthrough](#deriving-olog-n--binary-search-walkthrough).
+
 **Graph:**
 
 ```
@@ -836,11 +840,11 @@ Use **structure of the code** without writing the full polynomial.
 | Recursion that splits in half + O(n) combine | Often **O(n log n)** |
 | Try all subsets / permutations | **O(2ⁿ)** / **O(n!)** |
 
-**Example (intuition):** Bubble sort — outer `n`, inner up to `n` → “about `n × n`” → **O(n²)** without expanding `n²/2 + n/2`.
+**Example (intuition):** Bubble sort — outer `n`, inner up to `n` → “about `n × n`” → **O(n²)** without expanding `n²/2 + n/2`. See [Practice 4 — bubble sort](#practice-4--bubble-sort) for the full sum.
 
 **Example (intuition):** One `for` reading every array element once → **O(n)**.
 
-When intuition and math disagree, **count more carefully** or write **`T(n)`** and simplify.
+When intuition and math disagree, **count more carefully** or write **`T(n)`** and simplify. More loop examples: [Practice problems](#practice-problems--loop-and-sort-analysis).
 
 ---
 
@@ -887,6 +891,316 @@ relative work (log scale feeling)
 
 ---
 
+## Space complexity in practice
+
+**Space complexity** is the amount of **extra** memory an algorithm uses as a function of input size **`n`**. (The formal definition is in [Space complexity — definition](#space-complexity--definition) above.)
+
+### Where memory lives
+
+| Region | What it holds | Examples |
+|--------|----------------|----------|
+| **Stack** | Local variables, function call frames (recursion depth) | `int mid` in binary search; each recursive call frame |
+| **Heap** | Dynamically allocated data | `new int[n]`, `vector` growth, hash tables, merge-sort buffer |
+
+### Input space vs auxiliary space
+
+| Kind | Counted toward “algorithm space”? | Example |
+|------|-----------------------------------|---------|
+| **Input space** | The problem **gives** you the array — usually **not** blamed on the algorithm | Array of `n` integers passed in |
+| **Auxiliary space** | **Yes** — extra structures the algorithm allocates | Temp array in merge sort, recursion stack |
+
+**Rule of thumb:** When we say “space complexity **O(n)**,” we almost always mean **auxiliary** space unless the problem says “total space including input.”
+
+| What increases auxiliary space | Typical result |
+|--------------------------------|----------------|
+| Allocate an array / vector of size `n` | **O(n)** |
+| Recursion depth `d` | **O(d)** stack |
+| 2D table `n × n` for DP | **O(n²)** |
+
+### Example — merge sort (Module 21)
+
+Merge sort **divides** the array and **merges** with a temporary buffer:
+
+| Measure | Complexity | Why |
+|---------|------------|-----|
+| **Time** | **O(n log n)** | `log n` levels, **O(n)** merge work per level |
+| **Auxiliary space** | **O(n)** | Temporary array (or similar) holding a copy during merge |
+
+So merge sort is a classic **time–space trade-off**: you pay **O(n)** extra memory to get **O(n log n)** time instead of **O(n²)** in-place simple sorts.
+
+### Time vs space — which matters more?
+
+| Situation | Usual priority |
+|-----------|----------------|
+| Competitive programming, interviews, large datasets | **Lower time** first — a slow algorithm often fails before memory does |
+| Embedded / huge data / memory limits | **Space** may dominate — then prefer in-place **O(1)** auxiliary algorithms |
+
+**Practical note:** **O(n)** auxiliary for merge sort is usually acceptable because **O(n log n)** time is so much better than **O(n²)** for large `n`. You optimize space only when constraints require it.
+
+---
+
+## Comparing growth rates (with graphs)
+
+For large `n`, small differences in Big O class dominate constant tweaks. Two comparisons that come up constantly:
+
+### **O(log n)** vs **O(n)**
+
+**O(log n)** grows **much slower** than **O(n)**. Doubling `n` adds **one** halving step for log; it **doubles** the work for linear.
+
+| Input size `n` | ≈ **O(log n)** steps (log₂) | ≈ **O(n)** steps |
+|----------------|----------------------------|------------------|
+| 1,000 | ~10 | 1,000 |
+| 100,000 | ~17 | 100,000 |
+| 1,000,000,000 | ~30 | 1,000,000,000 |
+
+So at **n = 10⁹**, logarithmic work is on the order of **tens** of steps; linear is **billions**.
+
+```mermaid
+xychart-beta
+    title "O(log n) vs O(n) (conceptual)"
+    x-axis "n" [10, 100, 1000, 10000]
+    y-axis "steps (scaled)" 0 --> 10000
+    line "O(log n)" [3.3, 6.6, 10, 13.3]
+    line "O(n)" [10, 100, 1000, 10000]
+```
+
+**Takeaway:** Binary search **O(log n)** on a sorted array is vastly better than linear scan **O(n)** when you only need to search repeatedly on the same data.
+
+---
+
+### **O(n log n)** vs **O(n²)**
+
+| Input size `n` | ≈ **n log₂ n** | ≈ **n²** |
+|----------------|----------------|----------|
+| 1,000 | ~10,000 | 1,000,000 |
+| 10,000 | ~130,000 | 100,000,000 |
+
+**O(n log n)** (merge sort, heap sort, efficient `std::sort`) scales to large inputs; **O(n²)** (bubble, insertion, selection in the usual nested-loop form) becomes slow quickly.
+
+```mermaid
+xychart-beta
+    title "O(n log n) vs O(n²) (conceptual)"
+    x-axis "n" [10, 50, 100, 200]
+    y-axis "work (scaled)" 0 --> 50000
+    line "O(n log n)" [33, 282, 664, 1520]
+    line "O(n²)" [100, 2500, 10000, 40000]
+```
+
+---
+
+## Deriving **O(log n)** — binary search walkthrough
+
+Binary search on a **sorted** array of size `n` halves the search range each iteration.
+
+```cpp
+int binSearch(int *arr, int n, int key) {
+    int start = 0, end = n - 1;
+    while (start <= end) {
+        int mid = (start + end) / 2;
+        if (key == arr[mid]) {
+            return mid;
+        } else if (key > arr[mid]) {
+            start = mid + 1;   // search right half
+        } else {
+            end = mid - 1;     // search left half
+        }
+    }
+    return -1;
+}
+```
+
+### Counting iterations
+
+After each failed comparison, the remaining segment length is at most:
+
+| Step | Remaining size (worst case) |
+|------|-----------------------------|
+| Start | `n` |
+| After 1 | ≤ `n/2` |
+| After 2 | ≤ `n/4` |
+| After `k` | ≤ `n / 2^k` |
+
+Stop when the segment has size **1** (or zero elements left):
+
+```
+n / 2^k = 1
+n = 2^k
+k = log₂ n
+```
+
+So the loop runs **at most** about **log₂ n** times → **O(log n)** time. Iterative version uses **O(1)** auxiliary space (only `start`, `end`, `mid`).
+
+**Why log is “good”:** For **n = 10⁶**, **log₂ n ≈ 20** — that is why **O(log n)** is considered excellent for search and balanced-tree height.
+
+---
+
+## Common classes — quick examples (cheat sheet)
+
+| Class | Name | Typical sources | Example |
+|-------|------|-----------------|--------|
+| **O(1)** | Constant | Fixed number of steps | First element `arr[0]` |
+| **O(log n)** | Logarithmic | Halving each step | Binary search, balanced BST height |
+| **O(n)** | Linear | One full pass | Linear search, find max in one loop |
+| **O(n log n)** | Linearithmic | `log n` levels × `n` work/level | Merge sort, heap sort |
+| **O(n²)** | Quadratic | Nested loops over `n` | Bubble/insertion/selection sort, naive pair loops |
+| **O(2ⁿ)** | Exponential | Branching recursion, all subsets | Naive Fibonacci recursion; brute subsets |
+
+**Exponential and DP:** Many naive recursive solutions are **O(2ⁿ)** (or similar) because they **recompute** the same subproblems. **Dynamic programming** / **memoization** removes repeated work and often drops time to **polynomial** (e.g. **O(n)** or **O(n²)**) at the cost of **extra O(n)** or **O(n²)** space.
+
+---
+
+## Practice problems — loop and sort analysis
+
+Work through each problem by (1) counting inner iterations for a typical `i`, (2) summing over `i`, (3) simplifying to Big O. Assume the inner body does **Θ(1)** work (**k** operations = constant).
+
+---
+
+### Practice 1 — upper triangle of pairs
+
+**Code:**
+
+```cpp
+for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+        // constant work
+    }
+}
+```
+
+**Question:** What is the time complexity?
+
+**Solution:**
+
+| Outer `i` | Inner `j` runs from `i+1` to `n-1` | Inner iterations |
+|-----------|--------------------------------------|------------------|
+| `0` | `1 .. n-1` | `n - 1` |
+| `1` | `2 .. n-1` | `n - 2` |
+| … | … | … |
+| `n - 2` | `n-1` only | `1` |
+| `n - 1` | (empty) | `0` |
+
+Total iterations:
+
+```
+(n - 1) + (n - 2) + … + 1 + 0 = n(n - 1) / 2 = (n² - n) / 2
+```
+
+Drop constants and lower terms → **O(n²)**.
+
+**Intuition:** You touch about **half** of all ordered pairs `(i, j)` with `i < j` — still quadratic in `n`.
+
+---
+
+### Practice 2 — inner loop depends on `i`
+
+**Code:**
+
+```cpp
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+        // constant work
+    }
+}
+```
+
+**Question:** What is the time complexity?
+
+**Solution:**
+
+| Outer `i` | Inner `j` runs `0 .. i-1` | Inner iterations |
+|-----------|---------------------------|------------------|
+| `0` | (none) | `0` |
+| `1` | `0` | `1` |
+| `2` | `0, 1` | `2` |
+| … | … | … |
+| `n - 1` | `0 .. n-2` | `n - 1` |
+
+Total:
+
+```
+0 + 1 + 2 + … + (n - 1) = n(n - 1) / 2
+```
+
+→ **O(n²)**.
+
+**Note:** This is the **same order** as Practice 1 (only a constant factor differs: half the pairs vs all pairs above the diagonal).
+
+---
+
+### Practice 3 — stride `K` on the outer loop
+
+**Code** (fixed integer **`K`** with `1 ≤ K < n`):
+
+```cpp
+for (int i = 0; i < n; i += K) {
+    for (int j = 0; j <= K; j++) {
+        // constant work
+    }
+}
+```
+
+**Question:** What is the time complexity in terms of `n` and `K`?
+
+**Solution:**
+
+| Part | Count |
+|------|--------|
+| Outer loop | `i = 0, K, 2K, …` → about **⌈n / K⌉** iterations |
+| Inner loop | `j = 0 .. K` → **K + 1** iterations each time |
+
+Total work:
+
+```
+Θ((n / K) · (K + 1)) = Θ(n + n/K) = Θ(n)   when K is a fixed constant
+```
+
+→ **O(n)**.
+
+**Intuition:** The outer loop runs **fewer** times when `K` is large, but the inner loop runs **more** — the product stays **linear in `n`**.
+
+If **`K` is not constant** (e.g. `K = n/2`), analyze separately; the table above assumes **fixed** `K` independent of `n`.
+
+---
+
+### Practice 4 — bubble sort
+
+**Code:**
+
+```cpp
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+```
+
+**Question:** Worst-case time complexity?
+
+**Solution:**
+
+| Pass `i` | Inner limit `j < n - i - 1` | Comparisons (worst case) |
+|----------|-------------------------------|---------------------------|
+| `0` | `n - 1` | `n - 1` |
+| `1` | `n - 2` | `n - 2` |
+| … | … | … |
+| `n - 2` | `1` | `1` |
+
+Total comparisons:
+
+```
+(n - 1) + (n - 2) + … + 1 = n(n - 1) / 2
+```
+
+→ **O(n²)** time. Auxiliary space → **O(1)** (only a few variables if `swap` is in-place).
+
+**Graph link:** Nested passes over a shrinking range → parabola-shaped growth → same class as [Quadratic time — O(n²)](#5-quadratic-time--on²).
+
+---
+
 ## Connecting to earlier modules
 
 | Topic | Module | Typical complexity |
@@ -915,10 +1229,12 @@ Complexity analysis is the language you use to **justify** these choices and to 
 | 8 | Use **graphs** to remember shape: flat (O(1)), slow rise (log), line (n), between line and parabola (n log n), parabola (n²), explosion (2ⁿ, n!). |
 | 9 | Find complexity via **graph**, **function** (`T(n)` → simplify), or **intuition** (loops/recursion). |
 | 10 | Analyze by **loops**, **recursion depth**, and **extra arrays**; link practice to companion `.cpp` files. |
+| 11 | **Heap vs stack**, **input vs auxiliary** space; merge sort = **O(n)** extra for **O(n log n)** time. |
+| 12 | **O(log n) ≪ O(n)** and **O(n log n) ≪ O(n²)** for large `n` — use comparison tables and graphs. |
+| 13 | Practice: triangle loops → **O(n²)**; stride-`K` outer + fixed inner → **O(n)**; bubble sort → **O(n²)**. |
 
 ---
 
-**Next steps:** Work through examples in [a.cpp](a.cpp) — define `T(n)`, verify **`T(n) = O(g(n))`** using the CLRS inequality or simplification, and check best vs worst case. In later modules, the same formal bounds apply to trees, graphs, and dynamic programming.
+**Next steps:** Work through examples in [a.cpp](a.cpp) — define `T(n)`, verify **`T(n) = O(g(n))`** using the CLRS inequality or simplification, and check best vs worst case. Redo the [practice problems](#practice-problems--loop-and-sort-analysis) without looking at the sums. In later modules, the same formal bounds apply to trees, graphs, and dynamic programming.
 
 **Further reading:** Cormen, Leiserson, Rivest, and Stein — *Introduction to Algorithms* (CLRS), chapter on asymptotic notation (Big O, Ω, Θ, little-o, little-ω).
-
