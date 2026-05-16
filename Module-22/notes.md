@@ -693,9 +693,9 @@ You can arrive at the same Big O class in different ways. All three are valid; u
 ```mermaid
 flowchart TB
   Q[Need time complexity?]
-  Q --> G[Graph: shape vs n]
-  Q --> F[Function: simplify T(n)]
-  Q --> I[Intuition: loops / recursion]
+  Q --> G["Graph: shape vs n"]
+  Q --> F["Function: simplify T(n)"]
+  Q --> I["Intuition: loops / recursion"]
   G --> R["Big O e.g. O(n²)"]
   F --> R
   I --> R
@@ -921,3 +921,4 @@ Complexity analysis is the language you use to **justify** these choices and to 
 **Next steps:** Work through examples in [a.cpp](a.cpp) — define `T(n)`, verify **`T(n) = O(g(n))`** using the CLRS inequality or simplification, and check best vs worst case. In later modules, the same formal bounds apply to trees, graphs, and dynamic programming.
 
 **Further reading:** Cormen, Leiserson, Rivest, and Stein — *Introduction to Algorithms* (CLRS), chapter on asymptotic notation (Big O, Ω, Θ, little-o, little-ω).
+
