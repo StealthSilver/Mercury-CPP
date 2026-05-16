@@ -1,7 +1,7 @@
 # DSA with C++ — Module 22 Notes
 
-**Topic:** Time and space complexity — asymptotic analysis, **Big O**, **Big Ω (Omega)**, and **Big Θ (Theta)**, standard growth classes, best/average/worst case, and complexity graphs.  
-**Companion code:** [a.cpp](a.cpp) and future files in this folder illustrate counting operations on sample algorithms. These notes explain *definitions* and *intuition*; use the `.cpp` files for runnable examples.
+**Topic:** Time and space complexity — asymptotic analysis, **Big O**, **Big Ω (Omega)**, and **Big Θ (Theta)**, standard growth classes, recursion & **Master’s theorem**, best/average/worst case, and complexity graphs.  
+These notes explain *definitions*, *worked examples*, and *practice problems* with full solutions.
 
 **Prerequisite:** Comfortable with loops, arrays, and basic algorithms from earlier modules (e.g. linear scan, binary search, sorting from Modules 11–13 and 21).
 
@@ -850,14 +850,14 @@ When intuition and math disagree, **count more carefully** or write **`T(n)`** a
 
 ### Code analysis checklist
 
-Apply this when reading [a.cpp](a.cpp) or any program (combine with graph or function method above).
+Apply this when reading any program (combine with graph or function method above).
 
 | Step | Action |
 |------|--------|
 | 1 | Identify **input size** `n` (and `m` if multiple dimensions). |
 | 2 | Count **loops**: single loop over `n` → often **O(n)**; nested `k` loops each `n` → often **O(nᵏ)**. |
 | 3 | **Divide and conquer**: depth × work per level (Module 21 merge/quick sort). |
-| 4 | **Recursion**: tree depth and work per node. |
+| 4 | **Recursion**: tree depth and work per node — see [Recursion — time and space complexity](#recursion--time-and-space-complexity). |
 | 5 | Write **`T(n)`** if helpful, then **drop constants** and **lower-order terms**. |
 | 6 | State **best / worst / average** if they differ. |
 | 7 | For space, count **extra** structures and **recursion stack depth**. |
@@ -1201,6 +1201,410 @@ Total comparisons:
 
 ---
 
+## Recursion — time and space complexity
+
+Recursive algorithms are analyzed with the same Big O tools as loops, but you count **recursive calls**, **work per call**, and **call-stack depth**.
+
+### Two approaches
+
+| Approach | Idea | When to use |
+|----------|------|-------------|
+| **1. Recursion tree / call count** | **Total work** ≈ (number of calls) × (work per call), or **sum work at each tree level** | Quick estimate; drawing the tree helps |
+| **2. Recurrence relation** | Write **`T(n)`** from the code, then solve (expand, tree levels, or **Master’s theorem**) | Divide-and-conquer, formal proof |
+
+```mermaid
+flowchart LR
+  R[Recursive code] --> A["Approach 1: tree / #calls × work"]
+  R --> B["Approach 2: T(n) recurrence"]
+  B --> M["Master theorem if aT(n/b) + f(n)"]
+  A --> O["Big O answer"]
+  M --> O
+  B --> O
+```
+
+### Space complexity in recursion
+
+| Formula (intuition) | Meaning |
+|---------------------|---------|
+| **Auxiliary stack space** ≈ **maximum depth of recursion tree** × **memory per stack frame** | Each active call holds local variables on the **call stack** |
+
+| Pattern | Typical stack depth | Typical auxiliary space |
+|---------|---------------------|-------------------------|
+| **Linear recursion** (`f(n-1)`) | **O(n)** | **O(n)** stack |
+| **Divide & conquer** (halve `n`, two calls) | **O(log n)** if balanced | **O(log n)** stack + sometimes **O(n)** heap (merge buffer) |
+
+**Important:** Stack space is **auxiliary**. Extra arrays allocated in recursion (merge buffer) add to space separately.
+
+### Linear vs divide-and-conquer recurrences
+
+| Type | Code shape | Recurrence (time) | Tree shape |
+|------|------------|-------------------|------------|
+| **Linear** | One smaller subproblem `f(n-1)` | `T(n) = T(n-1) + Θ(1)` | **Chain** — depth `n` |
+| **Divide & conquer** | Two (or `a`) subproblems of half size + combine | `T(n) = a·T(n/b) + f(n)` | **Branching** — depth **log_b n** |
+
+---
+
+### Example 1 — sum of numbers `1 + 2 + … + n`
+
+**Code:**
+
+```cpp
+int sum(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n + sum(n - 1);
+}
+```
+
+#### Recurrence (approach 2)
+
+```
+T(n) = T(n - 1) + k        // k = Θ(1) work per call (compare, add, return)
+T(n - 1) = T(n - 2) + k
+   ⋮
+T(0) = k
+
+T(n) = (n + 1) · k  →  O(n)
+```
+
+#### Recursion tree (approach 1)
+
+A **single chain** — no branching. Depth = **`n + 1`** nodes from `sum(n)` down to `sum(0)`.
+
+```mermaid
+flowchart TB
+  S5["sum(5)"] --> S4["sum(4)"]
+  S4 --> S3["sum(3)"]
+  S3 --> S2["sum(2)"]
+  S2 --> S1["sum(1)"]
+  S1 --> S0["sum(0) base"]
+```
+
+| Measure | Calculation | Result |
+|---------|-------------|--------|
+| **Time** | `(n + 1)` calls × `Θ(1)` each | **O(n)** |
+| **Space (stack)** | max depth × frame size | **(n + 1) × Θ(1) = O(n)** |
+
+#### Call stack snapshot (`sum(3)`)
+
+Stack grows on the way **down**; unwinds on **return** (values accumulate: `0 → 1 → 3 → 6`).
+
+| Step | Call stack (bottom → top) | Action |
+|------|---------------------------|--------|
+| 1 | `sum(3)` | call `sum(2)` |
+| 2 | `sum(3)`, `sum(2)` | call `sum(1)` |
+| 3 | `sum(3)`, `sum(2)`, `sum(1)` | call `sum(0)` |
+| 4 | `sum(3)`, `sum(2)`, `sum(1)`, `sum(0)` | base → return `0` |
+| 5 | `sum(3)`, `sum(2)`, `sum(1)` | return `1 + 0 = 1` |
+| 6 | `sum(3)`, `sum(2)` | return `2 + 1 = 3` |
+| 7 | `sum(3)` | return `3 + 3 = 6` |
+
+**Max frames alive at once:** **4** = **O(n)** for general `n`.
+
+---
+
+### Example 2 — factorial of `n`
+
+**Code:**
+
+```cpp
+int factorial(int n) {
+    if (n == 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+```
+
+**Note:** The **value** satisfies `fact(n) = n · fact(n-1)` (factorial growth), but **time** recurrence is still **`T(n) = T(n-1) + Θ(1)`** — one recursive call and constant work per level.
+
+#### Recursion tree
+
+Same **linear chain** as `sum`, depth **`n + 1`**.
+
+```mermaid
+flowchart TB
+  F4["fact(4)"] --> F3["fact(3)"]
+  F3 --> F2["fact(2)"]
+  F2 --> F1["fact(1)"]
+  F1 --> F0["fact(0) → 1"]
+```
+
+| Measure | Result |
+|---------|--------|
+| **Time** | **O(n)** — `n` calls, `Θ(1)` each |
+| **Space (stack)** | **O(n)** — depth `n + 1` |
+
+#### Call stack (`factorial(3)`)
+
+| Max stack | Frames |
+|-----------|--------|
+| Deepest | `fact(3) → fact(2) → fact(1) → fact(0)` |
+
+Returns unwind: `1 → 1·1 → 2·1 → 3·2 = 6`.
+
+---
+
+### Example 3 — naive Fibonacci
+
+**Code:**
+
+```cpp
+int fib(int n) {
+    if (n == 0 || n == 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+```
+
+#### Recurrence
+
+```
+T(n) = T(n - 1) + T(n - 2) + Θ(1)
+```
+
+This is **not** Master-theorem form (two subproblems of sizes `n-1` and `n-2`, not `n/b`).
+
+#### Recursion tree (`n = 5`)
+
+Each internal node **branches twice** — many **repeated** subproblems.
+
+```mermaid
+flowchart TB
+  F5["fib(5)"] --> F4["fib(4)"]
+  F5 --> F3a["fib(3)"]
+  F4 --> F3b["fib(3)"]
+  F4 --> F2a["fib(2)"]
+  F3a --> F2b["fib(2)"]
+  F3a --> F1a["fib(1)"]
+```
+
+`fib(3)`, `fib(2)`, etc. appear **multiple times** — that is why work explodes.
+
+**ASCII tree (small `n = 4`):**
+
+```
+                    fib(4)
+                   /      \
+              fib(3)        fib(2)
+             /     \        /     \
+        fib(2)   fib(1) fib(1)  fib(0)
+        /    \
+   fib(1) fib(0)
+```
+
+| Measure | Calculation | Result |
+|---------|-------------|--------|
+| **Time** | Roughly **~2ⁿ** calls (each call spawns two until base) | **O(2ⁿ)** — **exponential** |
+| **Space (stack)** | Longest root-to-leaf path has length **`n`** | **O(n)** |
+
+**Why it is bad:** For `n = 40`, about **10⁹** calls is already impractical.
+
+#### Optimizing with DP (memoization)
+
+Store `fib(k)` after computing once:
+
+| Version | Time | Extra space |
+|---------|------|-------------|
+| Naive recursion | **O(2ⁿ)** | **O(n)** stack |
+| Top-down memo / bottom-up DP | **O(n)** | **O(n)** table + **O(n)** stack (or **O(1)** space iterative) |
+
+Recurrence becomes **`T(n) = T(n-1) + Θ(1)`** when each `fib(k)` computed once → **linear** time.
+
+```mermaid
+xychart-beta
+    title "Naive fib vs DP (call count, conceptual)"
+    x-axis "n" [5, 10, 15, 20]
+    y-axis "relative work" 0 --> 25000
+    line "naive ~2^n" [32, 1024, 8192, 21845]
+    line "DP O(n)" [5, 10, 15, 20]
+```
+
+---
+
+### Master’s theorem (divide-and-conquer recurrences)
+
+**Applies when:**
+
+```
+T(n) = a · T(n/b) + f(n)     with a ≥ 1, b > 1
+```
+
+Compare **`f(n)`** to **`n^(log_b a)`** (work at the “leaf” level of the recursion tree).
+
+Let **`c = log_b a`**.
+
+| Case | Condition on `f(n)` | Result |
+|------|---------------------|--------|
+| **1** | `f(n) = O(n^d)` with **`d < c`** | **`T(n) = Θ(n^c) = Θ(n^(log_b a))`** |
+| **2** | `f(n) = Θ(n^c log^k n)` for some **`k ≥ 0`** | **`T(n) = Θ(n^c log^(k+1) n)`** |
+| **3** | `f(n) = Ω(n^d)` with **`d > c`** (+ regularity condition) | **`T(n) = Θ(f(n))`** |
+
+**Intuition (recursion tree):**
+
+| Case | Dominant work at |
+|------|------------------|
+| 1 | **Leaves** (many cheap leaves) |
+| 2 | **Every level** (balanced — multiply levels × work/level) |
+| 3 | **Root** (expensive combine step) |
+
+#### Standard examples
+
+| Algorithm | Recurrence | `a`, `b` | `log_b a` | `f(n)` | Case | Time |
+|-----------|------------|----------|-----------|--------|------|------|
+| **Binary search** | `T(n/2) + Θ(1)` | 1, 2 | 0 | `Θ(1) = Θ(n⁰)` | 2 (`c = 0`) | **Θ(log n)** |
+| **Merge sort** | `2T(n/2) + Θ(n)` | 2, 2 | 1 | `Θ(n) = Θ(n¹)` | 2 (`c = 1`) | **Θ(n log n)** |
+| **Fast power** | `T(n/2) + Θ(1)` | 1, 2 | 0 | `Θ(1)` | 2 | **Θ(log n)** |
+
+---
+
+### Example 4 — merge sort
+
+**Code:**
+
+```cpp
+void mergeSort(int arr[], int si, int ei) {
+    if (si >= ei) {
+        return;
+    }
+    int mid = si + (ei - si) / 2;
+    mergeSort(arr, si, mid);
+    mergeSort(arr, mid + 1, ei);
+    merge(arr, si, mid, ei);   // Θ(ei - si + 1) work
+}
+```
+
+#### Recurrence
+
+For segment length **`n = ei - si + 1`:**
+
+```
+T(n) = 2 · T(n/2) + Θ(n)
+```
+
+**Master’s theorem:** `a = 2`, `b = 2`, `log₂ 2 = 1`, `f(n) = Θ(n)` → **case 2** → **`T(n) = Θ(n log n)`**.
+
+#### Recursion tree (time) — work per level
+
+For `n = 8`:
+
+```
+Level 0:          [ mergeSort n=8 ]     work Θ(8)
+                 /                    \
+Level 1:   [ n=4 ]                  [ n=4 ]     total Θ(8)
+           /      \                /      \
+Level 2: [4][4]  [4][4]  ...                 total Θ(8)
+Level 3: 8 leaves (size 1)                   total Θ(8)
+
+Depth = log₂ n  levels
+Work per level = Θ(n)
+Total = Θ(n log n)
+```
+
+```mermaid
+flowchart TB
+  L0["n=8 merge Θ(8)"] --> L1a["n=4"]
+  L0 --> L1b["n=4"]
+  L1a --> L2a["n=2"]
+  L1a --> L2b["n=2"]
+  L1b --> L2c["n=2"]
+  L1b --> L2d["n=2"]
+```
+
+| Measure | Result | Notes |
+|---------|--------|-------|
+| **Time** | **O(n log n)** | `log n` levels × `Θ(n)` merge work per level |
+| **Stack space** | **O(log n)** | Recursion depth on a balanced split |
+| **Auxiliary heap** | **O(n)** | Temporary buffer in `merge` (see [Space complexity in practice](#space-complexity-in-practice)) |
+| **Total auxiliary** | **O(n)** | Dominated by merge buffer |
+
+#### Call stack (`mergeSort` on `[0..3]`, `n = 4`)
+
+| Order | Stack (bottom → top) | Event |
+|-------|----------------------|-------|
+| 1 | `(0,3)` | call left `(0,1)` |
+| 2 | `(0,3), (0,1)` | call left `(0,0)` |
+| 3 | `(0,3), (0,1), (0,0)` | base return |
+| 4 | `(0,3), (0,1)` | call right `(1,1)` → return, **merge** `(0,1)` |
+| 5 | `(0,3)` | call right `(2,3)` → … same pattern |
+| 6 | `(0,3)` | **merge** `(0,3)` |
+
+**Max depth:** about **`log₂ n + 1`** frames → **O(log n)** stack.
+
+---
+
+### Example 5 — fast power `x^n` (binary exponentiation)
+
+**Code:**
+
+```cpp
+int power(int x, int n) {
+    if (n == 0) {
+        return 1;
+    }
+    int halfPow = power(x, n / 2);
+    int sq = halfPow * halfPow;
+    if (n % 2 != 0) {   // odd exponent
+        sq *= x;
+    }
+    return sq;
+}
+```
+
+**Idea:** Each step halves **`n`** → only **one** recursive call (not two like merge sort).
+
+#### Recurrence
+
+```
+T(n) = T(n/2) + Θ(1)
+```
+
+**Master:** `a = 1`, `b = 2`, `log₂ 1 = 0`, `f(n) = Θ(1)` → **case 2** → **`T(n) = Θ(log n)`**.
+
+#### Recursion tree
+
+**Single chain** of depth **`log₂ n + 1`** (like binary search on `n`).
+
+```mermaid
+flowchart TB
+  P16["power(n=16)"] --> P8["n=8"]
+  P8 --> P4["n=4"]
+  P4 --> P2["n=2"]
+  P2 --> P1["n=1"]
+  P1 --> P0["n=0 base"]
+```
+
+| `n` | Recursive calls (worst) | Time | Stack |
+|-----|-------------------------|------|-------|
+| 16 | ~5 (`16→8→4→2→1→0`) | **O(log n)** | **O(log n)** |
+
+**Compare:** Naive loop multiplying `n` times → **O(n)** time.
+
+#### Call stack (`power(x, 8)`)
+
+| Step | Stack |
+|------|-------|
+| Deepest | `power(8) → power(4) → power(2) → power(1) → power(0)` |
+
+Unwind: square at each level; multiply extra `x` when `n` was odd.
+
+---
+
+### Recursion examples — summary table
+
+| Problem | Recurrence | Time | Stack space | Extra notes |
+|---------|------------|------|-------------|-------------|
+| `sum(n)` | `T(n-1) + Θ(1)` | **O(n)** | **O(n)** | Linear chain |
+| `factorial(n)` | `T(n-1) + Θ(1)` | **O(n)** | **O(n)** | Linear chain |
+| `fib(n)` naive | `T(n-1) + T(n-2) + Θ(1)` | **O(2ⁿ)** | **O(n)** | Use DP → **O(n)** time |
+| **Merge sort** | `2T(n/2) + Θ(n)` | **O(n log n)** | **O(log n)** | + **O(n)** merge buffer |
+| **`x^n` fast** | `T(n/2) + Θ(1)` | **O(log n)** | **O(log n)** | Halve exponent each step |
+| **Binary search** | `T(n/2) + Θ(1)` | **O(log n)** | **O(1)** iterative / **O(log n)** recursive |
+
+---
+
 ## Connecting to earlier modules
 
 | Topic | Module | Typical complexity |
@@ -1212,6 +1616,210 @@ Total comparisons:
 | Quick sort | 21 | Time **O(n log n)** average, **O(n²)** worst; partition space **O(1)** |
 
 Complexity analysis is the language you use to **justify** these choices and to predict behavior on **large** inputs.
+
+---
+
+## Review & challenge problems
+
+Short conceptual questions plus code analysis. Try each yourself before reading the solution.
+
+---
+
+### Problem 1 — **O(2ⁿ)** vs **O(n!)**
+
+**Question:** Which is a **better** (faster-growing-slower) time complexity: **O(2ⁿ)** or **O(n!)**?
+
+**Answer:** **O(2ⁿ)** is better (i.e. grows more slowly for large `n`).
+
+**Why:** Among common classes, **n!** grows faster than **2ⁿ**:
+
+```
+… < O(2ⁿ) < O(n!) < …
+```
+
+| n | 2ⁿ | n! |
+|---|-----|-----|
+| 10 | 1,024 | 3,628,800 |
+| 20 | ~10⁶ | ~2.4×10¹⁸ |
+
+For large `n`, an **O(n!)** algorithm is unusable long before **O(2ⁿ)** becomes impractical.
+
+---
+
+### Problem 2 — **O(2ⁿ)** vs **O(nⁿ)**
+
+**Question:** Which is better: **O(2ⁿ)** or **O(nⁿ)**?
+
+**Answer:** **O(2ⁿ)** is better.
+
+**Why:** Compare logs (same base):
+
+```
+log(2ⁿ) = n
+log(nⁿ) = n · log n
+```
+
+For large `n`, **`n · log n > n`**, so **nⁿ** grows faster than **2ⁿ**.
+
+**Note:** **O(nⁿ)** is **not** the same as **O(n!)** — factorial is even worse than **nⁿ** for large `n`.
+
+---
+
+### Problem 3 — nested loops (`i` linear, `j` doubles)
+
+**Code:**
+
+```cpp
+int i, j, k = 0;
+for (i = n / 2; i <= n; i++) {
+    for (j = 2; j <= n; j = j * 2) {
+        k = k + n / 2;
+    }
+}
+```
+
+**Question:** Find the time complexity (input size = `n`).
+
+**Solution:**
+
+| Loop | How many iterations? |
+|------|----------------------|
+| **Outer** `i` from `n/2` to `n` | About **`n/2 + 1` = Θ(n)** |
+| **Inner** `j = 2, 4, 8, …` while `j ≤ n` | **`j` doubles** each time → **Θ(log n)** (same as `j *= 2`) |
+| **Body** | `k = k + n/2` → **Θ(1)** per inner iteration |
+
+Total:
+
+```
+Θ(n) × Θ(log n) × Θ(1) = O(n log n)
+```
+
+**Answer:** **O(n log n)** time, **O(1)** extra space (`i`, `j`, `k`).
+
+---
+
+### Problem 4 — `for (int i = 0; i < n; i++) i *= k;`
+
+**Code (as written):**
+
+```cpp
+for (int i = 0; i < n; i++) {
+    i *= k;
+}
+```
+
+**Question:** What is the time complexity?
+
+**Solution:** As written, this is **not a valid analysis problem** for typical `k`:
+
+| `k` | What happens |
+|-----|----------------|
+| `k = 0` | `i` stays `0` → **infinite loop** |
+| `k = 1` | `i` stays `0` → **infinite loop** |
+| `k > 1` | `0 * k = 0` → `i` never advances → **infinite loop** |
+
+So the snippet is almost certainly a **typo**. Common intended versions:
+
+| Intended code | Iterations | Complexity |
+|---------------|------------|------------|
+| `i++` (normal loop) | `n` | **O(n)** |
+| `i += k` (fixed step `k ≥ 1`) | about `n/k` | **O(n)** |
+| `i *= 2` (separate loop, `i` starts at 1) | **Θ(log n)** | **O(log n)** |
+
+**Answer to submit in class:** Point out the **bug**; if they meant **`i++`**, answer is **O(n)**; if they meant **`i *= 2`** with `i` starting at 1, answer is **O(log n)**.
+
+---
+
+### Problem 5 — “B is O(log n) so B always beats A which is O(n)”
+
+**Statement:** Algorithm **A** has worst-case **O(n)** and **B** has worst-case **O(log n)**. Therefore **B always runs faster than A**.
+
+**Answer:** **False.**
+
+**Why Big O does not mean “always faster”:**
+
+| Reason | Example |
+|--------|---------|
+| **Hidden constants** | `A` does `0.001n` ops; `B` does `1000 log n` ops → for small/medium `n`, **A** can be faster |
+| **Only asymptotic for large `n`** | O(log n) wins **eventually**; not for every `n` |
+| **O is an upper bound** | “O(n)” allows **Θ(1)** on some inputs; “O(log n)” allows **Θ(n)** on worst inputs if not tight |
+
+**Correct statement:** For **sufficiently large** `n`, an algorithm with **Θ(log n)** worst case is faster than one with **Θ(n)** worst case **if** leading constants are comparable — not “always” for all `n`.
+
+---
+
+### Problem 6 — `floorSqrt` (integer square root)
+
+**Code:**
+
+```cpp
+int floorSqrt(int x) {
+    if (x == 0 || x == 1) {
+        return x;
+    }
+    int i = 1, result = 1;
+    while (result <= x) {
+        i++;
+        result = i * i;
+    }
+    return i - 1;
+}
+```
+
+**Question:** Time and space complexity? (Treat input size as **`n = x`**.)
+
+**Solution:**
+
+The loop increases **`i`** until **`i² > x`**. Smallest such **`i`** is about **`⌊√x⌋ + 1`**.
+
+| Measure | Analysis | Result |
+|---------|----------|--------|
+| **Time** | Loop runs **Θ(√x)** times; each iteration **Θ(1)** | **O(√n)** if `n = x` |
+| **Space** | Only `i`, `result` | **O(1)** |
+
+**Recurrence view:** `T(x) = T(x-1) + O(1)` in a loose sense as `i` marches up — linear in **`√x`**, not in `x`.
+
+**Answer:** **Time O(√n)**, **space O(1)** (auxiliary).
+
+**Note:** A binary-search style sqrt can do **O(log n)** time; this brute-force version is **simpler but slower**.
+
+---
+
+### Problem 7 — nested loops, `j` decreases
+
+**Code:**
+
+```cpp
+int a = 0;
+for (int i = 0; i < n; ++i) {
+    for (int j = n; j > i; --j) {
+        a = a + i + j;
+    }
+}
+```
+
+**Question:** Time and space complexity?
+
+**Solution:**
+
+For each fixed **`i`**, **`j`** runs: `n, n-1, …, i+1` → **`(n - i)`** iterations.
+
+| `i` | Inner iterations |
+|-----|------------------|
+| `0` | `n` |
+| `1` | `n - 1` |
+| … | … |
+| `n - 1` | `1` |
+
+Total:
+
+```
+n + (n - 1) + … + 1 = n(n + 1) / 2 = Θ(n²)
+```
+
+**Answer:** **Time O(n²)**, **space O(1)**.
+
+**Link:** Same triangular sum as [Practice 1](#practice-1--upper-triangle-of-pairs) (pairs with `j > i`).
 
 ---
 
@@ -1228,13 +1836,18 @@ Complexity analysis is the language you use to **justify** these choices and to 
 | 7 | Know the **ordering** of common classes and **best / average / worst** when they differ. |
 | 8 | Use **graphs** to remember shape: flat (O(1)), slow rise (log), line (n), between line and parabola (n log n), parabola (n²), explosion (2ⁿ, n!). |
 | 9 | Find complexity via **graph**, **function** (`T(n)` → simplify), or **intuition** (loops/recursion). |
-| 10 | Analyze by **loops**, **recursion depth**, and **extra arrays**; link practice to companion `.cpp` files. |
+| 10 | Analyze by **loops**, **recursion depth**, and **extra arrays**; redo [review problems](#review--challenge-problems). |
 | 11 | **Heap vs stack**, **input vs auxiliary** space; merge sort = **O(n)** extra for **O(n log n)** time. |
 | 12 | **O(log n) ≪ O(n)** and **O(n log n) ≪ O(n²)** for large `n` — use comparison tables and graphs. |
 | 13 | Practice: triangle loops → **O(n²)**; stride-`K` outer + fixed inner → **O(n)**; bubble sort → **O(n²)**. |
+| 14 | Recursion: **tree / #calls × work** or **recurrence**; stack space ≈ **depth × frame**. |
+| 15 | Linear recursion → **O(n)** time & stack; naive **fib** → **O(2ⁿ)** time, **O(n)** stack; **DP** fixes time. |
+| 16 | **Master’s theorem** for `a·T(n/b) + f(n)` → merge sort **Θ(n log n)**, binary search / fast pow **Θ(log n)**. |
+| 17 | Draw **recursion tree** + **call stack** to avoid confusing depth with total calls (e.g. fib). |
+| 18 | **O(2ⁿ)** beats **O(nⁿ)** and **O(n!)**; **O** ≠ “always faster”; know **`i *= k`** typos. |
 
 ---
 
-**Next steps:** Work through examples in [a.cpp](a.cpp) — define `T(n)`, verify **`T(n) = O(g(n))`** using the CLRS inequality or simplification, and check best vs worst case. Redo the [practice problems](#practice-problems--loop-and-sort-analysis) without looking at the sums. In later modules, the same formal bounds apply to trees, graphs, and dynamic programming.
+**Next steps:** Define `T(n)` for each loop and recurrence, simplify to Big O, and check best vs worst case. Redo [loop practice](#practice-problems--loop-and-sort-analysis), [review problems](#review--challenge-problems), and sketch trees for [sum](#example-1--sum-of-numbers-1--2--n), [fib](#example-3--naive-fibonacci), and [merge sort](#example-4--merge-sort) without looking. In later modules, the same formal bounds apply to trees, graphs, and dynamic programming.
 
-**Further reading:** Cormen, Leiserson, Rivest, and Stein — *Introduction to Algorithms* (CLRS), chapter on asymptotic notation (Big O, Ω, Θ, little-o, little-ω).
+**Further reading:** Cormen, Leiserson, Rivest, and Stein — *Introduction to Algorithms* (CLRS), chapter on asymptotic notation (Big O, Ω, Θ, little-o, little-ω) and recurrence / Master theorem.
