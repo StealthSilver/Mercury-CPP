@@ -1,7 +1,7 @@
 # DSA with C++ — Module 23 Notes
 
 **Topic:** Backtracking — definition, relation to recursion, the explore–choose–unchoose pattern, and three problem families (decision, optimization, enumeration).  
-**Companion code:** [a.cpp](a.cpp) and future files in this folder will illustrate these ideas. These notes give *definitions* and *worked examples in words* only — no implementation snippets here.
+**Companion code:** [a.cpp](a.cpp) (array backtracking demo), [b.cpp](b.cpp) (subsets), [c.cpp](c.cpp) (permutations), [d.cpp](d.cpp) (N-Queens). These notes give *definitions* and *worked examples in words* only — no implementation snippets here.
 
 **Prerequisite:** Module 20 (recursion, base case, call stack, recursion tree) and Module 16 (2D grids / matrices). Module 21 (divide and conquer) is separate: it always breaks into fixed subproblems; backtracking **tries choices** and **undoes** them when a path fails.
 
@@ -354,6 +354,284 @@ Space is usually **O(depth)** for the recursion stack plus whatever you store fo
 
 ---
 
+## Find all subsets of a string
+
+**Reference:** [b.cpp](b.cpp) — **enumeration** (Type 3): print every subset.
+
+### Question
+
+Given a string (e.g. `"abc"`), find and print **all subsets** — every way to keep some characters and drop others. Order of characters in a subset follows the original string; we do not reorder.
+
+| String | Example subsets |
+|--------|-----------------|
+| `"abc"` | `""` (empty / null set), `"a"`, `"b"`, `"c"`, `"ab"`, `"ac"`, `"bc"`, `"abc"` |
+
+For a string of length **n**, each character is either **in** or **out** → **2ⁿ** subsets total.
+
+### Idea (include / skip)
+
+Walk the string index by index (`i = 0, 1, …, n-1`). At each index:
+
+| Choice | Meaning |
+|--------|---------|
+| **Skip** `s[i]` | Do not add this character; move to `i + 1` |
+| **Take** `s[i]` | Append to current subset, move to `i + 1`, then **remove** it after exploring (backtrack) |
+
+When `i == n`, the current subset is complete → print it.
+
+This is the same **take / skip** tree as “all subsets of {A, B, C}” in the decision-tree section above, applied to string characters.
+
+### Recursion tree for `"abc"` (skip first, then take — matches [b.cpp](b.cpp))
+
+Each node shows the **subset built so far** and which index `i` we are deciding next.
+
+```
+                         ""  (i=0, decide 'a')
+                skip /                    \ take
+               ""  (i=1)                  "a"  (i=1)
+          skip/    \take              skip/    \take
+         ""        "b"               "a"        "ab"
+       skip/\take skip/\take      skip/\take  skip/\take
+      ""   "c"   "b"  "bc"       "a"  "ac"  "ab" "abc"
+       |    |     |     |          |     |     |     |
+     PRINT all 8 leaves when i reaches 3
+```
+
+**How backtracking shows up:** On the **take** branch you `push_back` before the recursive call and `pop_back` after it returns. That undo step lets the same `subset` string try the **skip** branch at the same level with a clean state.
+
+### Small trace (first few calls)
+
+| Step | Action | `subset` after |
+|------|--------|----------------|
+| Start | `i = 0`, skip `'a'` | `""` |
+| | `i = 1`, skip `'b'` | `""` |
+| | `i = 2`, skip `'c'` | `""` → **print** `""` |
+| | `i = 2`, take `'c'` | `"c"` → **print** `"c"` → pop → `""` |
+| | `i = 1`, take `'b'` | … continues for `"b"`, `"bc"`, then back to try `'a'` … |
+
+Program output order (depth-first, skip before take):  
+`""`, `"c"`, `"b"`, `"bc"`, `"a"`, `"ac"`, `"ab"`, `"abc"`.
+
+### What [b.cpp](b.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `findSubsets(s, subset, i)` | Recursive worker; `i` is the next index to decide |
+| Base case `i == s.size()` | One full subset → `printSubset` |
+| Skip branch | `findSubsets(s, subset, i + 1)` — no change to `subset` |
+| Take branch | `push_back` → recurse → `pop_back` (backtrack) |
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(2ⁿ × n)** — there are **2ⁿ** subsets; printing each can take up to **n** characters. Often written simply as **O(2ⁿ)** when we count “work per leaf” as O(1) aside from output. |
+| **Space** | **O(n)** — recursion depth is **n**; the `subset` buffer holds at most **n** characters. |
+
+**Problem type:** Enumeration — list every valid subset.
+
+---
+
+## Find all permutations of a string
+
+**Reference:** [c.cpp](c.cpp) — **enumeration** (Type 3): print every arrangement.
+
+### Question
+
+Given a string of **n unique** characters (e.g. `"abc"`), print **every ordering** (permutation) of those characters.
+
+| Input | All 6 permutations (3! = 6) |
+|-------|-------------------------------|
+| `"abc"` | `"abc"`, `"acb"`, `"bac"`, `"bca"`, `"cab"`, `"cba"` |
+
+A **permutation** uses each character **exactly once**; only the **order** changes.
+
+### Idea (fix position `i`, try each unused letter)
+
+Treat the string as slots `0 … n-1`. At index **`i`**, try every character from position **`j = i … n-1`** in the **suffix** by swapping `s[i]` and `s[j]`, then fill slot `i + 1` recursively. After the subtree returns, **swap back** (backtrack) and try the next `j`.
+
+| Step | Action |
+|------|--------|
+| **Choose** | `swap(s[i], s[j])` — put the `j`-th character in position `i` |
+| **Recurse** | `findPermutations(s, i + 1)` |
+| **Unchoose** | `swap(s[i], s[j])` again |
+
+Base case: `i == n` → entire string is one permutation → print.
+
+### Recursion tree for `"abc"` (matches [c.cpp](c.cpp))
+
+Root: string `"abc"`, fix position `i = 0`.
+
+```
+                         "abc"  (i=0)
+            j=0          j=1 swap      j=2 swap
+           /              |              \
+        "abc"           "bac"           "cba"
+       (i=1)            (i=1)            (i=1)
+      j=0 j=1          j=0 j=1          j=0 j=1
+       |    |           |    |           |    |
+     abc  acb         bac  bca         cba  cab
+     PRINT at i=3 (leaves)
+```
+
+- Left branch under `i=0`: keep `'a'` at front → permutations of `"bc"` → **abc**, **acb**
+- Middle: `'b'` at front → **bac**, **bca**
+- Right: `'c'` at front → **cba**, **cab**
+
+**6 leaves** = **3!** — one leaf per permutation.
+
+### How backtracking works here
+
+Without the second `swap`, the string would stay permuted and the next `j` at the same level would start from the wrong arrangement. The undo restores `"abc"` (at that level) so the next sibling branch is correct.
+
+### What [c.cpp](c.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `findPermutations(s, i)` | `i` = next index to fix |
+| Loop `j` from `i` to `n-1` | Try each character in the suffix at position `i` |
+| `swap` twice | Choose and unchoose |
+| Base case `i == s.size()` | Print current arrangement |
+
+**Note:** This version assumes **all characters are distinct**. Repeated letters (e.g. `"aab"`) need extra rules to avoid duplicate permutations.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n! × n)** — **n!** permutations; each print is **O(n)**. Often summarized as **O(n!)**. |
+| **Space** | **O(n)** recursion stack depth; the string is rearranged **in place** (no extra array of size n for the path). Auxiliary storage aside from the call stack: **O(1)**. |
+
+**Problem type:** Enumeration — list every ordering.
+
+---
+
+## N-Queens problem
+
+**Reference:** [d.cpp](d.cpp) — places queens on an **N×N** board; prints **all** solutions and the total count.
+
+### Question
+
+Place **N queens** on an **N×N** chessboard so that **no two queens attack each other**.
+
+A queen attacks along:
+
+- the same **row**
+- the same **column**
+- both **diagonals** (↘ and ↙ through her cell)
+
+```
+        col 0   1   2   3
+      +---+---+---+---+
+row 0 |   | Q |   |   |     Q attacks whole row 0, column 1,
+      +---+---+---+---+     and both diagonals through (0,1).
+row 1 |   |   |   | Q |
+      +---+---+---+---+
+row 2 | Q |   |   |   |
+      +---+---+---+---+
+row 3 |   |   | Q |   |
+      +---+---+---+---+
+```
+
+**Key rules we use:**
+
+| Rule | Why |
+|------|-----|
+| **One queen per row** | Two queens in the same row always attack each other |
+| **One queen per column** | Two in the same column always attack |
+| When placing row `r`, only check **rows above** for column / diagonal conflicts | Queens below are not placed yet |
+
+So we build the board **row by row**: row `0`, then row `1`, …, row `N-1`. At each row, try each column; if safe, place queen and recurse to the next row.
+
+### Example board size N = 4
+
+You must place **4 queens** on **4×4**. There are exactly **2** solutions (mirror images of each other).
+
+**Solution 1** (from [d.cpp](d.cpp)):
+
+```
+. Q . .
+. . . Q
+Q . . .
+. . Q .
+```
+
+**Solution 2:**
+
+```
+. . Q .
+Q . . .
+. . . Q
+. Q . .
+```
+
+(`.` = empty, `Q` = queen.)
+
+### Three variations (same backtracking skeleton)
+
+| # | Question | What you do at base case / on success |
+|---|----------|--------------------------------------|
+| **1. Decision** | Does **any** valid placement exist? | Return `true` as soon as `row == N`; stop searching |
+| **2. Enumeration (print all)** | List **every** valid board | **Print** each board when `row == N` — **[d.cpp](d.cpp) does this** |
+| **3. Count** | How many solutions? | Increment a counter at base case; **no** print |
+
+Variations 1 and 3 are subsets of the same pattern as 2: only the **reporting** step changes.
+
+### Partial recursion tree (N = 4, row-by-row)
+
+Each level = **which column** gets the queen in that row. `×` = dead end (not safe); leaves at row 4 = full solution.
+
+```
+row 0:  try col 0,1,2,3
+          |
+row 1:  from (0,0): col 2 ok → ...
+        from (0,0): col 1,3 often × quickly
+          |
+row 2:  only safe columns continue
+          |
+row 3:  if no safe col → backtrack to row 2
+          |
+row 4:  all rows filled → PRINT solution 1 or 2
+```
+
+Example failure (conceptual): place row 0 at col 0, row 1 at col 2, row 2 at col 1 — then row 3 may have **no** safe column. Backtrack: remove queen from row 2, try next column, and so on.
+
+### `isSafe(row, col)` (in words)
+
+Before placing at `(row, col)`, check all rows `0 … row-1`:
+
+| Check | Condition |
+|-------|-----------|
+| **Column** | Any queen in same column? |
+| **Diagonal ↖** | Walk up-left; any queen? |
+| **Diagonal ↗** | Walk up-right; any queen? |
+
+If all clear → safe to place `board[row][col] = 1`, recurse, then set back to `0`.
+
+### What [d.cpp](d.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `solveNQueens(board, row, solutionCount)` | Try every column in current `row` |
+| `isSafe(board, row, col)` | Validity check before choose |
+| Choose | `board[row][col] = 1` |
+| Recurse | `solveNQueens(board, row + 1, …)` |
+| Unchoose | `board[row][col] = 0` |
+| Base `row == N` | `printBoard` + increment `solutionCount` |
+
+Change `const int N = 4` at the top to experiment (e.g. **N = 8** has **92** solutions).
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | Worst case explores many column choices per row; with pruning, practical bound is often stated as **O(N!)**-style growth. Naive upper bound **O(N^N)** if we tried every cell — we do not; one queen per row cuts the search heavily. |
+| **Space** | **O(N²)** for the board array + **O(N)** recursion stack → **O(N²)** overall. |
+
+**Problem type:** Enumeration in [d.cpp](d.cpp); decision / count are the same search with a different **stop / report** rule.
+
+---
+
 ## Summary
 
 - **Backtracking** = recursion + **systematic trial** of choices + **undo** when a path fails.
@@ -361,58 +639,4 @@ Space is usually **O(depth)** for the recursion stack plus whatever you store fo
 - **Decision**, **optimization**, and **enumeration** share the same process; they differ in what you report when a full or partial exploration finishes.
 - The **grid from (0,0) to (n−1,n−1)** example unifies the three types: existence of a path, minimum total cost, and total number of paths (or listing them).
 - Until now you used recursion for **single chains** (factorial), **repeated merging** (sorting), or **one narrowed search** (binary search). Backtracking adds **exploring a space of choices** and **restoring state** on the way back up the call stack — that restore step is the heart of this module.
-
-
-FIND SUBSETS -> b.cpp
-
-Find and print all subsets of a given string 
-
-"abc"
-zero size -> null set 
-'a' , 'b' , 'c'
-'ab' , 'bc', 'ac'
-'abc' 
-
-total subsets with n element string -> 2^n
-
-so it will take 2^n time and hence we will use recursion
-
-craete the recursion tree for this and show how backtracking works 
-
-time complexity -> O(2^n)
-space complexity -> O(n)
-
-
-FIND PERMUTATIONS -> c.cpp
-
-Find and print all prmutations(arrangements) of a given string 
-
-"abc"
-"acb"
-"bca"
-"bac"
-"cab"
-"cba"
-
-for a string having n unique chars the numebr of permutaions will be n!
-
-craete the recursion tree for this and show how backtracking works 
-
-time complexity -> O(n!)
-space complexity -> O(1)
-
-N QUEENS -> d.cpp
-
-Place N queens on an NN chessboard such that no 2 queens can attack each other
-
-create the diagram for N=4 and explain the question
-
-Queen attacks vertically, horizontally and diognally
-
-we have to place the queens on safe positions
-
-there are three variatiosn of htis question 
-
-1. tell weather for a n*n board if solution exists
-2. print all possible solutions -> solve this and rest are subsets of this pattern
-3. tell the count of all solutions
+- **Practice files:** [b.cpp](b.cpp) (subsets, **2ⁿ**, take/skip tree), [c.cpp](c.cpp) (permutations, **n!**, swap tree), [d.cpp](d.cpp) (N-Queens, row-by-row placement, print all + count).
