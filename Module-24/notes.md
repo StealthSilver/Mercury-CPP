@@ -150,3 +150,6 @@ linked list is already there in C++ template library but you can also make it by
 
 making a linked list using OOPS 
 
+we will create a node class : it will have int data and Node* next
+
+then we have to create a collection of nodes
