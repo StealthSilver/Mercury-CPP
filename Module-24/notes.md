@@ -153,3 +153,10 @@ making a linked list using OOPS
 we will create a node class : it will have int data and Node* next
 
 then we have to create a collection of nodes
+
+Push Front -> LL.push_front(val)
+
+this is the function on a linked list which creates a new node at the begining of the linked list : it works for two cases
+
+1. ll is empty : a new node will initialize
+2. ll has elements : new node will be created, then the pointer of new node will point the head of ll
