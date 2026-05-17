@@ -1,7 +1,7 @@
 # DSA with C++ — Module 23 Notes
 
 **Topic:** Backtracking — definition, relation to recursion, the explore–choose–unchoose pattern, and three problem families (decision, optimization, enumeration).  
-**Companion code:** [a.cpp](a.cpp) (array backtracking demo), [b.cpp](b.cpp) (subsets), [c.cpp](c.cpp) (permutations), [d.cpp](d.cpp) (N-Queens). These notes give *definitions* and *worked examples in words* only — no implementation snippets here.
+**Companion code:** [a.cpp](a.cpp)–[f.cpp](f.cpp) (core demos), [g.cpp](g.cpp) (rat in a maze), [h.cpp](h.cpp) (keypad combinations), [i.cpp](i.cpp) (knight’s tour). These notes give *definitions* and *worked examples in words* only — no implementation snippets here.
 
 **Prerequisite:** Module 20 (recursion, base case, call stack, recursion tree) and Module 16 (2D grids / matrices). Module 21 (divide and conquer) is separate: it always breaks into fixed subproblems; backtracking **tries choices** and **undoes** them when a path fails.
 
@@ -632,6 +632,493 @@ Change `const int N = 4` at the top to experiment (e.g. **N = 8** has **92** sol
 
 ---
 
+## Count paths in a grid (right and down)
+
+**Reference:** [e.cpp](e.cpp) — **enumeration** (Type 3): count how many distinct paths exist.
+
+### Question
+
+You have an **N × M** grid ( **N** rows, **M** columns ). Start at **(0, 0)**. Goal: reach **(N−1, M−1)**. From each cell you may move only:
+
+| Move | Effect |
+|------|--------|
+| **Right (R)** | `(row, col)` → `(row, col + 1)` |
+| **Down (D)** | `(row, col)` → `(row + 1, col)` |
+
+**Find the number of different paths** from start to destination.
+
+Example **3 × 3** grid (rows `0..2`, cols `0..2`):
+
+```
+        col 0   1   2
+      +---+---+---+
+row 0 | S |   |   |     S = start (0,0)
+      +---+---+---+
+row 1 |   |   |   |
+      +---+---+---+
+row 2 |   |   | G |     G = goal (2,2)
+      +---+---+---+
+```
+
+One valid path: **R → R → D → D** (right, right, down, down). Another: **D → R → D → R**. Total for 3×3: **6** paths.
+
+### Idea (paths from here = right paths + down paths)
+
+At cell `(row, col)`:
+
+| Case | Result |
+|------|--------|
+| Out of grid | **0** paths |
+| Already at goal `(N−1, M−1)` | **1** path (do nothing more) |
+| Otherwise | **ways(R)** + **ways(D)** — try moving right, count all completions; try moving down, count all completions; add them |
+
+So:
+
+```
+countWays(row, col) = countWays(row, col+1)   // go right
+                    + countWays(row+1, col)   // go down
+```
+
+This is **not** “number of right moves + number of down moves” as counts of steps — it means **sum of path counts** from the two next cells.
+
+### Recursion tree (3×3 grid, from (0,0))
+
+Each node is `(row, col)`. Two branches: **R** (right) and **D** (down). Leaves at **(2,2)** return **1**.
+
+```
+                    (0,0)
+                   /     \
+                 R       D
+              (0,1)     (1,0)
+              /   \     /   \
+           R     D   R     D
+        (0,2) (1,1) (1,1) (2,0)
+         ...   ...   ...   ...
+              \     |     /
+               all paths meet toward (2,2)
+                    |
+                 (2,2) → 1
+```
+
+Full tree has **6 leaves** (six complete paths). Many nodes like `(1,1)` are reached by different routes — that overlap is why pure recursion recalculates work (see optimization below).
+
+### Small trace from (0,0)
+
+| Call | Right subtree | Down subtree | Return |
+|------|---------------|--------------|--------|
+| `(0,0)` | from `(0,1)` → … → **3** paths | from `(1,0)` → … → **3** paths | **3 + 3 = 6** |
+| `(0,1)` | … | … | contributes to total |
+| `(2,2)` | — | — | **1** |
+
+### What [e.cpp](e.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `countWays(row, col)` | Recursive path count from current cell |
+| Out of bounds | Return `0` |
+| `(N-1, M-1)` | Return `1` |
+| Else | `countWays(row, col+1) + countWays(row+1, col)` |
+
+Constants `N` (rows) and `M` (columns) are at the top of the file.
+
+### Complexity (recursive version in [e.cpp](e.cpp))
+
+| | |
+|--|--|
+| **Time** | **O(2^(N+M))** in the worst case as an upper bound — each step you often have two choices (right or down) until the grid ends. Many subproblems repeat (e.g. `(1,1)` computed multiple times), so actual work is less than a full binary tree but still **exponential** without memoization. |
+| **Space** | **O(N + M)** — maximum recursion depth is about **N + M** steps along one path (all rights then all downs, or mixed). |
+
+**Problem type:** Enumeration — count all valid paths.
+
+---
+
+### Optimization — formula in **O(1)** time (no recursion tree)
+
+Every path from **(0,0)** to **(N−1, M−1)** must use exactly:
+
+| Move | Count |
+|------|--------|
+| **Down** | **N − 1** times (one row down per step) |
+| **Right** | **M − 1** times (one column right per step) |
+
+Total steps = **(N−1) + (M−1)**. You are only choosing **which positions** get **D** and which get **R** — order matters.
+
+For **N = 3, M = 3**: need **2** downs and **2** rights → **4** slots to fill → arrange **D, D, R, R**:
+
+```
+Example slot order:  R R D D  → path on grid
+                     D R D R  → another path
+```
+
+Number of arrangements = choose **(N−1)** down-positions out of **(N−1)+(M−1)** total slots:
+
+\[
+\text{ways} = \frac{(N-1 + M-1)!}{(N-1)!\,(M-1)!}
+\]
+
+| Grid | Downs | Rights | Total steps | Ways |
+|------|-------|--------|-------------|------|
+| 3×3 | 2 | 2 | 4 | 4!/(2!×2!) = **6** |
+| 2×3 | 1 | 2 | 3 | 3!/(1!×2!) = **3** |
+
+| | |
+|--|--|
+| **Time (formula)** | **O(1)** if you treat factorial as precomputed, or **O(N+M)** if you compute the factorial loop once |
+| **Space (formula)** | **O(1)** extra |
+
+Use recursion/backtracking to **understand** the tree; use the formula when you only need the **count** fast.
+
+---
+
+## Sudoku solver (does a solution exist?)
+
+**Reference:** [f.cpp](f.cpp) — **decision** (Type 1): print whether a valid completion exists; if yes, print the solved board.
+
+### Question
+
+A **Sudoku** puzzle is a **9×9** grid. Some cells already contain digits **1–9**; empty cells are **0** (or blank). Fill every empty cell so that:
+
+| Rule | Meaning |
+|------|---------|
+| **Row** | Each row has digits **1–9** with **no repeat** |
+| **Column** | Each column has **1–9** with **no repeat** |
+| **3×3 box** | Each of the nine bold boxes has **1–9** with **no repeat** |
+
+**Goal here:** answer **“Does a solution exist?”** — print **Yes** or **No**. If yes, [f.cpp](f.cpp) also prints the filled grid.
+
+### Board layout (9×9 with 3×3 boxes)
+
+```
++-------+-------+-------+
+| 5 3 . | . 7 . | . . . |     '.' or 0 = empty
+| 6 . . | 1 9 5 | . . . |
+| . 9 8 | . . . | . 6 . |
++-------+-------+-------+
+| 8 . . | . 6 . | . . 3 |
+| 4 . . | 8 . 3 | . . 1 |
+| 7 . . | . 2 . | . . 6 |
++-------+-------+-------+
+| . 6 . | . . . | 2 8 . |
+| . . . | 4 1 9 | . . 5 |
+| . . . | . 8 . | . 7 9 |
++-------+-------+-------+
+```
+
+Each empty cell must be filled with a digit that does not break row, column, or box rules.
+
+### Idea (backtracking on empty cells)
+
+1. Scan for the **next empty** cell `(row, col)`.
+2. Try digits **1 … 9**:
+   - If digit is **not valid** in that row, column, and 3×3 box → skip.
+   - **Choose:** place digit.
+   - **Recurse** on the rest of the board.
+   - If recursion returns success → bubble **true** up.
+   - **Unchoose:** set cell back to `0` and try next digit.
+3. If no digit works → this branch fails → return **false**.
+4. If there are **no empty cells** → puzzle complete → return **true**.
+
+### `isValid` (in words)
+
+Before placing `num` at `(row, col)`:
+
+| Check | Look at |
+|-------|---------|
+| Row | All cells in `row` |
+| Column | All cells in `col` |
+| Box | 3×3 block containing `(row, col)` — top-left of box is `(row/3)*3`, `(col/3)*3` |
+
+If `num` already appears in any of these → invalid.
+
+### Recursion tree (conceptual — one empty cell)
+
+At an empty cell, up to **9** branches (digits 1–9). Many branches die immediately when `isValid` is false.
+
+```
+solve from board B
+    |
+ next empty (0,2)
+    |
+ try 1 ×  try 2 ×  try 3 ×  try 4 ✓
+                              |
+                         place 4, recurse
+                              |
+                         next empty ...
+                              |
+                    eventually all filled → YES
+```
+
+If digit **4** leads to a dead end later, backtrack: clear `(0,2)`, try **5**, and so on. First full assignment that works wins in [f.cpp](f.cpp) (early `return true`).
+
+### What [f.cpp](f.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `isValid(board, row, col, num)` | Row, column, 3×3 box check |
+| `solveSudoku(board)` | Find empty → try 1–9 → choose / recurse / unchoose |
+| Base case | No empty cell left → return `true` |
+| `main` | Sample puzzle → print **Solution exists: Yes/No** and solved grid if yes |
+
+**Problem type:** Decision — existence of a valid completion.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | Worst case is **exponential** in the number of empty cells — each empty can try up to 9 digits and search deep. In practice, `isValid` prunes most branches early. Often described loosely as **O(9^k)** where **k** = count of empty cells in the worst case. |
+| **Space** | **O(81)** = **O(1)** for the fixed 9×9 board + **O(k)** recursion stack depth (**k** empty cells along a path, at most 81). |
+
+---
+
+## Practice problems
+
+Extra backtracking problems with full solutions in [g.cpp](g.cpp), [h.cpp](h.cpp), and [i.cpp](i.cpp).
+
+---
+
+## Rat in a maze
+
+**Reference:** [g.cpp](g.cpp) — **enumeration** (Type 3): print **all** paths from start to destination.
+
+### Question
+
+A rat is at **(0, 0)** in an **N × N** maze. The maze is a matrix:
+
+| Cell value | Meaning |
+|------------|---------|
+| **0** | Blocked — rat cannot enter |
+| **1** | Open — rat can walk here |
+
+**Destination:** **(N−1, N−1)**.
+
+Find **every path** the rat can take from start to destination. Print each path as a string of moves:
+
+| Move | New position (row = x, col = y) |
+|------|----------------------------------|
+| **U** (up) | `(x, y − 1)` |
+| **D** (down) | `(x, y + 1)` |
+| **L** (left) | `(x − 1, y)` |
+| **R** (right) | `(x + 1, y)` |
+
+The rat cannot revisit a cell on the **same** path (no cycles).
+
+### Example maze (N = 4) in [g.cpp](g.cpp)
+
+```
+        col 0   1   2   3
+      +---+---+---+---+
+row 0 | 1 | 0 | 0 | 0 |     1 = open, 0 = wall
+      +---+---+---+---+
+row 1 | 1 | 1 | 0 | 1 |
+      +---+---+---+---+
+row 2 | 0 | 1 | 0 | 0 |
+      +---+---+---+---+
+row 3 | 1 | 1 | 1 | 1 |     goal at (3,3)
+      +---+---+---+---+
+```
+
+One solution path printed by the program: **`RDRRDD`** (right → down → right → right → down → down).
+
+### Idea (DFS + visited + path string)
+
+At cell `(row, col)`:
+
+1. If `(row, col)` is the goal → print current path string.
+2. Else try **U, D, L, R** (in that order in [g.cpp](g.cpp)):
+   - Next cell must be **inside** the grid, **open** (`1`), and **not visited**.
+   - **Choose:** mark visited, append move letter to `path`.
+   - **Recurse** from next cell.
+   - **Unchoose:** unmark visited, remove last letter from `path`.
+
+Start cell `(0, 0)` is marked visited before the first call.
+
+### Recursion tree (conceptual, tiny 2×2 open grid)
+
+```
+                    (0,0) path=""
+                   /  |  \  \
+                  U   D   L   R  (many branches die: wall / visited)
+                  |
+            only valid moves continue...
+                  |
+              (1,1) path="RD..."  → ... → (1,1) goal → PRINT
+```
+
+On a larger maze the tree is wide (up to **4** branches per cell) but **pruned** by walls and the visited set.
+
+### What [g.cpp](g.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `isSafe(...)` | In bounds, open cell, not visited |
+| `findPaths(...)` | Try 4 directions, build path string |
+| `visited[][]` | Prevents reusing a cell on one path |
+| `main` | Sample 4×4 maze; prints all path strings |
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(4^(N²))** worst-case upper bound — at each step up to 4 moves, path length **O(N²)**. Actual time is much smaller due to walls and visited pruning. |
+| **Space** | **O(N²)** for `visited` + **O(N²)** recursion depth in the worst case (long path) + path string length **O(N²)**. |
+
+**Problem type:** Enumeration — list all valid paths.
+
+---
+
+## Keypad letter combinations
+
+**Reference:** [h.cpp](h.cpp) — **enumeration** (Type 3): print all letter strings for a digit string.
+
+### Question
+
+Given a string of digits **2–9** (e.g. `"23"`), print **every** letter combination the number could represent on a phone keypad (old telephone buttons). **1** does not map to any letter.
+
+### Keypad mapping
+
+| Digit | Letters |
+|-------|---------|
+| 2 | a, b, c |
+| 3 | d, e, f |
+| 4 | g, h, i |
+| 5 | j, k, l |
+| 6 | m, n, o |
+| 7 | p, q, r, s |
+| 8 | t, u, v |
+| 9 | w, x, y, z |
+
+Example: `"23"` → **ad, ae, af, bd, be, bf, cd, ce, cf** (9 strings = 3 × 3).
+
+### Idea (one digit at a time)
+
+Process digits left to right at index `i`. For `digits[i]`, try **each letter** on that key:
+
+| Step | Action |
+|------|--------|
+| **Base** | `i == length` → print built string |
+| **Loop** | For each letter on current key: `push_back` → recurse(`i+1`) → `pop_back` |
+
+Same **choose → recurse → unchoose** pattern as subsets, but choices come from the keypad table instead of take/skip.
+
+### Recursion tree for `"23"`
+
+```
+                         ""  i=0 digit '2'
+                    /      |      \
+                  'a'     'b'     'c'     i=1 digit '3'
+                 / | \   / | \   / | \
+               ad ae af bd be bf cd ce cf   → PRINT 9 leaves
+```
+
+**Number of outputs** = product of letters per digit (e.g. 3 × 3 = **9** for `"23"`; digit **7** has 4 letters so it multiplies by 4).
+
+### What [h.cpp](h.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `keypad[]` | Maps digit `'2'`…`'9'` to letter string |
+| `findCombinations(digits, i, current)` | Build string digit by digit |
+| `main` | Example `digits = "23"` |
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(4^n × n)** worst case — **n** = number of digits; each digit maps to at most **4** letters (digit 7); print each result costs up to **n**. Often written **O(4^n)**. |
+| **Space** | **O(n)** — recursion depth **n** + `current` string of length **n**. |
+
+**Problem type:** Enumeration — list all combinations.
+
+---
+
+## Knight’s tour
+
+**Reference:** [i.cpp](i.cpp) — **enumeration / construction**: fill board with visit order **0 … N²−1**.
+
+### Question
+
+On an **N × N** chessboard, place a **knight** at **(0, 0)**. The knight moves in an **L-shape** (2 squares in one direction, 1 square perpendicular). Visit **every square exactly once**. Print the **visit order** in each cell (0 for start, then 1, 2, … up to **N²−1**).
+
+### Knight moves (8 options)
+
+From `(row, col)` the knight can jump to:
+
+```
+        (r-2,c+1)  (r-1,c+2)
+              \    /
+               \  /
+    (r-2,c-1) — K — (r+2,c+1)
+               /  \
+              /    \
+        (r-1,c-2)  (r+1,c+2)
+        ... and 4 more symmetric jumps
+```
+
+Offsets used in [i.cpp](i.cpp):  
+`(2,1), (1,2), (-1,2), (-2,1), (-2,-1), (-1,-2), (1,-2), (2,-1)`.
+
+### Sample output (N = 8)
+
+Each cell shows **when** the knight stepped on it (matches problem statement):
+
+```
+ 0 59 38 33 30 17  8 63
+37 34 31 60  9 62 29 16
+58  1 36 39 32 27 18  7
+...
+```
+
+Cell **(0,0)** is **0** (start). Cell **(0,1)** is **59** (second-to-last move). Last cell visited has value **63**.
+
+### Idea (backtracking + move count)
+
+| State | Meaning |
+|-------|---------|
+| `board[row][col] == -1` | Not visited yet |
+| `board[row][col] == k` | Visited at step **k** |
+
+1. Set `board[0][0] = 0`, call `solveKnight(..., moveCount = 1)`.
+2. From current square, try all **8** knight jumps.
+3. If square is safe (inside board and `-1`), set `board[next] = moveCount`, recurse with `moveCount + 1`.
+4. If recursion succeeds → return `true`.
+5. Else **backtrack:** set `board[next] = -1` and try next jump.
+6. Base case: `moveCount == N²` → all cells filled → success.
+
+### Recursion tree (conceptual — very bushy)
+
+```
+                 (0,0) step=0
+        8 knight jumps (only safe ones stay)
+           /  |  |  |  |  |  |  \
+      (2,1) (1,2) ...              (many pruned)
+         |
+    each node has up to 7 more moves
+         |
+    depth N² — one long path to full tour
+```
+
+For **N = 8** there are **64** steps; pure backtracking tries many orderings but pruning (only unvisited squares) finds a tour. [i.cpp](i.cpp) prints **one** valid tour (first found in search order).
+
+### What [i.cpp](i.cpp) does
+
+| Piece | Role |
+|-------|------|
+| `rowMove[]`, `colMove[]` | 8 knight offsets |
+| `isSafe` | In bounds and cell is `-1` |
+| `solveKnight` | Place next move number, recurse, backtrack |
+| `main` | `N = 8`, print 8×8 order matrix |
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(8^(N²))** worst-case upper bound — up to 8 moves, **N²** steps. In practice heavily pruned; still exponential. For **N = 8** it can take a few seconds of search. |
+| **Space** | **O(N²)** for the board + **O(N²)** recursion stack depth along one path. |
+
+**Problem type:** Enumeration / construction — build one full tour (visit order for every cell).
+
+---
+
 ## Summary
 
 - **Backtracking** = recursion + **systematic trial** of choices + **undo** when a path fails.
@@ -639,4 +1126,5 @@ Change `const int N = 4` at the top to experiment (e.g. **N = 8** has **92** sol
 - **Decision**, **optimization**, and **enumeration** share the same process; they differ in what you report when a full or partial exploration finishes.
 - The **grid from (0,0) to (n−1,n−1)** example unifies the three types: existence of a path, minimum total cost, and total number of paths (or listing them).
 - Until now you used recursion for **single chains** (factorial), **repeated merging** (sorting), or **one narrowed search** (binary search). Backtracking adds **exploring a space of choices** and **restoring state** on the way back up the call stack — that restore step is the heart of this module.
-- **Practice files:** [b.cpp](b.cpp) (subsets, **2ⁿ**, take/skip tree), [c.cpp](c.cpp) (permutations, **n!**, swap tree), [d.cpp](d.cpp) (N-Queens, row-by-row placement, print all + count).
+- **Core files:** [a.cpp](a.cpp)–[f.cpp](f.cpp) (array demo, subsets, permutations, N-Queens, grid paths, Sudoku).
+- **Practice files:** [g.cpp](g.cpp) (rat maze — all paths, **4** directions + visited), [h.cpp](h.cpp) (keypad — digit tree), [i.cpp](i.cpp) (knight’s tour — **8** jumps, visit order).

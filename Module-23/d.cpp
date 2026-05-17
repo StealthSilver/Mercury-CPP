@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-const int N = 4;
+const int N = 7;
 
 bool isSafe(int board[N][N], int row, int col) {
     for (int i = 0; i < row; i++) {

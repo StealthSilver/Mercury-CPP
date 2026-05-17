@@ -1,0 +1,3 @@
+MODULE 24 Notes
+
+LINKED LISTS
