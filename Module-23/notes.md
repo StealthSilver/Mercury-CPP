@@ -363,3 +363,56 @@ Space is usually **O(depth)** for the recursion stack plus whatever you store fo
 - Until now you used recursion for **single chains** (factorial), **repeated merging** (sorting), or **one narrowed search** (binary search). Backtracking adds **exploring a space of choices** and **restoring state** on the way back up the call stack — that restore step is the heart of this module.
 
 
+FIND SUBSETS -> b.cpp
+
+Find and print all subsets of a given string 
+
+"abc"
+zero size -> null set 
+'a' , 'b' , 'c'
+'ab' , 'bc', 'ac'
+'abc' 
+
+total subsets with n element string -> 2^n
+
+so it will take 2^n time and hence we will use recursion
+
+craete the recursion tree for this and show how backtracking works 
+
+time complexity -> O(2^n)
+space complexity -> O(n)
+
+
+FIND PERMUTATIONS -> c.cpp
+
+Find and print all prmutations(arrangements) of a given string 
+
+"abc"
+"acb"
+"bca"
+"bac"
+"cab"
+"cba"
+
+for a string having n unique chars the numebr of permutaions will be n!
+
+craete the recursion tree for this and show how backtracking works 
+
+time complexity -> O(n!)
+space complexity -> O(1)
+
+N QUEENS -> d.cpp
+
+Place N queens on an NN chessboard such that no 2 queens can attack each other
+
+create the diagram for N=4 and explain the question
+
+Queen attacks vertically, horizontally and diognally
+
+we have to place the queens on safe positions
+
+there are three variatiosn of htis question 
+
+1. tell weather for a n*n board if solution exists
+2. print all possible solutions -> solve this and rest are subsets of this pattern
+3. tell the count of all solutions
