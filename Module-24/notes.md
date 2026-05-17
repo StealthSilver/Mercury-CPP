@@ -1,6 +1,6 @@
 # DSA with C++ — Module 24 Notes
 
-**Topic:** Linked lists — definition, node structure, head/tail pointers, memory layout, and how they compare to arrays.  
+**Topic:** Linked lists — definition, node structure, head/tail pointers, memory layout, comparison to arrays, and a from-scratch `List` with `push_front` / `push_back`.  
 **Companion code:** [a.cpp](a.cpp) and later files in this folder. These notes give *definitions* and *mental models* only — no implementation snippets here.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
@@ -141,22 +141,163 @@ The **logical** order is 10 → 20 → 30. The **physical** order in memory is n
 | **vs array** | Array: contiguous, index in `O(1)`. List: scattered nodes, reach i-th in `O(i)`. |
 | **Traversal** | Only by following links — no `list[i]` in one step. |
 
-Later topics in this module (and companion `.cpp` files) will cover **creating** lists, **insertion**, **deletion**, and variants such as **doubly linked** lists — still using this node-and-pointer model.
+Later topics in this module will cover **deletion**, **search**, and variants such as **doubly linked** lists — still using this node-and-pointer model.
+
+---
+
+## Building a linked list in C++ (OOP)
+
+C++ already provides linked-list-style containers in the standard library (e.g. `std::list`). In this course you also build one **from scratch** with classes so you see exactly how **nodes** and **pointers** work.
+
+**Reference:** [a.cpp](a.cpp) — `Node`, `List`, `push_front`, `push_back`, and `display`.
+
+### Two classes
+
+| Class | Role |
+|-------|------|
+| **`Node`** | Holds `data` (e.g. `int`) and `next` (`Node*`). Constructor sets `next` to `nullptr`. |
+| **`List`** | Owns **`head`** and **`tail`** pointers and operations on the whole chain (insert, print, etc.). |
+
+The **list object** is not the nodes themselves — it is the **manager** that remembers where the chain starts and ends.
+
+### Creating an empty list
+
+| Step | What happens |
+|------|----------------|
+| **Constructor `List()`** | Set `head = nullptr` and `tail = nullptr`. |
+| **In `main`** | Write `List linkedList;` — **not** `List linkedList();`, which C++ parses as a **function declaration**, not an object. |
+
+---
+
+## `push_front` — insert at the beginning
+
+**Call:** `linkedList.push_front(val)`  
+**Time (with head pointer):** `O(1)` — no walk through the list.
+
+### Case 1 — list is empty (`head == nullptr`)
+
+| Step | Effect |
+|------|--------|
+| Allocate `newNode` with `val` | One node on the heap |
+| `head = newNode`, `tail = newNode` | Single node is both first and last |
+
+```
+  before:  head ──► NULL    tail ──► NULL
+
+  after:   head ──► [ val | NULL ] ◄── tail
+```
+
+### Case 2 — list has at least one node
+
+| Step | Effect |
+|------|--------|
+| `newNode->next = head` | New node points to the old first node |
+| `head = newNode` | Head moves to the new front |
+
+```
+  before:  head ──► [ 20 | • ] ──► [ 30 | NULL ] ◄── tail
+
+  after:   head ──► [ 10 | • ] ──► [ 20 | • ] ──► [ 30 | NULL ] ◄── tail
+                      new              old head
+```
+
+**Example in [a.cpp](a.cpp):** `push_front(30)`, then `20`, then `10` → display shows `10 -> 20 -> 30 -> NULL`.
+
+---
+
+## `push_back` — insert at the end
+
+**Call:** `linkedList.push_back(val)`  
+**Time (with tail pointer):** `O(1)` — append without walking from head to the last node.
+
+Without a **tail** pointer, every `push_back` would be `O(n)` because you would have to traverse the whole list to find the last node.
+
+### Case 1 — list is empty (`head == nullptr`)
+
+Same as `push_front` on an empty list: `head` and `tail` both point to `newNode`.
+
+```
+  before:  head ──► NULL    tail ──► NULL
+
+  after:   head ──► [ val | NULL ] ◄── tail
+```
+
+### Case 2 — list has at least one node
+
+| Step | Effect |
+|------|--------|
+| `tail->next = newNode` | Old last node links forward to the new node |
+| `tail = newNode` | Tail moves to the new last node (`newNode->next` stays `nullptr`) |
+
+```
+  before:  head ──► [ 10 | • ] ──► ... ──► [ 30 | NULL ] ◄── tail
+
+  after:   head ──► [ 10 | • ] ──► ... ──► [ 30 | • ] ──► [ 40 | NULL ] ◄── tail
+```
+
+**Example in [a.cpp](a.cpp):** After the three `push_front` calls, `push_back(40)` and `push_back(50)` → `10 -> 20 -> 30 -> 40 -> 50 -> NULL`.
+
+---
+
+## `display` — traverse and print
+
+| Step | Action |
+|------|--------|
+| Start | `temp = head` |
+| Loop | While `temp != nullptr`, print `temp->data`, then `temp = temp->next` |
+| End | Print `NULL` to show the chain ends |
+
+This is the standard **linear traversal** pattern for a singly linked list.
+
+---
+
+## What to remember (implementation)
+
+| Operation | Empty list | Non-empty list | Why keep `tail`? |
+|-----------|------------|----------------|------------------|
+| **`push_front`** | `head = tail = newNode` | `newNode->next = head`, `head = newNode` | Tail unchanged |
+| **`push_back`** | `head = tail = newNode` | `tail->next = newNode`, `tail = newNode` | Avoid `O(n)` walk to the last node |
+
+| Pitfall | Correct approach |
+|---------|------------------|
+| **`List linkedList();` in `main`** | Use `List linkedList;` — otherwise you declare a function, not a list |
+| **Forgetting `tail` on append** | `push_back` needs `tail`; only updating `head` is not enough |
+| **Lost `next` on insert** | Set new links **before** moving `head` or `tail` so you do not drop the rest of the list |
 
 
-LINKED LIST IMPLEMENTATION
+ -> is the member access through pointer operator.
 
-linked list is already there in C++ template library but you can also make it by your own
+temp->data
+means: data on the object that temp points to — same as:
 
-making a linked list using OOPS 
+(*temp).data
+In your file
+temp has type Node* (pointer to a Node).
+data is a member of class Node.
+So temp->data reads the integer stored in the current node while you walk the list.
+-> vs .
+Expression	temp type	Meaning
+temp->data
+Node* (pointer)
+Access data through the pointer
+node.data
+Node (object)
+Access data on the object directly
+Rule of thumb: use -> when you have a pointer; use . when you have the object itself.
 
-we will create a node class : it will have int data and Node* next
 
-then we have to create a collection of nodes
+Insert in LL Middle
 
-Push Front -> LL.push_front(val)
+Insert node at a given position in the LL
 
-this is the function on a linked list which creates a new node at the begining of the linked list : it works for two cases
+LL.insert(val, pos)
 
-1. ll is empty : a new node will initialize
-2. ll has elements : new node will be created, then the pointer of new node will point the head of ll
+the position is like an index 
+we can add value in the linked list middle but we cannot do that in the array and vector as they are not linked 
+
+steps : 
+
+1. create newNode 
+2. find node at pos-1 (loop)
+a) newnode -> next = temp -> next
+b) temp -> next = newNode
