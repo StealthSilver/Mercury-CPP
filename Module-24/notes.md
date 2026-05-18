@@ -497,6 +497,7 @@ Mirror of **`push_back`**: push adds at the end; pop removes the end.
 | `insert(val, pos)` | Insert at index | `O(pos)` |
 | `removeAt(pos)` | Remove at index | `O(pos)` |
 | `searchItr(key)` | Find key (iterative) | `O(n)` |
+| `searchRec(key)` | Find key (recursive) | `O(n)` |
 | `display()` | Print from head | `O(n)` |
 
 | Pair | Insert | Remove |
@@ -614,8 +615,8 @@ For a **public** node used directly in `main`, **`struct`** is common because `d
 
 ## Recursive search — `searchRec`
 
-**Call:** `searchRec(head, key)` in [c.cpp](c.cpp)  
-**Reference:** [c.cpp](c.cpp) (same simple list style as [b.cpp](b.cpp))  
+**Call:** `linkedList.searchRec(key)` in [a.cpp](a.cpp) · `searchRec(head, key)` in [c.cpp](c.cpp)  
+**Reference:** [c.cpp](c.cpp) (simple list in `main`) · [a.cpp](a.cpp) (`searchRec` + private `searchRecHelper`)  
 **Time:** `O(n)` — still visits up to `n` nodes (on the **call stack** instead of a loop).
 
 ### Iterative vs recursive
@@ -669,4 +670,4 @@ Each recursive call waits for the next. For a list of length `n`, recursion dept
 |------|----------|--------|
 | [b.cpp](b.cpp) | `searchItr(head, key)` | Loop |
 | [c.cpp](c.cpp) | `searchRec(head, key, index)` | Recursion |
-| [a.cpp](a.cpp) | `List::searchItr(key)` | Loop inside full class |
+| [a.cpp](a.cpp) | `List::searchItr(key)` / `List::searchRec(key)` | Loop / recursion inside full class |

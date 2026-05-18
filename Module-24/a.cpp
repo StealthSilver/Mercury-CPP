@@ -214,6 +214,14 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    // searchRec — recursive search for key  |  O(n)
+    // Returns 0-based index if found, -1 if not found
+    // -------------------------------------------------------------------------
+    int searchRec(int key) const {
+        return searchRecHelper(head, key, 0);
+    }
+
+    // -------------------------------------------------------------------------
     // display — traverse from head; uses temp->data and temp->next
     // -------------------------------------------------------------------------
     void display() const {
@@ -223,6 +231,17 @@ public:
             temp = temp->next;
         }
         cout << "NULL" << endl;
+    }
+
+private:
+    int searchRecHelper(Node* node, int key, int index) const {
+        if (node == nullptr) {
+            return -1;
+        }
+        if (node->data == key) {
+            return index;
+        }
+        return searchRecHelper(node->next, key, index + 1);
     }
 };
 
@@ -255,6 +274,9 @@ int main() {
 
     cout << "searchItr(30): " << linkedList.searchItr(30) << endl;  // 1
     cout << "searchItr(99): " << linkedList.searchItr(99) << endl;  // -1
+
+    cout << "searchRec(30): " << linkedList.searchRec(30) << endl;  // 1
+    cout << "searchRec(99): " << linkedList.searchRec(99) << endl;  // -1
 
     // linkedList goes out of scope here → ~List() deletes all remaining nodes
     return 0;
