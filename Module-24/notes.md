@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — iterative search · [c.cpp](c.cpp) — recursive search · [d.cpp](d.cpp) — reverse in place.
+**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — focused demos (search, reverse, remove Nth, palindrome).
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -811,5 +811,356 @@ On `15 -> 30 -> 40`, after `reverse()` → `40 -> 30 -> 15 -> NULL`.
 | Reverse by only swapping **values** | Works for ints but wrong when nodes are moved/shared elsewhere — prefer pointer reverse |
 
 
-FIND AND REMOVE THE Nth NODE FROM END
+## Remove the Nth node from the end
+
+**Call:** `removeNthFromEnd(head, n)` in [e.cpp](e.cpp)  
+**Reference:** [e.cpp](e.cpp) only (not added to [a.cpp](a.cpp))  
+**Convention:** **`n` is 1-indexed from the end** — `n = 1` is the **last** node, `n = 2` is the second from last, etc.
+
+### Problem
+
+Given a singly linked list, **find and delete** the node that is **`n` positions from the end**, in **one pass** if possible.
+
+Example list: `10 -> 20 -> 30 -> 40 -> NULL`
+
+| `n` | Node removed | Result |
+|-----|--------------|--------|
+| `1` | `40` (last) | `10 -> 20 -> 30 -> NULL` |
+| `2` | `30` | `10 -> 20 -> 40 -> NULL` |
+| `4` | `10` (first) | `20 -> 30 -> 40 -> NULL` |
+
+---
+
+### Naive idea (two passes)
+
+| Pass | Work |
+|------|------|
+| **1** | Count length `L` |
+| **2** | Walk to position `L - n` and remove |
+
+**Time:** `O(L)` · **Space:** `O(1)` — correct, but two traversals.
+
+The **two-pointer** method below still **`O(L)`** time but uses **one** traversal after a short setup.
+
+---
+
+### Optimal idea: two pointers + dummy node
+
+Use **`slow`** and **`fast`**, plus a **dummy** node before `head`.
+
+| Pointer | Role |
+|---------|------|
+| **dummy** | Fake node with `next = head` — makes removing the **first** node easy when `n == L` |
+| **slow** | Will end up **just before** the node to delete |
+| **fast** | Leads `slow` by a fixed gap |
+
+#### Step 1 — create a gap of `n + 1` steps
+
+Start: `slow = fast = dummy`.
+
+Move **`fast` forward `n + 1` times**.
+
+For `n = 2` on four nodes:
+
+```
+  dummy -> 10 -> 20 -> 30 -> 40 -> NULL
+  slow
+  fast moves n+1 = 3 times → fast at 30
+```
+
+Now **`fast` is `n + 1` nodes ahead of `slow`**.
+
+#### Step 2 — move both until `fast` hits the end
+
+```
+  while (fast != nullptr:
+      slow = slow->next
+      fast = fast->next
+```
+
+When `fast == nullptr`, **`slow` is the node before the target**.
+
+```
+  dummy -> 10 -> 20 -> 30 -> 40 -> NULL
+                  slow          fast=NULL
+```
+
+Target to remove = `slow->next` (here `30`).
+
+#### Step 3 — delete
+
+```
+  toDelete = slow->next
+  slow->next = slow->next->next
+  delete toDelete
+  head = dummy.next
+```
+
+---
+
+### Why `n + 1` steps (not `n`)?
+
+We need `slow` **before** the victim so we can do `slow->next = slow->next->next`.
+
+| Gap between slow and fast | Where slow lands when fast is past last |
+|---------------------------|----------------------------------------|
+| **`n` nodes apart** | On the node to delete (hard to unlink) |
+| **`n + 1` apart** | On the **predecessor** of the node to delete |
+
+So the first loop runs **`i = 0` to `n`** → **`n + 1`** advances of `fast`.
+
+---
+
+### Dummy node — why?
+
+Without dummy, removing the **head** (when `n == L`) is a special case.
+
+| With dummy | Effect |
+|------------|--------|
+| `dummy.next` is real `head` | `slow` can sit on `dummy`; deleting `slow->next` removes head uniformly |
+| After delete | `head = dummy.next` updates head if first node was removed |
+
+---
+
+### Complexity (detailed)
+
+Let **`L`** = number of nodes in the list.
+
+#### Time — **`O(L)`**
+
+| Phase | Work |
+|-------|------|
+| Move `fast` `n + 1` steps | At most `L + 1` — **`O(L)`** |
+| Move both until end | `fast` walks remaining nodes — **`O(L)`** |
+| Delete + update head | **`O(1)`** |
+| **Total** | **`O(L)`** — **one logical pass** over the list |
+
+You cannot do better than `O(L)` in the worst case: you must at least reach the node before the one you delete.
+
+#### Space — **`O(1)`** extra
+
+| Item | Space |
+|------|--------|
+| `slow`, `fast` pointers | `O(1)` |
+| **`dummy` node** | `O(1)` — one extra node on stack, not proportional to `L` |
+| Recursion | None |
+| **Total auxiliary** | **`O(1)`** |
+
+The **`L` nodes** already stored are input memory, not algorithm overhead.
+
+#### Compare
+
+| Approach | Time | Extra space | Passes |
+|----------|------|-------------|--------|
+| Count length, then remove | `O(L)` | `O(1)` | 2 |
+| **Two-pointer + dummy ([e.cpp](e.cpp))** | `O(L)` | `O(1)` | 1 |
+| Store all nodes in array | `O(L)` | `O(L)` | 1–2 |
+
+---
+
+### Example trace ([e.cpp](e.cpp))
+
+List: `10 -> 20 -> 30 -> 40`, remove **`n = 2`** (node `30`).
+
+| Step | `slow` at | `fast` at |
+|------|-----------|-----------|
+| After `n+1` advance | `dummy` | `30` |
+| End of while | `20` | `nullptr` |
+| Delete | unlink `30` | |
+
+Output: `10 -> 20 -> 40 -> NULL`.
+
+Second call in [e.cpp](e.cpp): `n = 1` removes `40` → `10 -> 20 -> NULL`.
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Only `n` steps ahead instead of `n + 1` | `slow` lands on victim — cannot unlink cleanly |
+| No dummy when removing head | Extra branch for `head = head->next` |
+| `n > L` | Guard: if `fast` becomes `nullptr` too early in first loop, invalid `n` |
+| Forget `delete` | Memory leak |
+| Off-by-one on indexing | Agree whether `n=1` means last — [e.cpp](e.cpp) uses **last = 1** |
+
+---
+
+### Module file map (search & modify)
+
+| File | Topic |
+|------|--------|
+| [b.cpp](b.cpp) | Iterative search |
+| [c.cpp](c.cpp) | Recursive search |
+| [d.cpp](d.cpp) | Reverse in place |
+| [e.cpp](e.cpp) | Remove Nth from end |
+| [f.cpp](f.cpp) | Palindrome check |
+
+---
+
+## Practice: Palindrome linked list
+
+**Problem:** Given the head of a singly linked list, return **`true`** if it reads the same forward and backward, else **`false`**.
+
+**Reference:** [f.cpp](f.cpp) — `isPalindrome(head)`  
+**Not in [a.cpp](a.cpp)** — practice file only.
+
+### Examples
+
+| Input (list) | Output | Why |
+|--------------|--------|-----|
+| `1 -> 2 -> 2 -> 1` | `true` | Same as `1,2,2,1` reversed |
+| `1 -> 2` | `false` | `1,2` ≠ `2,1` |
+| `1` or empty | `true` | Single / empty palindrome |
+
+---
+
+### What “palindrome” means here
+
+Compare **values in order**, not node addresses:
+
+```
+  1 -> 2 -> 2 -> 1   ✓  (reads 1,2,2,1 from both ends)
+  1 -> 2             ✗  (reads 1,2 vs 2,1)
+```
+
+You cannot index from the end in `O(1)` on a singly linked list — you must **walk** or **rewrite links**.
+
+---
+
+### Approach 1 — copy to array (easy, extra space)
+
+| Step | Action |
+|------|--------|
+| 1 | Traverse list, push each `data` into a vector/array |
+| 2 | Two pointers: start and end of array, move inward |
+| 3 | If all pairs match → `true` |
+
+| Time | Space |
+|------|--------|
+| `O(n)` | `O(n)` for the array |
+
+Good for understanding; not optimal for space.
+
+---
+
+### Approach 2 — middle + reverse second half ([f.cpp](f.cpp))
+
+**Idea:** Split the list at the middle, **reverse** the second half, compare two front-to-front walks, then clean up.
+
+Uses skills from [d.cpp](d.cpp) (reverse) and slow/fast pointers (like [e.cpp](e.cpp)).
+
+#### Step 1 — find middle (slow / fast)
+
+| Pointer | Moves |
+|---------|--------|
+| **slow** | `+1` per step |
+| **fast** | `+2` per step |
+
+Stop when `fast` cannot take two more steps. **`slow`** lands at the **end of the first half** (for even length).
+
+```
+  1 -> 2 -> 2 -> 1
+  s    f
+       s         f
+       s              f (stop)
+```
+
+For `1 -> 2 -> 2 -> 1`, **`slow`** is the **first `2`**.
+
+#### Step 2 — reverse second half
+
+Reverse starting at **`slow->next`** (same three-pointer reverse as [d.cpp](d.cpp)).
+
+```
+  first half:  1 -> 2
+  second half reversed: 1 -> 2   (from original 2 -> 1)
+```
+
+Temporarily set **`slow->next = nullptr`** to split halves.
+
+#### Step 3 — compare
+
+Walk **`p1`** from `head` and **`p2`** from reversed second head while **`p2 != nullptr`**.
+
+| `p1` | `p2` | Match? |
+|------|------|--------|
+| 1 | 1 | yes |
+| 2 | 2 | yes |
+| done | | return `true` |
+
+Only need to walk while **`p2`** runs — second half has the same or fewer nodes (odd length: middle node ignored).
+
+#### Step 4 — cleanup ([f.cpp](f.cpp))
+
+Free the reversed second-half nodes after the check (list was modified for the algorithm).
+
+---
+
+### Why this works (even vs odd length)
+
+| Length | Middle behavior | Compare |
+|--------|-----------------|--------|
+| **Even** `1→2→2→1` | Two equal halves | All nodes in second half vs first |
+| **Odd** `1→2→1` | Middle `2` not compared | Second half is `1`; first half `1→2` vs `1` only while `p2` moves |
+
+The **middle node** of an odd palindrome does not need a pair — it matches itself.
+
+---
+
+### Complexity (detailed)
+
+Let **`n`** = number of nodes.
+
+#### Time — **`O(n)`**
+
+| Phase | Cost |
+|-------|------|
+| Slow/fast to middle | ≤ `n/2` steps → **`O(n)`** |
+| Reverse second half | ≤ `n/2` nodes → **`O(n)`** |
+| Compare halves | ≤ `n/2` steps → **`O(n)`** |
+| **Total** | **`O(n)`** — linear constant factors |
+
+#### Space — **`O(1)`** extra (this approach)
+
+| Item | Space |
+|------|--------|
+| `slow`, `fast`, `p1`, `p2`, reverse pointers | **`O(1)`** |
+| No vector / recursion | |
+| **Note** | Algorithm **modifies** links temporarily; still constant extra pointers |
+
+| Approach | Time | Extra space |
+|----------|------|-------------|
+| Copy to array | `O(n)` | `O(n)` |
+| **Middle + reverse ([f.cpp](f.cpp))** | `O(n)` | **`O(1)`** |
+
+---
+
+### Code map ([f.cpp](f.cpp))
+
+| Function | Role |
+|----------|------|
+| `buildList` | Build list from array for tests |
+| `reverseSegment` | Reverse from a given head (second half) |
+| `isPalindrome` | Full palindrome check |
+| `main` | Runs `1,2,2,1` → `true` and `1,2` → `false` |
+
+### Output ([f.cpp](f.cpp))
+
+```
+List: 1 -> 2 -> 2 -> 1 -> NULL
+Is palindrome? true
+
+List: 1 -> 2 -> NULL
+Is palindrome? false
+```
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Compare without reversing second half | Cannot walk singly list backward |
+| Wrong middle (off-by-one) | Wrong split → wrong answer |
+| Forget odd-length middle | Comparing middle twice — use **`while (p2 != nullptr)`** |
+| Lose nodes after reverse | Memory leak — free second half in [f.cpp](f.cpp) after check |
 
