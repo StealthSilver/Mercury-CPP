@@ -1,3 +1,4 @@
+
 #include <iostream>
 using namespace std;
 
@@ -6,20 +7,18 @@ struct Node {
     Node* next;
 };
 
-// Iterative search from head: return index if found, else -1
-int searchItr(Node* head, int key) {
-    Node* temp = head;
-    int index = 0;
-
-    while (temp != nullptr) {
-        if (temp->data == key) {
-            return index;
-        }
-        temp = temp->next;
-        index++;
+// Recursive search: check current node, then trust search on rest of list
+// Returns 0-based index if found, else -1
+int searchRec(Node* head, int key, int index = 0) {
+    if (head == nullptr) {
+        return -1;  // base case: reached end — not found
     }
 
-    return -1;
+    if (head->data == key) {
+        return index;  // base case: found at current index
+    }
+
+    return searchRec(head->next, key, index + 1);
 }
 
 int main() {
@@ -30,7 +29,7 @@ int main() {
     head->next->next->next = new Node{40, nullptr};
 
     int key = 30;
-    int idx = searchItr(head, key);
+    int idx = searchRec(head, key);
     if (idx != -1) {
         cout << key << " found at index " << idx << endl;
     } else {
@@ -38,14 +37,13 @@ int main() {
     }
 
     key = 99;
-    idx = searchItr(head, key);
+    idx = searchRec(head, key);
     if (idx != -1) {
         cout << key << " found at index " << idx << endl;
     } else {
         cout << key << " not found" << endl;
     }
 
-    // Free all nodes
     while (head != nullptr) {
         Node* toDelete = head;
         head = head->next;

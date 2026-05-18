@@ -1,8 +1,3 @@
-// Module 24 — Singly linked list (complete reference implementation)
-// Classes : Node, List
-// List API  : push_front, push_back, pop_front, pop_back, insert, removeAt, searchItr, display
-// Lifecycle : List() constructor, ~List() destructor
-
 #include <iostream>
 using namespace std;
 

@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — **iterative search** (`searchItr`) only.
+**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — iterative search · [c.cpp](c.cpp) — recursive search.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -552,5 +552,121 @@ List: `10 -> 20 -> 30 -> 40 -> NULL`
 
 [b.cpp](b.cpp) builds a **simple linked list in `main`** (no `List` class) and uses a standalone function **`searchItr(head, key)`**. Same logic as the member function in [a.cpp](a.cpp), but easier to read when you are learning search first.
 
+---
 
-RECURSIVE SEARCH -> c
+## `struct Node` in [b.cpp](b.cpp) / [c.cpp](c.cpp)
+
+In the simple demos you use a **`struct Node`** — not a full **`class List`**:
+
+```cpp
+struct Node {
+    int data;
+    Node* next;
+};
+```
+
+| Member | Role |
+|--------|------|
+| **`data`** | Value stored in this node |
+| **`next`** | Pointer to the next node, or `nullptr` at the end |
+
+### Why a `struct` here?
+
+| Idea | Detail |
+|------|--------|
+| **Lightweight container** | Only holds **data** for one node — no `push_front`, `display`, etc. on the type itself |
+| **List lives in `main`** | You wire nodes with `head->next = ...`; functions like `searchItr` / `searchRec` take `head` |
+| **Same layout as `class Node` in [a.cpp](a.cpp)** | One node = value + link; [a.cpp](a.cpp) wraps many nodes inside a `List` class |
+
+**One-line intuition:** `struct Node` is the **brick**; `class List` in [a.cpp](a.cpp) is the **wall** built from bricks plus rules for how to change it.
+
+---
+
+## `struct` vs `class` in C++
+
+In C++, **`struct` and `class` are almost the same** — both can have data members, member functions, constructors, etc.
+
+| | `struct` | `class` |
+|---|----------|---------|
+| **Default access** | Members are **`public`** | Members are **`private`** |
+| **Typical use** | Plain data bundles (POD-style), simple nodes | Types with **invariants** and many operations (e.g. `List`) |
+| **In this module** | `struct Node` in [b.cpp](b.cpp), [c.cpp](c.cpp) | `class Node`, `class List` in [a.cpp](a.cpp) |
+
+### Example — same node, two keywords
+
+```cpp
+struct Node { int data; Node* next; };   // public by default
+class Node  { int data; Node* next; };   // would need public: unless you only use inside List
+```
+
+For a **public** node used directly in `main`, **`struct`** is common because `data` and `next` are meant to be accessed freely.
+
+### When to prefer which
+
+| Prefer **`struct`** | Prefer **`class`** |
+|---------------------|-------------------|
+| Small type that mostly **stores fields** | Type that **hides** `head`/`tail` and exposes methods |
+| Used like a C-style record | Enforces **encapsulation** (`private` head, public `push_back`) |
+
+**Remember:** choosing `struct` vs `class` does **not** change how `next` pointers or `->` work — only default visibility and convention.
+
+---
+
+## Recursive search — `searchRec`
+
+**Call:** `searchRec(head, key)` in [c.cpp](c.cpp)  
+**Reference:** [c.cpp](c.cpp) (same simple list style as [b.cpp](b.cpp))  
+**Time:** `O(n)` — still visits up to `n` nodes (on the **call stack** instead of a loop).
+
+### Iterative vs recursive
+
+| | [b.cpp](b.cpp) `searchItr` | [c.cpp](c.cpp) `searchRec` |
+|---|---------------------------|---------------------------|
+| **Control** | `while (temp != nullptr)` loop | Function **calls itself** on `head->next` |
+| **State** | `temp` and `index` in local variables | `head` and `index` passed into each call |
+| **Base case** | Loop ends when `temp == nullptr` | `head == nullptr` → return `-1` |
+| **Found** | Return `index` inside loop | `head->data == key` → return `index` |
+
+### Idea
+
+1. If `head == nullptr` → **not found** → return `-1`.
+2. If `head->data == key` → **found** → return current `index`.
+3. Otherwise → search the **rest** of the list: `searchRec(head->next, key, index + 1)`.
+
+```
+  searchRec(10→20→30→40, key=30, index=0)
+    10 ≠ 30  →  searchRec(20→30→40, 30, 1)
+                  20 ≠ 30  →  searchRec(30→40, 30, 2)
+                                  30 = 30  →  return 2
+```
+
+### Code shape ([c.cpp](c.cpp))
+
+| Case | Return |
+|------|--------|
+| `head == nullptr` | `-1` |
+| `head->data == key` | `index` |
+| else | `searchRec(head->next, key, index + 1)` |
+
+### Example ([c.cpp](c.cpp))
+
+Same list as [b.cpp](b.cpp): `10 -> 20 -> 30 -> 40 -> NULL`
+
+| Call | Output |
+|------|--------|
+| `searchRec(head, 30)` | `30 found at index 2` |
+| `searchRec(head, 99)` | `99 not found` |
+
+### Stack note
+
+Each recursive call waits for the next. For a list of length `n`, recursion depth is **`O(n)`** — fine for learning; for very long lists, **iterative** search ([b.cpp](b.cpp)) avoids deep call stacks.
+
+---
+
+## Search summary
+
+| File | Function | Style |
+|------|----------|--------|
+| [b.cpp](b.cpp) | `searchItr(head, key)` | Loop |
+| [c.cpp](c.cpp) | `searchRec(head, key, index)` | Recursion |
+| [a.cpp](a.cpp) | `List::searchItr(key)` | Loop inside full class |
