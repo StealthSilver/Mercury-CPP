@@ -1,6 +1,6 @@
 // Module 24 — Singly linked list (complete reference implementation)
 // Classes : Node, List
-// List API  : push_front, push_back, pop_front, pop_back, insert, removeAt, display
+// List API  : push_front, push_back, pop_front, pop_back, insert, removeAt, searchItr, display
 // Lifecycle : List() constructor, ~List() destructor
 
 #include <iostream>
@@ -200,6 +200,25 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    // searchItr — iterative search for key  |  O(n)
+    // Returns 0-based index if found, -1 if not found
+    // -------------------------------------------------------------------------
+    int searchItr(int key) const {
+        Node* temp = head;
+        int index = 0;
+
+        while (temp != nullptr) {
+            if (temp->data == key) {
+                return index;
+            }
+            temp = temp->next;
+            index++;
+        }
+
+        return -1;
+    }
+
+    // -------------------------------------------------------------------------
     // display — traverse from head; uses temp->data and temp->next
     // -------------------------------------------------------------------------
     void display() const {
@@ -238,6 +257,9 @@ int main() {
 
     linkedList.pop_back();
     linkedList.display();  // 15 -> 30 -> 40 -> NULL
+
+    cout << "searchItr(30): " << linkedList.searchItr(30) << endl;  // 1
+    cout << "searchItr(99): " << linkedList.searchItr(99) << endl;  // -1
 
     // linkedList goes out of scope here → ~List() deletes all remaining nodes
     return 0;

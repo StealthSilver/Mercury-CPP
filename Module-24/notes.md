@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — **complete `Node` + `List` class** with all operations and comments. These notes explain *what* and *why*; open [a.cpp](a.cpp) for the full implementation.
+**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — **iterative search** (`searchItr`) only.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -496,6 +496,7 @@ Mirror of **`push_back`**: push adds at the end; pop removes the end.
 | `pop_back()` | Remove last node | `O(n)` |
 | `insert(val, pos)` | Insert at index | `O(pos)` |
 | `removeAt(pos)` | Remove at index | `O(pos)` |
+| `searchItr(key)` | Find key (iterative) | `O(n)` |
 | `display()` | Print from head | `O(n)` |
 
 | Pair | Insert | Remove |
@@ -504,8 +505,52 @@ Mirror of **`push_back`**: push adds at the end; pop removes the end.
 | **Back** | `push_back` — `O(1)` with `tail` | `pop_back` — `O(n)` without `prev` pointer |
 
 
-ITIRATIVE SEARCH -> b.cpp
+## Iterative search — `searchItr`
 
-searchItr(key)
+**Call:** `linkedList.searchItr(key)` in [a.cpp](a.cpp) · `searchItr(head, key)` in [b.cpp](b.cpp)  
+**Reference:** [b.cpp](b.cpp) (simple list in `main`) · [a.cpp](a.cpp) (full `List` class)  
+**Time:** `O(n)` — worst case visit every node once.
 
-use a loop to search the element from the starting 
+### Idea
+
+Walk the list **from `head`** using a **`while` loop** (not recursion). Compare each node’s `data` with `key`. If it matches, return that node’s **0-based index**. If the loop ends without a match, return **`-1`**.
+
+| Step | Action |
+|------|--------|
+| 1 | `temp = head`, `index = 0` |
+| 2 | While `temp != nullptr` |
+| 3 | If `temp->data == key`, return `index` |
+| 4 | Else `temp = temp->next`, `index++` |
+| 5 | Return `-1` (not found) |
+
+```
+  list:  10 -> 20 -> 30 -> 40 -> NULL
+  key:   30
+
+  temp at index 0: 10  ≠ 30  → advance
+  temp at index 1: 20  ≠ 30  → advance
+  temp at index 2: 30  = 30  → return 2
+```
+
+### Return value
+
+| Result | Meaning |
+|--------|---------|
+| `0, 1, 2, …` | **Found** — index of first node with `data == key` |
+| `-1` | **Not found** — no node holds `key` |
+
+### Example ([b.cpp](b.cpp))
+
+List: `10 -> 20 -> 30 -> 40 -> NULL`
+
+| Call | Output |
+|------|--------|
+| `searchItr(30)` | `2` → print `30 found at index 2` |
+| `searchItr(99)` | `-1` → print `99 not found` |
+
+### Why a separate [b.cpp](b.cpp)?
+
+[b.cpp](b.cpp) builds a **simple linked list in `main`** (no `List` class) and uses a standalone function **`searchItr(head, key)`**. Same logic as the member function in [a.cpp](a.cpp), but easier to read when you are learning search first.
+
+
+RECURSIVE SEARCH -> c
