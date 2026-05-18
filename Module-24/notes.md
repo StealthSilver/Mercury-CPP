@@ -1,6 +1,6 @@
 # DSA with C++ — Module 24 Notes
 
-**Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
+**Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
 **Companion code:** [a.cpp](a.cpp) — **complete `Node` + `List` class** with all operations and comments. These notes explain *what* and *why*; open [a.cpp](a.cpp) for the full implementation.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
@@ -149,7 +149,7 @@ Later topics in this module will cover **deletion**, **search**, and variants su
 
 C++ already provides linked-list-style containers in the standard library (e.g. `std::list`). In this course you also build one **from scratch** with classes so you see exactly how **nodes** and **pointers** work.
 
-**Reference:** [a.cpp](a.cpp) — full class: `Node`, `List`, `push_front`, `push_back`, `insert`, `removeAt`, `display`, `~List()`.
+**Reference:** [a.cpp](a.cpp) — full class: `Node`, `List`, `push_front`, `push_back`, `pop_front`, `pop_back`, `insert`, `removeAt`, `display`, `~List()`.
 
 ### Two classes
 
@@ -410,20 +410,102 @@ Same idea as removing the front node repeatedly until the list is empty.
 | Nodes stay on the heap after program logic “finishes” with the list | All `new` nodes are matched with `delete` when the `List` dies |
 | Memory leak (especially bad in long-running programs) | Clean shutdown of list memory |
 
-`removeAt` deletes **one** node; the destructor deletes **every** node still in the list.
+`removeAt` deletes **one** node at any index; the destructor deletes **every** node still in the list.
 
-POP FRONT
+---
 
-LL.pop_front 
+## `pop_front` — remove the first node
 
-when we have to delete the first node of the ll
+**Call:** `linkedList.pop_front()`  
+**Reference:** [a.cpp](a.cpp) — `List::pop_front`  
+**Time:** `O(1)` — only `head` moves; no walk through the list.
 
-Node* temp = head
-head = head -=> next
-temp -> next = NULL
-delete temp
+Mirror of **`push_front`**: push adds at the front; pop removes the front.
 
-POP BACK
+### Steps
 
-LL.pop_back
+| Step | Code in [a.cpp](a.cpp) | Effect |
+|------|------------------------|--------|
+| 1 | If `head == nullptr`, return | Empty list — nothing to remove |
+| 2 | `temp = head` | Remember the node to free |
+| 3 | `head = head->next` | Second node becomes the new front |
+| 4 | `temp->next = nullptr` | Detach old front (safe before `delete`) |
+| 5 | `delete temp` | Free heap memory |
+| 6 | If `head == nullptr`, `tail = nullptr` | List had only one node |
 
+```
+  before:  head ──► [ 10 | • ] ──► [ 15 | • ] ──► ... ◄── tail
+
+  after:   head ──► [ 15 | • ] ──► ... ◄── tail
+           (10 deleted)
+```
+
+**Relation to `removeAt`:** `removeAt(0)` calls `pop_front()` in [a.cpp](a.cpp).
+
+**Example:** After `10 -> 15 -> 30 -> 40 -> 50`, `pop_front()` → `15 -> 30 -> 40 -> 50 -> NULL`.
+
+---
+
+## `pop_back` — remove the last node
+
+**Call:** `linkedList.pop_back()`  
+**Reference:** [a.cpp](a.cpp) — `List::pop_back`  
+**Time:** `O(n)` — singly linked list must **walk from head** to find the node **before** `tail` (tail’s predecessor).
+
+Mirror of **`push_back`**: push adds at the end; pop removes the end.
+
+### Case 1 — only one node (`head == tail`)
+
+| Step | Effect |
+|------|--------|
+| `delete tail` | Free the only node |
+| `head = tail = nullptr` | List becomes empty |
+
+### Case 2 — two or more nodes
+
+| Step | Code idea in [a.cpp](a.cpp) | Effect |
+|------|----------------------------|--------|
+| 1 | `temp = head` | Start at front |
+| 2 | Loop: `while (temp->next != tail)` | Walk until `temp` is **just before** tail |
+| 3 | `delete tail` | Free old last node |
+| 4 | `tail = temp`, `temp->next = nullptr` | New last node; chain ends cleanly |
+
+```
+  before:  head ──► ... ──► [ 40 | • ] ──► [ 50 | NULL ] ◄── tail
+                                    temp              tail
+
+  after:   head ──► ... ──► [ 40 | NULL ] ◄── tail
+                                    (50 deleted)
+```
+
+**Why `O(n)`?** With only a **next** pointer per node, you cannot move `tail` backward in one step. You must find **tail’s predecessor** by scanning from `head`. (A **doubly linked** list can pop back in `O(1)` with a `prev` pointer.)
+
+**Example:** After `pop_front` demo (`15 -> 30 -> 40 -> 50`), `pop_back()` → `15 -> 30 -> 40 -> NULL`.
+
+---
+
+## Complete `List` API ([a.cpp](a.cpp))
+
+| Member | Purpose | Typical time |
+|--------|---------|--------------|
+| `List()` | Empty list | `O(1)` |
+| `~List()` | Delete all nodes | `O(n)` |
+| `push_front(val)` | Insert at front | `O(1)` |
+| `push_back(val)` | Insert at end | `O(1)` |
+| `pop_front()` | Remove first node | `O(1)` |
+| `pop_back()` | Remove last node | `O(n)` |
+| `insert(val, pos)` | Insert at index | `O(pos)` |
+| `removeAt(pos)` | Remove at index | `O(pos)` |
+| `display()` | Print from head | `O(n)` |
+
+| Pair | Insert | Remove |
+|------|--------|--------|
+| **Front** | `push_front` — `O(1)` | `pop_front` — `O(1)` |
+| **Back** | `push_back` — `O(1)` with `tail` | `pop_back` — `O(n)` without `prev` pointer |
+
+
+ITIRATIVE SEARCH -> b.cpp
+
+searchItr(key)
+
+use a loop to search the element from the starting 

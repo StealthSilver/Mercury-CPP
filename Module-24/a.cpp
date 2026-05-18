@@ -1,6 +1,6 @@
 // Module 24 — Singly linked list (complete reference implementation)
 // Classes : Node, List
-// List API  : push_front, push_back, insert, removeAt, display
+// List API  : push_front, push_back, pop_front, pop_back, insert, removeAt, display
 // Lifecycle : List() constructor, ~List() destructor
 
 #include <iostream>
@@ -78,6 +78,51 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    // pop_front — remove the first node  |  O(1)
+    // -------------------------------------------------------------------------
+    void pop_front() {
+        if (head == nullptr) {
+            return;
+        }
+
+        Node* temp = head;
+        head = head->next;
+        temp->next = nullptr;
+        delete temp;
+
+        if (head == nullptr) {
+            tail = nullptr;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // pop_back — remove the last node  |  O(n) — walk to node before tail
+    // -------------------------------------------------------------------------
+    void pop_back() {
+        if (head == nullptr) {
+            return;
+        }
+
+        // Only one node in the list
+        if (head == tail) {
+            delete tail;
+            head = nullptr;
+            tail = nullptr;
+            return;
+        }
+
+        // Find the node just before tail (tail's predecessor)
+        Node* temp = head;
+        while (temp->next != tail) {
+            temp = temp->next;
+        }
+
+        delete tail;
+        tail = temp;
+        temp->next = nullptr;
+    }
+
+    // -------------------------------------------------------------------------
     // insert — insert at index pos (0-based)  |  O(pos)
     // pos == 0  → same as push_front
     // pos == size → same as push_back
@@ -128,12 +173,7 @@ public:
         }
 
         if (pos <= 0) {
-            Node* toDelete = head;
-            head = head->next;
-            delete toDelete;
-            if (head == nullptr) {
-                tail = nullptr;
-            }
+            pop_front();
             return;
         }
 
@@ -192,6 +232,12 @@ int main() {
 
     linkedList.removeAt(2);
     linkedList.display();  // 10 -> 15 -> 30 -> 40 -> 50 -> NULL
+
+    linkedList.pop_front();
+    linkedList.display();  // 15 -> 30 -> 40 -> 50 -> NULL
+
+    linkedList.pop_back();
+    linkedList.display();  // 15 -> 30 -> 40 -> NULL
 
     // linkedList goes out of scope here → ~List() deletes all remaining nodes
     return 0;
