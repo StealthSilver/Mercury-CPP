@@ -1,7 +1,14 @@
+// Module 24 — Singly linked list (complete reference implementation)
+// Classes : Node, List
+// List API  : push_front, push_back, insert, removeAt, display
+// Lifecycle : List() constructor, ~List() destructor
+
 #include <iostream>
 using namespace std;
 
-// One node: value + link to the next node
+// =============================================================================
+// Node — one unit of the list (data + link to next)
+// =============================================================================
 class Node {
 public:
     int data;
@@ -13,18 +20,36 @@ public:
     }
 };
 
-// Singly linked list with head and tail pointers
+// =============================================================================
+// List — manages head/tail and all operations on the chain
+// =============================================================================
 class List {
     Node* head;
     Node* tail;
 
 public:
+    // -------------------------------------------------------------------------
+    // Constructor / destructor
+    // -------------------------------------------------------------------------
+
     List() {
         head = nullptr;
         tail = nullptr;
     }
 
-    // Insert at the front (new node becomes head)
+    // Free every node when the List object is destroyed (end of main, etc.)
+    ~List() {
+        while (head != nullptr) {
+            Node* toDelete = head;
+            head = head->next;   // -> : access member through pointer
+            delete toDelete;
+        }
+        tail = nullptr;
+    }
+
+    // -------------------------------------------------------------------------
+    // push_front — insert at the beginning  |  O(1)
+    // -------------------------------------------------------------------------
     void push_front(int val) {
         Node* newNode = new Node(val);
 
@@ -37,7 +62,9 @@ public:
         }
     }
 
-    // Insert at the back (new node becomes tail)
+    // -------------------------------------------------------------------------
+    // push_back — insert at the end  |  O(1) with tail pointer
+    // -------------------------------------------------------------------------
     void push_back(int val) {
         Node* newNode = new Node(val);
 
@@ -50,7 +77,11 @@ public:
         }
     }
 
-    // Insert at index pos (0-based: 0 = front, size = append at end)
+    // -------------------------------------------------------------------------
+    // insert — insert at index pos (0-based)  |  O(pos)
+    // pos == 0  → same as push_front
+    // pos == size → same as push_back
+    // -------------------------------------------------------------------------
     void insert(int val, int pos) {
         if (pos <= 0) {
             push_front(val);
@@ -62,11 +93,11 @@ public:
             return;
         }
 
-        // Walk to the node just before the insertion index
+        // Step 2: walk to node at index (pos - 1)
         Node* temp = head;
         for (int i = 0; i < pos - 1; i++) {
             if (temp == nullptr) {
-                return;  // pos out of range
+                return;
             }
             temp = temp->next;
         }
@@ -75,24 +106,27 @@ public:
             return;
         }
 
-        // Inserting after the last node — same as push_back
         if (temp->next == nullptr) {
             push_back(val);
             return;
         }
 
+        // Step 1: create newNode
+        // Step 3a & 3b: link new node between temp and temp->next
         Node* newNode = new Node(val);
         newNode->next = temp->next;
         temp->next = newNode;
     }
 
-    // Remove node at index pos (0-based); cannot use name "delete" — C++ keyword
+    // -------------------------------------------------------------------------
+    // removeAt — remove node at index pos (0-based)  |  O(pos)
+    // Cannot name this "delete" — reserved C++ keyword
+    // -------------------------------------------------------------------------
     void removeAt(int pos) {
         if (head == nullptr) {
             return;
         }
 
-        // Case 1: remove the first node
         if (pos <= 0) {
             Node* toDelete = head;
             head = head->next;
@@ -103,11 +137,10 @@ public:
             return;
         }
 
-        // Case 2: find node before the one to remove
         Node* temp = head;
         for (int i = 0; i < pos - 1; i++) {
             if (temp == nullptr || temp->next == nullptr) {
-                return;  // pos out of range
+                return;
             }
             temp = temp->next;
         }
@@ -126,6 +159,9 @@ public:
         delete toDelete;
     }
 
+    // -------------------------------------------------------------------------
+    // display — traverse from head; uses temp->data and temp->next
+    // -------------------------------------------------------------------------
     void display() const {
         Node* temp = head;
         while (temp != nullptr) {
@@ -136,8 +172,11 @@ public:
     }
 };
 
+// =============================================================================
+// main — demo every operation (see notes.md for step-by-step traces)
+// =============================================================================
 int main() {
-    List linkedList;
+    List linkedList;  // not List linkedList(); — function declaration, not an object
 
     linkedList.push_front(30);
     linkedList.push_front(20);
@@ -148,11 +187,12 @@ int main() {
     linkedList.push_back(50);
     linkedList.display();  // 10 -> 20 -> 30 -> 40 -> 50 -> NULL
 
-    linkedList.insert(15, 1);  // insert 15 at index 1
-    linkedList.display();      // 10 -> 15 -> 20 -> 30 -> 40 -> 50 -> NULL
+    linkedList.insert(15, 1);
+    linkedList.display();  // 10 -> 15 -> 20 -> 30 -> 40 -> 50 -> NULL
 
-    linkedList.removeAt(2);    // remove node at index 2 (value 20)
-    linkedList.display();      // 10 -> 15 -> 30 -> 40 -> 50 -> NULL
+    linkedList.removeAt(2);
+    linkedList.display();  // 10 -> 15 -> 30 -> 40 -> 50 -> NULL
 
+    // linkedList goes out of scope here → ~List() deletes all remaining nodes
     return 0;
 }

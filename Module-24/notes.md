@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
-**Topic:** Linked lists — definition, node structure, head/tail pointers, memory layout, comparison to arrays, and a from-scratch `List` with `push_front` / `push_back`.  
-**Companion code:** [a.cpp](a.cpp) and later files in this folder. These notes give *definitions* and *mental models* only — no implementation snippets here.
+**Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
+**Companion code:** [a.cpp](a.cpp) — **complete `Node` + `List` class** with all operations and comments. These notes explain *what* and *why*; open [a.cpp](a.cpp) for the full implementation.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -149,7 +149,7 @@ Later topics in this module will cover **deletion**, **search**, and variants su
 
 C++ already provides linked-list-style containers in the standard library (e.g. `std::list`). In this course you also build one **from scratch** with classes so you see exactly how **nodes** and **pointers** work.
 
-**Reference:** [a.cpp](a.cpp) — `Node`, `List`, `push_front`, `push_back`, and `display`.
+**Reference:** [a.cpp](a.cpp) — full class: `Node`, `List`, `push_front`, `push_back`, `insert`, `removeAt`, `display`, `~List()`.
 
 ### Two classes
 
@@ -264,40 +264,166 @@ This is the standard **linear traversal** pattern for a singly linked list.
 | **Forgetting `tail` on append** | `push_back` needs `tail`; only updating `head` is not enough |
 | **Lost `next` on insert** | Set new links **before** moving `head` or `tail` so you do not drop the rest of the list |
 
+---
 
- -> is the member access through pointer operator.
+## The `->` operator (member access through a pointer)
 
-temp->data
-means: data on the object that temp points to — same as:
+Used everywhere in [a.cpp](a.cpp): `display`, `insert`, `removeAt`, `push_front`, `push_back`, destructor.
 
-(*temp).data
-In your file
-temp has type Node* (pointer to a Node).
-data is a member of class Node.
-So temp->data reads the integer stored in the current node while you walk the list.
--> vs .
-Expression	temp type	Meaning
-temp->data
-Node* (pointer)
-Access data through the pointer
-node.data
-Node (object)
-Access data on the object directly
-Rule of thumb: use -> when you have a pointer; use . when you have the object itself.
+### Meaning
 
+`temp->data` means: read **`data`** on the object **`temp` points to**. It is shorthand for:
 
-Insert in LL Middle
+`(*temp).data`
 
-Insert node at a given position in the LL
+| In [a.cpp](a.cpp) | Detail |
+|-------------------|--------|
+| **`temp`** | Type `Node*` — pointer to a `Node` |
+| **`data`** | Member of `class Node` |
+| **`temp->data`** | Value in the current node while traversing |
+| **`temp->next`** | Address of the next node (move `temp` forward in the loop) |
 
-LL.insert(val, pos)
+### `->` vs `.`
 
-the position is like an index 
-we can add value in the linked list middle but we cannot do that in the array and vector as they are not linked 
+| Expression | Type of left side | Meaning |
+|------------|-------------------|---------|
+| `temp->data` | `Node*` (pointer) | Access member **through** the pointer |
+| `node.data` | `Node` (object) | Access member on the **object itself** |
 
-steps : 
+**Rule:** use **`->`** when you have a **pointer**; use **`.`** when you have the **object**.
 
-1. create newNode 
-2. find node at pos-1 (loop)
-a) newnode -> next = temp -> next
-b) temp -> next = newNode
+---
+
+## `insert` — insert at a given index
+
+**Call:** `linkedList.insert(val, pos)`  
+**Reference:** [a.cpp](a.cpp) — `List::insert`  
+**Time:** `O(pos)` — walk from head to the node before the insertion point.
+
+### Why linked lists can insert “in the middle” easily
+
+In an **array** or **`vector`**, inserting in the middle often requires **shifting** every element after the gap. In a **linked list**, you only **rewire pointers** — no shifting of the rest of the data in memory.
+
+### `pos` is a 0-based index
+
+| `pos` | Behavior in [a.cpp](a.cpp) |
+|-------|----------------------------|
+| `0` | Delegates to `push_front` |
+| `1 … size-1` | Insert **after** the node at index `pos - 1` |
+| `size` (after last element) | `temp->next == nullptr` → `push_back` |
+
+### Steps (middle insert)
+
+| Step | Code idea in [a.cpp](a.cpp) |
+|------|----------------------------|
+| 1 | Create `newNode` with `val` |
+| 2 | Walk `temp` to index **`pos - 1`** (`for (i = 0; i < pos - 1; i++) temp = temp->next`) |
+| 3a | `newNode->next = temp->next` — new node points to old successor |
+| 3b | `temp->next = newNode` — predecessor points to new node |
+
+```
+  before:  ... ──► [ temp | • ] ──► [ 30 | • ] ──► ...
+
+  insert 15 at pos 1 (after node 10):
+
+  after:   ... ──► [ temp | • ] ──► [ 15 | • ] ──► [ 30 | • ] ──► ...
+                              newNode
+```
+
+**Example in [a.cpp](a.cpp):** After `10 -> 20 -> 30 -> 40 -> 50`, call `insert(15, 1)` → `10 -> 15 -> 20 -> 30 -> 40 -> 50 -> NULL`.
+
+---
+
+## `removeAt` — delete node at a given index
+
+**Call:** `linkedList.removeAt(pos)`  
+**Reference:** [a.cpp](a.cpp) — `List::removeAt` (not named `delete` — that is a C++ keyword)  
+**Time:** `O(pos)`.
+
+### Case 1 — remove front (`pos <= 0`)
+
+| Step | Effect |
+|------|--------|
+| `toDelete = head` | Remember node to free |
+| `head = head->next` | Second node becomes first |
+| `delete toDelete` | Free heap memory |
+| If list empty | `tail = nullptr` |
+
+### Case 2 — remove in middle or at end
+
+| Step | Effect |
+|------|--------|
+| Walk `temp` to index **`pos - 1`** | `temp` is node **before** the victim |
+| `toDelete = temp->next` | Node to remove |
+| `temp->next = toDelete->next` | Bypass `toDelete` |
+| If `toDelete` was tail | `tail = temp` |
+| `delete toDelete` | Free heap memory |
+
+```
+  before:  ... ──► [ temp | • ] ──► [ 20 | • ] ──► [ 30 | • ] ──► ...
+
+  removeAt(2) — remove node at index 2 (value 20):
+
+  after:   ... ──► [ temp | • ] ──► [ 30 | • ] ──► ...
+```
+
+**Example in [a.cpp](a.cpp):** After insert demo, `removeAt(2)` removes `20` → `10 -> 15 -> 30 -> 40 -> 50 -> NULL`.
+
+---
+
+## Deleting the entire linked list (destructor)
+
+Every node is created with **`new`**, so memory must be freed with **`delete`**. If you only remove nodes one-by-one in `main` but never free the rest, you get a **memory leak**.
+
+**Reference:** [a.cpp](a.cpp) — `~List()` destructor.
+
+### When it runs
+
+The **destructor** `~List()` runs automatically when a `List` object is **destroyed** — for example when `linkedList` goes out of scope at the end of `main`, or when a `List` local variable leaves a `{ }` block.
+
+You do **not** call the destructor yourself; C++ calls it for you.
+
+### What it does
+
+| Step | Action |
+|------|--------|
+| 1 | While `head != nullptr` |
+| 2 | Remember `head` in `toDelete` |
+| 3 | Move `head` to `head->next` |
+| 4 | `delete toDelete` |
+| 5 | After the loop, set `tail = nullptr` |
+
+Same idea as removing the front node repeatedly until the list is empty.
+
+```
+  before:  head ──► [10] ──► [20] ──► [30] ──► NULL ◄── tail
+
+  loop:    delete front node each time until head is NULL
+
+  after:   head ──► NULL    tail ──► NULL
+```
+
+### Why you need it
+
+| Without destructor | With destructor |
+|--------------------|-----------------|
+| Nodes stay on the heap after program logic “finishes” with the list | All `new` nodes are matched with `delete` when the `List` dies |
+| Memory leak (especially bad in long-running programs) | Clean shutdown of list memory |
+
+`removeAt` deletes **one** node; the destructor deletes **every** node still in the list.
+
+POP FRONT
+
+LL.pop_front 
+
+when we have to delete the first node of the ll
+
+Node* temp = head
+head = head -=> next
+temp -> next = NULL
+delete temp
+
+POP BACK
+
+LL.pop_back
+
