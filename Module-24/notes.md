@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — iterative search · [c.cpp](c.cpp) — recursive search.
+**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp) — iterative search · [c.cpp](c.cpp) — recursive search · [d.cpp](d.cpp) — reverse in place.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -498,6 +498,7 @@ Mirror of **`push_back`**: push adds at the end; pop removes the end.
 | `removeAt(pos)` | Remove at index | `O(pos)` |
 | `searchItr(key)` | Find key (iterative) | `O(n)` |
 | `searchRec(key)` | Find key (recursive) | `O(n)` |
+| `reverse()` | Reverse list in place | `O(n)` time, `O(1)` extra space |
 | `display()` | Print from head | `O(n)` |
 
 | Pair | Insert | Remove |
@@ -671,3 +672,144 @@ Each recursive call waits for the next. For a list of length `n`, recursion dept
 | [b.cpp](b.cpp) | `searchItr(head, key)` | Loop |
 | [c.cpp](c.cpp) | `searchRec(head, key, index)` | Recursion |
 | [a.cpp](a.cpp) | `List::searchItr(key)` / `List::searchRec(key)` | Loop / recursion inside full class |
+
+
+## Reverse a linked list in place
+
+**Call:** `linkedList.reverse()` in [a.cpp](a.cpp) · `reverseList(head)` in [d.cpp](d.cpp)  
+**Reference:** [d.cpp](d.cpp) (simple list in `main`) · [a.cpp](a.cpp) (updates `head` and `tail` on full `List`)
+
+### What “reverse” means
+
+Turn:
+
+`10 -> 20 -> 30 -> 40 -> NULL`
+
+into:
+
+`40 -> 30 -> 20 -> 10 -> NULL`
+
+Same **nodes** in memory — only **`next` pointers** change direction.
+
+### In place
+
+| In place? | Meaning |
+|-----------|---------|
+| **Yes (this algorithm)** | No extra linked list; **no new nodes** — only rewire existing links |
+| **No (other approach)** | Copy values or nodes into a new list/array — uses **O(n)** extra space |
+
+**In place** here means **constant extra space** for pointers (`prev`, `curr`, `next`), not “you cannot use a few variables.”
+
+---
+
+### Algorithm (iterative, three pointers)
+
+Used in [d.cpp](d.cpp) and [a.cpp](a.cpp).
+
+| Pointer | Role |
+|---------|------|
+| **`prev`** | Already reversed part (starts `nullptr`) |
+| **`curr`** | Current node being fixed |
+| **`next`** | Saves `curr->next` before we overwrite it |
+
+**Per node:**
+
+1. `next = curr->next` — save rest of list  
+2. `curr->next = prev` — reverse link  
+3. `prev = curr` — extend reversed segment  
+4. `curr = next` — move forward  
+
+**After loop:** `head = prev` (old tail becomes new head). In [a.cpp](a.cpp) also set **`tail = old head`** before the loop.
+
+```
+  step 0:  NULL  ←  10  →  20  →  30  →  40  →  NULL
+           prev   curr
+
+  step 1:  NULL  ←  10     20  →  30  →  40
+           prev   curr
+
+  ... after all steps:
+
+           40  →  30  →  20  →  10  →  NULL
+           head (prev)
+```
+
+### Walkthrough ([d.cpp](d.cpp))
+
+| After processing | Reversed part (`prev`) | Remaining (`curr`) |
+|------------------|------------------------|---------------------|
+| Start | `NULL` | `10 → 20 → 30 → 40` |
+| 1 | `10` | `20 → 30 → 40` |
+| 2 | `20 → 10` | `30 → 40` |
+| 3 | `30 → 20 → 10` | `40` |
+| Done | `40 → 30 → 20 → 10` | `NULL` |
+
+---
+
+### Complexity (detailed)
+
+Let **`n`** = number of nodes.
+
+#### Time complexity — **`O(n)`**
+
+| Reason | Detail |
+|--------|--------|
+| **One pass** | Each node visited **exactly once** in the `while (curr != nullptr)` loop |
+| **Work per node** | Constant pointer assignments (save `next`, flip link, advance) |
+| **Total** | `n` nodes × `O(1)` work = **`O(n)`** |
+
+This is **optimal** for a singly linked list if you must touch every link to reverse — you cannot do better than linear time.
+
+#### Space complexity — **`O(1)`** extra space
+
+| Counts toward space? | In this algorithm |
+|----------------------|-------------------|
+| **`prev`, `curr`, `next`** | Yes — **3 pointers**, fixed count (does not grow with `n`) |
+| **Recursion stack** | **No** — iterative version uses no recursive calls |
+| **New nodes / copy array** | **No** — in-place rewire |
+
+So **auxiliary space** = **`O(1)`**.  
+The list itself still uses **`O(n)`** memory for `n` nodes — that is the input, not extra overhead from the algorithm.
+
+#### Compare approaches
+
+| Method | Time | Extra space | Notes |
+|--------|------|-------------|--------|
+| **Three-pointer reverse (this module)** | `O(n)` | `O(1)` | Standard interview / course solution |
+| **Recursive reverse** | `O(n)` | `O(n)` stack | Same flip idea; call stack depth = `n` |
+| **Copy values to array, reverse array, write back** | `O(n)` | `O(n)` array | Not pointer-based; wastes space |
+| **Build new reversed list** | `O(n)` | `O(n)` new nodes | Not in place |
+
+---
+
+### [a.cpp](a.cpp) vs [d.cpp](d.cpp)
+
+| | [d.cpp](d.cpp) | [a.cpp](a.cpp) `List::reverse()` |
+|---|----------------|----------------------------------|
+| **API** | `reverseList(head)` | `linkedList.reverse()` |
+| **Head** | `head = prev` via reference | `head = prev` |
+| **Tail** | Not tracked | `tail = old head` before loop |
+| **Empty / one node** | Loop still OK | Early return if `head == nullptr` or `head == tail` |
+
+### Example ([d.cpp](d.cpp))
+
+```
+Before: 10 -> 20 -> 30 -> 40 -> NULL
+After:  40 -> 30 -> 20 -> 10 -> NULL
+```
+
+### Example ([a.cpp](a.cpp))
+
+On `15 -> 30 -> 40`, after `reverse()` → `40 -> 30 -> 15 -> NULL`.
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Lose `curr->next` before saving it | Rest of list lost — always save in `next` first |
+| Forget to update **`tail`** in [a.cpp](a.cpp) | `push_back` breaks after reverse |
+| Reverse by only swapping **values** | Works for ints but wrong when nodes are moved/shared elsewhere — prefer pointer reverse |
+
+
+FIND AND REMOVE THE Nth NODE FROM END
+

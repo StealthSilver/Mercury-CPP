@@ -222,6 +222,30 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    // reverse — reverse list in place  |  time O(n), extra space O(1)
+    // -------------------------------------------------------------------------
+    void reverse() {
+        if (head == nullptr || head == tail) {
+            return;
+        }
+
+        tail = head;  // old head becomes the new tail
+
+        Node* prev = nullptr;
+        Node* curr = head;
+        Node* next = nullptr;
+
+        while (curr != nullptr) {
+            next = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = next;
+        }
+
+        head = prev;  // prev is the old tail (new head)
+    }
+
+    // -------------------------------------------------------------------------
     // display — traverse from head; uses temp->data and temp->next
     // -------------------------------------------------------------------------
     void display() const {
@@ -277,6 +301,9 @@ int main() {
 
     cout << "searchRec(30): " << linkedList.searchRec(30) << endl;  // 1
     cout << "searchRec(99): " << linkedList.searchRec(99) << endl;  // -1
+
+    linkedList.reverse();
+    linkedList.display();  // 40 -> 30 -> 15 -> NULL
 
     // linkedList goes out of scope here → ~List() deletes all remaining nodes
     return 0;
