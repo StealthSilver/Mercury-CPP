@@ -1,6 +1,6 @@
 # MODULE 28 — Binary Trees
 
-**Illustration code:** `a.cpp`–`z.cpp` (binary tree concepts & problems)
+**Illustration code:** `a.cpp` (build from preorder) · `b.cpp` (preorder) · `c.cpp` (inorder) · `d.cpp` (postorder) · `e.cpp` (level order / BFS) · `f.cpp`–`z.cpp` (more topics)
 
 ---
 
@@ -614,7 +614,17 @@ Path from root to **8**:
 
 ## Build tree from preorder (with `-1` for null)
 
+**Illustration code:** [`a.cpp`](a.cpp)
+
 Often a tree is **not** given as pointers — it is given as a **flat array** in **preorder**, with **`-1`** marking a **missing child** (null pointer).
+
+Run from this folder:
+
+```bash
+g++ -std=c++17 -o a a.cpp && ./a
+```
+
+`a.cpp` prints all **13 build steps**, the final tree shape, and checks that preorder serialization matches the input array.
 
 **Corrected array for this example:**
 
@@ -737,6 +747,8 @@ build → 1
 
 ### Code (C++)
 
+Full runnable version with step-by-step output: [`a.cpp`](a.cpp) (`buildFromPreorder`, `main`).
+
 ```cpp
 struct Node {
     int data;
@@ -763,8 +775,6 @@ Node* build(vector<int>& arr) {
 // Node* root = build(arr);
 ```
 
-**Illustration code:** run `a.cpp` — prints each build step and verifies preorder matches input.
-
 ---
 
 ### Preorder vs other serializations
@@ -784,3 +794,294 @@ Node* build(vector<int>& arr) {
 2. After a node, next values build its **left** subtree completely, then **right**.
 3. Each **leaf** contributes **two `-1`s** in the array (no left, no right).
 4. Array length for a tree with `n` real nodes is **2n + 1** when every null child is written (including missing children of nodes with one child).
+
+---
+
+## Tree traversal
+
+**Traversal** means visiting **every node** in the tree **exactly once** in a defined order.
+
+We use the same sample tree in `b.cpp`–`e.cpp` (built in `a.cpp`):
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+```
+
+| Traversal | Visit order (mnemonic) | File |
+|-----------|------------------------|------|
+| **Preorder** | **Root** → Left → Right | [`b.cpp`](b.cpp) |
+| **Inorder** | Left → **Root** → Right | [`c.cpp`](c.cpp) |
+| **Postorder** | Left → Right → **Root** | [`d.cpp`](d.cpp) |
+| **Level order** | Level by level (BFS) | [`e.cpp`](e.cpp) |
+
+**Outputs on this tree:**
+
+| Traversal | Sequence |
+|-----------|----------|
+| Preorder | **1, 2, 4, 5, 3, 6** |
+| Inorder | **4, 2, 5, 1, 3, 6** |
+| Postorder | **4, 5, 2, 6, 3, 1** |
+| Level order | **1, 2, 3, 4, 5, 6** |
+
+```text
+Preorder:   visit order as you read the tree "top-first" at each node
+            1 → 2 → 4 → 5 → 3 → 6
+
+Inorder:    left subtree, then node, then right
+            4 → 2 → 5 → 1 → 3 → 6
+
+Postorder:  children before parent
+            4 → 5 → 2 → 6 → 3 → 1
+
+Level order (by row):
+  Level 0:  1
+  Level 1:  2, 3
+  Level 2:  4, 5, 6
+```
+
+---
+
+### Recursive vs iterative
+
+| Style | Traversals | How |
+|-------|------------|-----|
+| **Recursive** | Preorder, inorder, postorder | Call stack follows left/right subtrees |
+| **Iterative** | Level order (BFS); others possible with explicit stack | **Queue** for level order |
+
+All traversals visit **n** nodes → **O(n)** time.
+
+| Traversal | Time | Space (extra) |
+|-----------|------|----------------|
+| Preorder / inorder / postorder (recursive) | **O(n)** | **O(h)** call stack, `h` = height; worst **O(n)** if skewed |
+| Level order (BFS + queue) | **O(n)** | **O(w)** queue size, `w` = max width; worst **O(n)** |
+
+---
+
+## Preorder traversal (recursive)
+
+**Illustration code:** [`b.cpp`](b.cpp)
+
+**Order:** **Root** → **Left subtree** → **Right subtree**
+
+### Algorithm
+
+1. If `root == nullptr`, return.
+2. **Visit** (print / store) `root`.
+3. Recurse on `root->left`.
+4. Recurse on `root->right`.
+
+```text
+        1  ← visit 1st
+       / \
+      2   3     then whole left of 1, then right of 1
+     / \
+    4   5
+
+Visit trace:  1, 2, 4, 5, 3, 6
+```
+
+```cpp
+void preorder(Node* root) {
+    if (!root) return;
+    cout << root->data << " ";   // root first
+    preorder(root->left);
+    preorder(root->right);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** recursion stack |
+
+**Uses:** copy tree, prefix expression, serialize with null markers (`a.cpp`).
+
+Run: `g++ -std=c++17 -o b b.cpp && ./b`
+
+---
+
+## Inorder traversal (recursive)
+
+**Illustration code:** [`c.cpp`](c.cpp)
+
+**Order:** **Left subtree** → **Root** → **Right subtree**
+
+### Algorithm
+
+1. If `root == nullptr`, return.
+2. Recurse on `root->left`.
+3. **Visit** `root`.
+4. Recurse on `root->right`.
+
+```text
+        1
+       / \
+      2   3
+     / \
+    4   5
+
+Left of 1: inorder(2) → 4, 2, 5
+Visit 1
+Right of 1: 3, 6
+
+Output: 4, 2, 5, 1, 3, 6
+```
+
+```cpp
+void inorder(Node* root) {
+    if (!root) return;
+    inorder(root->left);
+    cout << root->data << " ";   // root in the middle
+    inorder(root->right);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** recursion stack |
+
+**Uses:** on a **BST**, inorder prints values in **sorted order**.
+
+Run: `g++ -std=c++17 -o c c.cpp && ./c`
+
+---
+
+## Postorder traversal (recursive)
+
+**Illustration code:** [`d.cpp`](d.cpp)
+
+**Order:** **Left subtree** → **Right subtree** → **Root**
+
+### Algorithm
+
+1. If `root == nullptr`, return.
+2. Recurse on `root->left`.
+3. Recurse on `root->right`.
+4. **Visit** `root` (root **last**).
+
+```text
+        1
+       / \
+      2   3
+     / \
+    4   5
+
+Postorder(2) → 4, 5, 2
+Postorder(3) → 6, 3
+Then root 1
+
+Output: 4, 5, 2, 6, 3, 1
+```
+
+```cpp
+void postorder(Node* root) {
+    if (!root) return;
+    postorder(root->left);
+    postorder(root->right);
+    cout << root->data << " ";   // root last
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** recursion stack |
+
+**Uses:** delete tree (free children before parent), postfix expressions.
+
+Run: `g++ -std=c++17 -o d d.cpp && ./d`
+
+---
+
+## Level order traversal (iterative / BFS)
+
+**Illustration code:** [`e.cpp`](e.cpp)
+
+**Order:** visit **level 0**, then **level 1**, then **level 2**, … — left to right within each level.
+
+Uses a **queue** (FIFO), not recursion.
+
+### Algorithm
+
+1. If `root == nullptr`, return.
+2. Enqueue `root`.
+3. While queue is not empty:
+   - Dequeue front → **visit** it.
+   - If it has a **left** child, enqueue left.
+   - If it has a **right** child, enqueue right.
+
+```text
+Queue steps (visit when dequeuing):
+
+Start:     [1]
+Dequeue 1: visit 1     enqueue 2, 3        →  [2, 3]
+Dequeue 2: visit 2     enqueue 4, 5        →  [3, 4, 5]
+Dequeue 3: visit 3     enqueue 6           →  [4, 5, 6]
+Dequeue 4: visit 4                          →  [5, 6]
+Dequeue 5: visit 5                          →  [6]
+Dequeue 6: visit 6                          →  []
+
+Output: 1, 2, 3, 4, 5, 6
+```
+
+```text
+By level:
+
+  Level 0:  1
+  Level 1:  2  3
+  Level 2:  4  5  6
+```
+
+```cpp
+void levelOrder(Node* root) {
+    if (!root) return;
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node* cur = q.front();
+        q.pop();
+        cout << cur->data << " ";
+        if (cur->left)  q.push(cur->left);
+        if (cur->right) q.push(cur->right);
+    }
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each node enqueued and dequeued once |
+| **Space** | **O(w)** — max queue size ≈ **width** of tree; complete tree last level up to **n/2** |
+
+**Uses:** print tree by rows, BFS shortest path on unweighted graphs, level-wise problems (sum per level, zigzag, etc.).
+
+Run: `g++ -std=c++17 -o e e.cpp && ./e`
+
+---
+
+### All traversals — comparison
+
+```mermaid
+flowchart LR
+  subgraph pre["Preorder"]
+    P1[Root] --> P2[Left] --> P3[Right]
+  end
+  subgraph in["Inorder"]
+    I1[Left] --> I2[Root] --> I3[Right]
+  end
+  subgraph post["Postorder"]
+    O1[Left] --> O2[Right] --> O3[Root]
+  end
+```
+
+| | Preorder | Inorder | Postorder | Level order |
+|--|----------|---------|-----------|-------------|
+| **Root position** | First | Middle | Last | By row |
+| **Implementation** | Recursive | Recursive | Recursive | **Queue** (iterative) |
+| **File** | `b.cpp` | `c.cpp` | `d.cpp` | `e.cpp` |
+| **Time** | O(n) | O(n) | O(n) | O(n) |
+| **Extra space** | O(h) | O(h) | O(h) | O(w) |
