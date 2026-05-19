@@ -1,6 +1,6 @@
 # MODULE 28 — Binary Trees
 
-**Illustration code:** `a.cpp` (build from preorder) · `b.cpp` (preorder) · `c.cpp` (inorder) · `d.cpp` (postorder) · `e.cpp` (level order / BFS) · `f.cpp`–`z.cpp` (more topics)
+**Illustration code:** `a.cpp` (build from preorder) · `b.cpp`–`e.cpp` (traversals) · `f.cpp` (height) · `g.cpp` (count nodes) · `h.cpp` (sum of nodes) · `i.cpp`–`z.cpp` (more topics)
 
 ---
 
@@ -1085,3 +1085,181 @@ flowchart LR
 | **File** | `b.cpp` | `c.cpp` | `d.cpp` | `e.cpp` |
 | **Time** | O(n) | O(n) | O(n) | O(n) |
 | **Extra space** | O(h) | O(h) | O(h) | O(w) |
+
+---
+
+## Height of a binary tree
+
+**Illustration code:** [`f.cpp`](f.cpp)
+
+**Height of the tree** = **maximum number of edges** on any path from the **root** down to a **leaf**.
+
+- A **leaf** has height **0** (no edges below it).
+- An **empty tree** is often defined as height **-1** (or **0** if counting nodes — check the problem).
+
+Same sample tree as `a.cpp`–`e.cpp`:
+
+```text
+        1          height(1) = 2  ← tree height
+       / \
+      2   3        height(2) = 1, height(3) = 1
+     / \   \
+    4   5   6      height(4)=0, height(5)=0, height(6)=0
+
+Longest path: 1 → 2 → 4  (or 1 → 2 → 5, or 1 → 3 → 6)  →  2 edges
+```
+
+```text
+Per-node heights (edges to deepest leaf below):
+
+    1 (2)
+   / \
+  2(1) 3(1)
+ / \    \
+4(0)5(0) 6(0)
+```
+
+### Algorithm (recursive)
+
+For node `root`:
+
+1. If `root == nullptr` → return **-1** (no node; no edges).
+2. Else → **1 + max**( height(left), height(right) ).
+
+Why it works: height of a node = **one edge down** to the **taller** child, plus that child’s subtree height.
+
+```text
+height(4) = 1 + max(-1, -1) = 0     (leaf)
+height(5) = 0
+height(2) = 1 + max(0, 0) = 1
+height(6) = 0
+height(3) = 1 + max(-1, 0) = 1      (only right child)
+height(1) = 1 + max(1, 1) = 2       ← answer
+```
+
+```cpp
+int height(Node* root) {
+    if (!root) return -1;
+    return 1 + max(height(root->left), height(root->right));
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — visit every node once |
+| **Space** | **O(h)** — recursion stack; worst **O(n)** if skewed |
+
+Run: `g++ -std=c++17 -o f f.cpp && ./f`
+
+---
+
+## Count of nodes
+
+**Illustration code:** [`g.cpp`](g.cpp)
+
+**Count** = total number of **nodes** in the tree.
+
+### Algorithm (recursive)
+
+1. If `root == nullptr` → return **0**.
+2. Else → **1 + count(left) + count(right)**.
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+count(4) = 1
+count(5) = 1
+count(2) = 1 + 1 + 1 = 3   (nodes 2, 4, 5)
+count(6) = 1
+count(3) = 1 + 0 + 1 = 2   (nodes 3, 6)
+count(1) = 1 + 3 + 2 = 6   ← answer
+```
+
+```cpp
+int countNodes(Node* root) {
+    if (!root) return 0;
+    return 1 + countNodes(root->left) + countNodes(root->right);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** recursion stack |
+
+Run: `g++ -std=c++17 -o g g.cpp && ./g`
+
+---
+
+## Sum of nodes
+
+**Illustration code:** [`h.cpp`](h.cpp)
+
+**Sum** = add the **data** value of **every node** in the tree.
+
+### Algorithm (recursive)
+
+1. If `root == nullptr` → return **0**.
+2. Else → **root->data + sum(left) + sum(right)**.
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+sum(4) = 4
+sum(5) = 5
+sum(2) = 2 + 4 + 5 = 11
+sum(6) = 6
+sum(3) = 3 + 6 = 9
+sum(1) = 1 + 11 + 9 = 21   ← answer
+```
+
+```cpp
+int sumNodes(Node* root) {
+    if (!root) return 0;
+    return root->data + sumNodes(root->left) + sumNodes(root->right);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** recursion stack |
+
+Run: `g++ -std=c++17 -o h h.cpp && ./h`
+
+---
+
+### Height vs count vs sum — comparison
+
+| Problem | Base case (`nullptr`) | Recurrence | Sample tree answer |
+|---------|----------------------|------------|-------------------|
+| **Height** | `-1` | `1 + max(L, R)` | **2** edges |
+| **Count** | `0` | `1 + L + R` | **6** nodes |
+| **Sum** | `0` | `data + L + R` | **21** |
+
+```mermaid
+flowchart TD
+  R["Visit node"] --> L["Solve left subtree"]
+  R --> RT["Solve right subtree"]
+  L --> C["Combine results"]
+  RT --> C
+```
+
+All three use the same **recursive pattern**: trust answers from left and right subtrees, then combine at the current node.
+
+
+DIAMETER OF A TREE -> i.cpp
+
+No. of nodes in the longest path between 2 leaves
+
+approach 1 -> O(n^2) -> i.cpp
+
+approach 2 -> O(n) -> j.cpp
