@@ -1,6 +1,6 @@
 # MODULE 27 — Greedy Algorithms
 
-**Illustration code:** `a.cpp`–`d.cpp` (greedy basics) · `e.cpp`–`g.cpp` (practice) · `h.cpp` (job sequencing)
+**Illustration code:** `a.cpp`–`h.cpp` (greedy concepts & problems) · `i.cpp`–`m.cpp` (LeetCode-style greedy)
 
 ---
 
@@ -867,3 +867,177 @@ If the highest-profit job not yet scheduled is **J**, there is an optimal schedu
 `h.cpp` implements **`int jobSequencing(vector<int> profit, vector<int> deadline)`** with the classic sample.
 
 Run `h.cpp` — expected total profit **127** on the table above.
+
+---
+
+# LeetCode-style greedy problems
+
+---
+
+## Problem 1 — Split balanced string (`i.cpp`)
+
+### Problem statement
+
+A string of **`'L'`** and **`'R'`** is **balanced** if it has the same count of **`L`** and **`R`**.
+
+Given a **balanced** string **`s`**, split it into the **maximum number** of contiguous substrings, each **balanced**.
+
+**Example:** `s = "RLRRLLRLRL"` → answer **4** (e.g. `"RL"`, `"RRLL"`, `"RL"`, `"RL"`).
+
+### Greedy approach
+
+Scan left to right. Track **`balance`**: **`+1`** for **`L`**, **`-1`** for **`R`**.
+
+Whenever **`balance == 0`**, the prefix so far is a minimal balanced piece — **cut** and start a new piece.
+
+```text
+s = "RLRRLLRLRL"
+     ^balance=0 -> 1st piece "RL"
+        ^balance=0 -> 2nd piece "RRLL"
+              ...
+```
+
+```mermaid
+flowchart LR
+  C["scan char"] --> U["update balance"]
+  U --> Z{"balance == 0?"}
+  Z -->|yes| I["count++"]
+  Z -->|no| C
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** |
+
+---
+
+## Problem 2 — Largest odd number substring (`j.cpp`)
+
+### Problem statement
+
+Given numeric string **`num`**, return the **largest-valued odd** number that is a **non-empty substring** of **`num`**, or **`""`** if none exists.
+
+An integer is **odd** iff its **last digit** is odd.
+
+### Greedy approach
+
+To maximize value as a substring **`num[0..i]`**:
+
+- Prefer **longer** prefix (more digits).
+- Last digit must be **odd**.
+
+So find the **rightmost odd digit** at index **`i`**, return **`num.substr(0, i+1)`**.
+
+**Example:** `num = "4205"` → rightmost odd digit **`5`** at index 3 → **`"4205"`**.  
+`num = "420"` → rightmost odd **`3`** → **`"3"`** (not `"420"` — even last digit).
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** extra (output string **O(n)**) |
+
+---
+
+## Problem 3 — Smallest string with numeric value `k` (`k.cpp`)
+
+### Problem statement
+
+Lowercase letters **`a=1 … z=26`**. String value = sum of letter values.
+
+Given **`n`** (length) and **`k`** (target sum), return the **lexicographically smallest** string of length **`n`** with value exactly **`k`**.
+
+If impossible: **`k < n`** (all **`a`**) or **`k > 26*n`** (all **`z`**).
+
+### Greedy approach
+
+1. Start with **`n`** copies of **`'a'`** (minimum value **`n`**, lexicographically smallest base).
+2. **`rem = k - n`** extra value to distribute.
+3. From **right to left**, raise letters as little as possible: add at most **`25`** per position (`'a'` → `'z'`).
+
+Earlier positions stay **`'a'`** as long as possible → **smallest** lex order.
+
+**Example:** `n = 3`, `k = 27` → `"aay"` (1+1+25=27).
+
+```text
+aaa  rem=24 -> aaz rem=23 -> ... -> aay
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** for the string |
+
+---
+
+## Problem 4 — Best time to buy and sell stock (`l.cpp`)
+
+### Problem statement
+
+Array **`prices[i]`** = stock price on day **`i`**. **One** buy and **one** sell later. Maximize **`sell - buy`**, or **`0`** if no profit.
+
+### Greedy approach
+
+One pass: keep **`minPrice`** seen so far; at each day **`maxProfit = max(maxProfit, price - minPrice)`**.
+
+Buying at the **cheapest day so far** before selling today is the best sell on that day.
+
+```text
+prices: 7 1 5 3 6 4
+min:    7 1 1 1 1 1
+profit: 0 0 4 2 5 5  -> ans 5 (buy 1 sell 6)
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** |
+
+---
+
+## Problem 5 — Split array largest sum (`m.cpp`)
+
+### Problem statement
+
+Split **`nums`** into **`k`** **non-empty contiguous** subarrays. Minimize the **maximum** subarray sum among all splits.
+
+**Example:** `nums = [7,2,5,10,8]`, `k = 2` → split `[7,2,5]` and `[10,8]` → max sum **14** (answer).
+
+### Approach — binary search + greedy check
+
+Pure greedy on cut positions is hard. Standard solution:
+
+1. **Binary search** answer **`mid`** = candidate for “largest allowed subarray sum”.
+2. **Greedy validation:** scan **`nums`**, pack into subarrays without exceeding **`mid`**; count how many pieces needed. If count **`≤ k`**, **`mid`** is feasible.
+
+```text
+lo = max(nums), hi = sum(nums)
+while lo < hi:
+    if canSplit(mid): hi = mid
+    else: lo = mid + 1
+```
+
+```mermaid
+flowchart TD
+  BS["binary search on max sum"] --> G["greedy: min pieces with limit mid"]
+  G --> F{"pieces <= k?"}
+  F -->|yes| L["try smaller mid"]
+  F -->|no| R["need larger mid"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n log S)** — `S = sum(nums)` |
+| **Space** | **O(1)** |
+
+Run **`i.cpp`** through **`m.cpp`** for full solutions.
