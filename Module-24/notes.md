@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — custom `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms on simple lists · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycle detect/remove · [i.cpp](i.cpp)–[j.cpp](j.cpp) — STL · [k.cpp](k.cpp)–[m.cpp](m.cpp) — middle, merge sort, merge two sorted lists.
+**Companion code:** [a.cpp](a.cpp) — singly linked `List` · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycles · [i.cpp](i.cpp)–[o.cpp](o.cpp) — STL & advanced · [p.cpp](p.cpp) — **doubly linked list**.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -2222,3 +2222,560 @@ Merged: 1 -> 1 -> 2 -> 3 -> 4 -> 4 -> NULL
 |------|--------|
 | [m.cpp](m.cpp) | Merge two sorted lists |
 | [l.cpp](l.cpp) | Uses same merge in merge sort |
+| [n.cpp](n.cpp) | Zig-zag reorder list (full) |
+| [o.cpp](o.cpp) | Alternate merge (zig-zag step 3) |
+
+---
+
+## Zig-zag linked list (reorder list)
+
+**Problem:** Given a linked list in order  
+`L(1) -> L(2) -> L(3) -> … -> L(n-1) -> L(n)`  
+
+rearrange it so values alternate from **front** and **back**:
+
+`L(1) -> L(n) -> L(2) -> L(n-1) -> L(3) -> L(n-2) -> …`
+
+**Reference:** [n.cpp](n.cpp) — `reorderZigZag(head)`  
+**Also called:** Reorder List (LeetCode 143 style).
+
+### Examples
+
+| Before | After (zig-zag) |
+|--------|-----------------|
+| `1 -> 2 -> 3 -> 4 -> 5` | `1 -> 5 -> 2 -> 4 -> 3` |
+| `1 -> 2 -> 3 -> 4` | `1 -> 4 -> 2 -> 3` |
+| `1 -> 2` | `1 -> 2` |
+| `1` | `1` |
+
+**Pattern:** Take from the **left** end, then **right** end, then left, then right, …
+
+---
+
+### Why not swap values only?
+
+You *could* copy values into an array and reorder — **`O(n)`** time but **`O(n)`** extra space.
+
+The standard **`O(1)`** extra-space solution **rewires `next` pointers** using three ideas you already know:
+
+| Step | Technique | From |
+|------|-----------|------|
+| 1 | **Split** at middle | [l.cpp](l.cpp) / [k.cpp](k.cpp) |
+| 2 | **Reverse** second half | [d.cpp](d.cpp) |
+| 3 | **Merge alternately** | Like [m.cpp](m.cpp), but not sorted — strict alternation |
+
+---
+
+### Algorithm — three steps
+
+#### Step 1 — split into two halves
+
+Use **slow / fast** with `fast = head->next` (same as [l.cpp](l.cpp)) for a balanced split.
+
+```
+  1 -> 2 -> 3 -> 4 -> 5
+
+  left (first half):   1 -> 2 -> 3
+  right (second half): 4 -> 5
+```
+
+| Length | First half | Second half |
+|--------|------------|-------------|
+| **Odd** `5` | 3 nodes (includes middle) | 2 nodes |
+| **Even** `4` | 2 nodes | 2 nodes |
+
+#### Step 2 — reverse the second half
+
+```
+  right before: 4 -> 5
+  right after:  5 -> 4
+```
+
+Now the “tail end” of the original list is easy to reach from the front of `second`.
+
+#### Step 3 — merge alternately (zig-zag weave)
+
+See **[o.cpp](o.cpp)** for this step alone (`alternateMerge`).
+
+Pointers **`first`** (start of left half) and **`second`** (reversed right half).
+
+Each iteration:
+
+| Action | Links |
+|--------|--------|
+| Save | `nextFirst = first->next`, `nextSecond = second->next` |
+| Link | `first->next = second` |
+| Link | `second->next = nextFirst` |
+| Advance | `first = nextFirst`, `second = nextSecond` |
+
+```
+  first:  1 -> 2 -> 3
+  second: 5 -> 4
+
+  round 1: 1 -> 5 -> 2 -> 3,   second = 4
+  round 2: 1 -> 5 -> 2 -> 4 -> 3
+```
+
+Stop when **`second == nullptr`**. The remaining tail of the first half (if any) is already in place.
+
+---
+
+### Walkthrough — odd length
+
+**Start:** `1 -> 2 -> 3 -> 4 -> 5`
+
+| Step | Result |
+|------|--------|
+| Split | `1->2->3` and `4->5` |
+| Reverse 2nd | `5->4` |
+| Weave | `1->5->2->4->3` |
+
+### Walkthrough — even length
+
+**Start:** `1 -> 2 -> 3 -> 4`
+
+| Step | Result |
+|------|--------|
+| Split | `1->2` and `3->4` |
+| Reverse 2nd | `4->3` |
+| Weave | `1->4->2->3` |
+
+---
+
+### Complexity
+
+Let **n** = number of nodes.
+
+| Phase | Time | Extra space |
+|-------|------|-------------|
+| Split | `O(n)` | `O(1)` |
+| Reverse 2nd half | `O(n)` | `O(1)` |
+| Alternate merge | `O(n)` | `O(1)` |
+| **Total** | **`O(n)`** | **`O(1)`** |
+
+No new nodes — only pointer changes. Recursion is **not** required.
+
+---
+
+### Code shape ([n.cpp](n.cpp))
+
+```cpp
+void reorderZigZag(Node* head) {
+    Node* second = split(head);
+    second = reverseList(second);
+    Node* first = head;
+    while (second) {
+        Node* n1 = first->next;
+        Node* n2 = second->next;
+        first->next = second;
+        second->next = n1;
+        first = n1;
+        second = n2;
+    }
+}
+```
+
+---
+
+### Example output ([n.cpp](n.cpp))
+
+```
+Odd length before:  1 -> 2 -> 3 -> 4 -> 5 -> NULL
+Odd length after:   1 -> 5 -> 2 -> 4 -> 3 -> NULL
+
+Even length before: 1 -> 2 -> 3 -> 4 -> NULL
+Even length after:  1 -> 4 -> 2 -> 3 -> NULL
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Skip reversing second half | Cannot access end values in order |
+| Wrong split (unbalanced) | Still may work for some cases but weave order breaks |
+| Wrong weave order | Must attach **second** after **first**, then **second->next = nextFirst** |
+| Lose `next` before saving | Always save `n1`, `n2` before rewiring |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [n.cpp](n.cpp) | Zig-zag reorder (full pipeline) |
+| [o.cpp](o.cpp) | Alternate merge only (zig-zag weave step) |
+| [k.cpp](k.cpp) | Middle (split) |
+| [d.cpp](d.cpp) | Reverse |
+| [m.cpp](m.cpp) | Merge two **sorted** lists |
+
+---
+
+## Zig-zag — alternate merging ([o.cpp](o.cpp))
+
+**Focus:** The **third step** of zig-zag reorder — weave two lists together **one node at a time from each**, not the full split/reverse pipeline (see [n.cpp](n.cpp) for that).
+
+**Problem:** You have two lists (usually **first half** and **reversed second half**). Build one list by always taking **one node from A, then one from B, then A, then B, …**
+
+**Reference:** [o.cpp](o.cpp) — `alternateMerge(first, second)`
+
+### Example (after split + reverse in [n.cpp](n.cpp))
+
+| List | Nodes |
+|------|--------|
+| **First half** | `1 -> 2 -> 3` |
+| **Second half** (reversed) | `5 -> 4` |
+| **After alternate merge** | `1 -> 5 -> 2 -> 4 -> 3` |
+
+This is exactly the zig-zag pattern: front, back, front, back, …
+
+---
+
+### Alternate merge vs sorted merge ([m.cpp](m.cpp))
+
+| | [m.cpp](m.cpp) `mergeTwoSorted` | [o.cpp](o.cpp) `alternateMerge` |
+|---|--------------------------------|--------------------------------|
+| **Rule** | Smaller **value** wins | Strict **turn** — always from `first`, then `second` |
+| **Input order** | Both lists **sorted** | Any order (in zig-zag, second is **reversed** tail half) |
+| **Result** | One **sorted** list | **Interleaved** list |
+| **Compare** | `a->data <= b->data` | No compare — only alternation |
+
+```
+  sorted merge (m):     pick min(1,1) then min(2,3) ...
+  alternate merge (o):  1, then 5, then 2, then 4, then 3  (fixed pattern)
+```
+
+---
+
+### Algorithm
+
+Pointers: **`first`** (left chain), **`second`** (right chain).
+
+| Loop while `second != nullptr` | Action |
+|--------------------------------|--------|
+| Save | `n1 = first->next`, `n2 = second->next` |
+| Link | `first->next = second` |
+| Link | `second->next = n1` |
+| Advance | `first = n1`, `second = n2` |
+
+```cpp
+while (second != nullptr) {
+    Node* n1 = first->next;
+    Node* n2 = second->next;
+    first->next = second;
+    second->next = n1;
+    first = n1;
+    second = n2;
+}
+```
+
+**Why loop while `second`?**  
+If lengths differ by one (odd total), the first half has one extra node at the end — it is already linked via `second->next = n1`; no more nodes in `second`.
+
+---
+
+### Trace
+
+```
+  first:  1 -> 2 -> 3
+  second: 5 -> 4
+
+  iter 1: 1->5->2->3,  first=2, second=4
+  iter 2: 2->4->3,      first=3, second=null
+  done:   1->5->2->4->3
+```
+
+---
+
+### Complexity
+
+Let **n** = length of `first`, **m** = length of `second`.
+
+| | Value |
+|---|--------|
+| **Time** | **`O(n + m)`** — each node attached once |
+| **Extra space** | **`O(1)`** — only pointer variables |
+
+---
+
+### Where it fits in zig-zag ([n.cpp](n.cpp))
+
+| Step | File / function |
+|------|-----------------|
+| 1. Split at middle | [k.cpp](k.cpp) / [l.cpp](l.cpp) `split` |
+| 2. Reverse second half | [d.cpp](d.cpp) `reverseList` |
+| 3. **Alternate merge** | **[o.cpp](o.cpp)** `alternateMerge` |
+
+```cpp
+// Inside n.cpp after split + reverse:
+second = reverseList(second);
+alternateMerge(head, second);  // head is first half
+```
+
+---
+
+### Example output ([o.cpp](o.cpp))
+
+```
+First half:  1 -> 2 -> 3 -> NULL
+Second half: 5 -> 4 -> NULL
+After alternate merge: 1 -> 5 -> 2 -> 4 -> 3 -> NULL
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Use sorted-merge logic | Wrong order — must **alternate**, not compare values |
+| Loop `while (first && second)` and stop early | May drop nodes — standard pattern: **`while (second)`** |
+| Forget to save `n1`, `n2` before rewiring | Lose rest of list |
+| Second half not reversed first | Zig-zag order wrong — prepare lists like [n.cpp](n.cpp) |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [o.cpp](o.cpp) | Alternate merge (weave) |
+| [n.cpp](n.cpp) | Full zig-zag (split + reverse + alternate merge) |
+| [m.cpp](m.cpp) | Merge two **sorted** lists |
+
+## Doubly linked list (DLL)
+
+**Reference:** [p.cpp](p.cpp) — `DNode`, `DoublyList` with full operations  
+**Prerequisite:** [a.cpp](a.cpp) singly linked list — same ideas, plus a **`prev`** pointer per node.
+
+---
+
+### What is a doubly linked list?
+
+Each node stores:
+
+| Field | Role |
+|-------|------|
+| **`data`** | Value |
+| **`next`** | Pointer to the **next** node (toward tail) |
+| **`prev`** | Pointer to the **previous** node (toward head) |
+
+```
+  nullptr <-> [ 10 | • | • ] <-> [ 20 | • | • ] <-> [ 30 | • | • ] <-> nullptr
+               ^head                              ^tail
+               prev  next                           prev  next
+```
+
+You can walk **forward** (`next`) or **backward** (`prev`).
+
+**One-line intuition:** Singly linked = one-way street; doubly linked = **two-way street** between neighbors.
+
+---
+
+### Singly ([a.cpp](a.cpp)) vs doubly ([p.cpp](p.cpp))
+
+| Feature | Singly linked | Doubly linked |
+|---------|---------------|---------------|
+| **Pointers per node** | 1 (`next`) | 2 (`next`, `prev`) |
+| **`push_front` / `push_back`** | `O(1)` with head + tail | `O(1)` |
+| **`pop_front`** | `O(1)` | `O(1)` |
+| **`pop_back`** | **`O(n)`** — walk to predecessor | **`O(1)`** — use `tail->prev` |
+| **Traverse backward** | Not possible | `O(n)` via `prev` |
+| **Extra memory** | Less | More (one pointer per node) |
+
+STL **`std::list`** ([i.cpp](i.cpp)) is typically implemented as a **doubly linked list** — that is why `pop_back` is `O(1)`.
+
+---
+
+### `head` and `tail`
+
+Same as singly linked:
+
+| Pointer | Role |
+|---------|------|
+| **`head`** | First node (`prev == nullptr`) |
+| **`tail`** | Last node (`next == nullptr`) |
+
+Empty list: `head = tail = nullptr`.
+
+---
+
+### Operations in [p.cpp](p.cpp)
+
+#### Constructor / destructor
+
+| | Action |
+|---|--------|
+| **`DoublyList()`** | `head = tail = nullptr` |
+| **`~DoublyList()`** | Walk forward from `head`, `delete` each node |
+
+---
+
+#### `push_front(val)` — `O(1)`
+
+| Case | Links |
+|------|--------|
+| **Empty** | `head = tail = newNode` |
+| **Non-empty** | `newNode->next = head`, `head->prev = newNode`, `head = newNode` |
+
+```
+  before:  nullptr <-> [10] <-> [20] <-> nullptr
+
+  after push_front(5):
+           nullptr <-> [5] <-> [10] <-> [20] <-> nullptr
+           ^head
+```
+
+---
+
+#### `push_back(val)` — `O(1)`
+
+| Case | Links |
+|------|--------|
+| **Empty** | `head = tail = newNode` |
+| **Non-empty** | `tail->next = newNode`, `newNode->prev = tail`, `tail = newNode` |
+
+Mirror of `push_front` at the **tail** side.
+
+---
+
+#### `pop_front()` — `O(1)`
+
+| Step | Action |
+|------|--------|
+| 1 | `toDelete = head`, `head = head->next` |
+| 2 | If new `head` exists: `head->prev = nullptr` |
+| 3 | Else: `tail = nullptr` (list empty) |
+| 4 | `delete toDelete` |
+
+---
+
+#### `pop_back()` — `O(1)` ⭐ main advantage over singly linked
+
+| Step | Action |
+|------|--------|
+| 1 | `toDelete = tail`, `tail = tail->prev` |
+| 2 | If new `tail` exists: `tail->next = nullptr` |
+| 3 | Else: `head = nullptr` |
+| 4 | `delete toDelete` |
+
+In [a.cpp](a.cpp) this required an **`O(n)`** walk to find the node before `tail`.
+
+---
+
+#### `insert(val, pos)` — `O(pos)`
+
+Insert **before** the node currently at index `pos` (0-based), same index idea as [a.cpp](a.cpp).
+
+| Step | Action |
+|------|--------|
+| 1 | Walk `temp` to index `pos - 1` |
+| 2 | Create `newNode` |
+| 3 | `newNode->next = temp->next`, `newNode->prev = temp` |
+| 4 | `temp->next->prev = newNode`, `temp->next = newNode` |
+
+Must update **both** `next` and `prev` on neighbors.
+
+---
+
+#### `removeAt(pos)` — `O(pos)` (delete at index)
+
+Unlink `temp` at index `pos`:
+
+| If… | Then… |
+|-----|--------|
+| `temp->prev` exists | `temp->prev->next = temp->next` |
+| else | `head = temp->next` |
+| `temp->next` exists | `temp->next->prev = temp->prev` |
+| else | `tail = temp->prev` |
+
+Then `delete temp`.
+
+**Always fix four links** (predecessor’s `next`, successor’s `prev`, and maybe `head` / `tail`).
+
+---
+
+#### `displayForward` / `displayBackward`
+
+| Function | Walk |
+|----------|------|
+| **`displayForward`** | `head` → `next` → … |
+| **`displayBackward`** | `tail` → `prev` → … |
+
+Only possible on a DLL because of **`prev`**.
+
+---
+
+### Complexity summary ([p.cpp](p.cpp))
+
+| Operation | Time | Notes |
+|-----------|------|--------|
+| `push_front` | `O(1)` | |
+| `push_back` | `O(1)` | |
+| `pop_front` | `O(1)` | |
+| `pop_back` | **`O(1)`** | vs `O(n)` singly |
+| `insert` / `removeAt` | `O(pos)` | Walk from head |
+| `displayForward` / `Backward` | `O(n)` | |
+
+**Space:** `O(n)` for `n` nodes — **2 pointers** per node instead of 1.
+
+---
+
+### Example run ([p.cpp](p.cpp))
+
+| Step | Forward list |
+|------|----------------|
+| `push_back(20)`, `push_back(30)`, `push_front(10)` | `10 <-> 20 <-> 30` |
+| `insert(15, 1)` | `10 <-> 15 <-> 20 <-> 30` |
+| `pop_front()`, `pop_back()` | `15 <-> 20` |
+| `removeAt(1)` | `15` |
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Set only `next`, forget `prev` | Broken backward walk, wrong `pop_back` |
+| Forget `head` / `tail` on delete | Orphan nodes or lost endpoints |
+| `tail->prev` when list empty | Check `tail == nullptr` first |
+| Assume `std::list` is singly linked | It is **doubly** linked internally |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [a.cpp](a.cpp) | Singly linked list |
+| [p.cpp](p.cpp) | Doubly linked list |
+| [i.cpp](i.cpp) | STL `list` (doubly linked in practice) |
+
+
+Question 1 : q.cpp
+Intersection of Two Linked Lists
+In a system there are two singly linked list. By some programming error, the end node of
+one of the linked lists got linked to the second list, forming an inverted Y-shaped list. Write
+a program to get the point where two linked lists merge.
+
+Question 2 : r.cpp
+Delete N Nodes After M Nodes of a Linked List
+We have a linked list and two integers M and N. Traverse the linked list such that you
+retain M nodes then delete next N nodes, continue the same till end of the linked list.
+
+QUestion 3 : s.cpp
+Swapping Nodes in a Linked List
+We have a linked list and two keys in it, swap nodes for two given keys. Nodes should be
+swapped by changing links. Swapping data of nodes may be expensive in many situations
+when data contains many fields. It may be assumed that all keys in the linked list are distinct.
+
+Question 4 : t.cpp
+Odd Even Linked List
+We have a Linked List of integers, write a function to modify the linked list such that all
+even numbers appear before all the odd numbers in the modified linked list. Also, keep the
+order of even and odd numbers same.
+
+Question 5 : u.cpp
+Merge k Sorted Lists
+We have K sorted linked lists of size N each, merge them and print the sorted output.
