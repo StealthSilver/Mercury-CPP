@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL)
 
 ---
 
@@ -136,4 +136,28 @@ When you write **`Stack<int>`** or **`Stack<std::string>`**, the compiler **gene
 
 Run `d.cpp` to compare stacks of integers and strings built from one template.
 
-STACK USING THE LINKED LIST -> E.CPP
+---
+
+## Stack using a linked list
+
+**Illustration code:** `e.cpp`
+
+So far, the stack’s storage is either a **contiguous array** / **`vector`** (one block, index or pointer arithmetic at the back). Another classic approach is a **singly linked list** where each element lives in its own **node**: a small struct with **`data`** and a **`next`** pointer to the following node.
+
+**Top at the head:** Treat the **head** of the list as the **top** of the stack.
+
+- **Push** — allocate a new node, point it to the current head, then make head the new node. **O(1)** time.
+- **Pop** — unlink the head node, `delete` it, move head to the next node. **O(1)** time.
+- **Top** — read `head->data`. **O(1)** time.
+
+No `capacity` field and no `reallocate` like a vector: growth is **one node per push**. Downsides: **extra memory** per item for the pointer, and nodes may be **scattered** in the heap (worse cache locality than a vector). Upsides: true **O(1)** push/pop without amortized reallocation, and lists are how stacks are taught next to sequential storage.
+
+**Ownership:** Every `new` from `push` must be matched with **`delete`** on `pop` and when clearing the stack. The class **destructor** should free all nodes (e.g. by calling **`clear()`**). This demo **deletes** copy construction and copy assignment so we do not have to implement deep copy; production code would add copy/move operations or use `std::unique_ptr`.
+
+`e.cpp` defines a **`Stack`** of **`int`** with **`push`**, **`pop`**, **`top`**, **`empty`**, **`size`**, **`clear`**, and **`print`** (walking from the head lists values **top → bottom**, i.e. the order you would pop), then **`main`** exercises the same LIFO behavior as the vector-based stack.
+
+Run `e.cpp` to see a linked-list-backed stack in action.
+
+STACK IN STL -> f.cpp
+
+include hte stack header file
