@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — singly linked `List` · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycles · [i.cpp](i.cpp)–[o.cpp](o.cpp) — STL & advanced · [p.cpp](p.cpp) — **doubly linked list**.
+**Companion code:** [a.cpp](a.cpp)–[p.cpp](p.cpp) — core LL · [q.cpp](q.cpp)–[u.cpp](u.cpp) — **practice problems** (this section).
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -2753,29 +2753,186 @@ Only possible on a DLL because of **`prev`**.
 | [i.cpp](i.cpp) | STL `list` (doubly linked in practice) |
 
 
-Question 1 : q.cpp
-Intersection of Two Linked Lists
-In a system there are two singly linked list. By some programming error, the end node of
-one of the linked lists got linked to the second list, forming an inverted Y-shaped list. Write
-a program to get the point where two linked lists merge.
+## Practice problems (q–u)
 
-Question 2 : r.cpp
-Delete N Nodes After M Nodes of a Linked List
-We have a linked list and two integers M and N. Traverse the linked list such that you
-retain M nodes then delete next N nodes, continue the same till end of the linked list.
+| File | Problem |
+|------|---------|
+| [q.cpp](q.cpp) | Intersection of two linked lists |
+| [r.cpp](r.cpp) | Delete N nodes after every M nodes |
+| [s.cpp](s.cpp) | Swap two nodes by links |
+| [t.cpp](t.cpp) | Odd–even linked list |
+| [u.cpp](u.cpp) | Merge k sorted lists |
 
-QUestion 3 : s.cpp
-Swapping Nodes in a Linked List
-We have a linked list and two keys in it, swap nodes for two given keys. Nodes should be
-swapped by changing links. Swapping data of nodes may be expensive in many situations
-when data contains many fields. It may be assumed that all keys in the linked list are distinct.
+---
 
-Question 4 : t.cpp
-Odd Even Linked List
-We have a Linked List of integers, write a function to modify the linked list such that all
-even numbers appear before all the odd numbers in the modified linked list. Also, keep the
-order of even and odd numbers same.
+## Question 1 — Intersection of two linked lists ([q.cpp](q.cpp))
 
-Question 5 : u.cpp
-Merge k Sorted Lists
-We have K sorted linked lists of size N each, merge them and print the sorted output.
+### Problem
+
+Two singly linked lists form an inverted **Y**: the tail of one list joins the other. Find the **merge node** (first shared node), not just the value.
+
+```
+  List A:  3 -> 7 -> 9 --\
+                          --> 10 -> 15
+  List B:  99 ------------/
+```
+
+### Idea
+
+After the merge point, both lists share the **same nodes** (same addresses). So find the first node where both pointers are equal.
+
+**Optimal:** align lengths, then walk together.
+
+| Step | Action |
+|------|--------|
+| 1 | `lenA`, `lenB` |
+| 2 | Advance the longer head by `|lenA - lenB|` |
+| 3 | Move both one step at a time until `a == b` or null |
+
+### Complexity
+
+| Time | Space |
+|------|--------|
+| **`O(m + n)`** | **`O(1)`** |
+
+### Output ([q.cpp](q.cpp))
+
+`Intersection at node with value: 10`
+
+---
+
+## Question 2 — Delete N nodes after every M nodes ([r.cpp](r.cpp))
+
+### Problem
+
+Given **M** and **N**, repeat: **keep M nodes**, **delete next N nodes**, until the list ends.
+
+**Example:** `M=2`, `N=3` on `1..12` → keep `1,2` | delete `3,4,5` | keep `6,7` | delete `8,9,10` | keep `11,12` → `1 -> 2 -> 6 -> 7 -> 11 -> 12`
+
+### Idea
+
+Use a **dummy** node. Pointer `curr` marks the last kept node in the current block.
+
+| Loop | Action |
+|------|--------|
+| Advance `curr` **M** times | Retain M nodes |
+| Delete **N** nodes after `curr` | `curr->next = toDelete->next` |
+
+### Complexity
+
+| Time | Space |
+|------|--------|
+| **`O(L)`** — L = list length | **`O(1)`** |
+
+---
+
+## Question 3 — Swap nodes for two keys ([s.cpp](s.cpp))
+
+### Problem
+
+Swap the **nodes** containing `key1` and `key2` by **rewiring links**, not swapping `data` fields (important when `data` is large).
+
+Keys are **distinct**.
+
+### Idea
+
+| Step | Action |
+|------|--------|
+| 1 | Find `node1`, `prev1` and `node2`, `prev2` |
+| 2 | Rewire predecessors to opposite nodes |
+| 3 | Fix `next` pointers — special cases if nodes are **adjacent** |
+
+### Complexity
+
+| Time | Space |
+|------|--------|
+| **`O(n)`** search | **`O(1)`** |
+
+### Output ([s.cpp](s.cpp))
+
+`1,2,3,4` swap keys `1` and `4` → `4,2,3,1`
+
+---
+
+## Question 4 — Odd–even linked list ([t.cpp](t.cpp))
+
+### Problem
+
+Move all **even** values before all **odd** values. **Stable:** relative order within evens and within odds unchanged.
+
+`1,2,3,4,5,6,7,8` → `2,4,6,8,1,3,5,7`
+
+### Idea
+
+Two chains: **even** and **odd**, built while scanning once.
+
+| Step | Action |
+|------|--------|
+| 1 | `evenDummy`, `oddDummy` with tail pointers |
+| 2 | Append each node to the correct chain |
+| 3 | `evenTail->next = oddHead`, `oddTail->next = nullptr` |
+
+### Complexity
+
+| Time | Space |
+|------|--------|
+| **`O(n)`** | **`O(1)`** — reuse existing nodes |
+
+---
+
+## Question 5 — Merge k sorted lists ([u.cpp](u.cpp))
+
+### Problem
+
+**K** sorted linked lists, each of size **N**. Merge into one sorted list.
+
+**Example:** `[1,4,7]`, `[2,5,8]`, `[3,6,9]` → `1,2,3,4,5,6,7,8,9`
+
+### Idea — min-heap (priority queue)
+
+| Step | Action |
+|------|--------|
+| 1 | Push the **head** of each non-empty list into a min-heap |
+| 2 | Pop smallest node, attach to answer, push its `next` |
+| 3 | Repeat until heap empty |
+
+Uses [m.cpp](m.cpp) idea repeatedly — always pick the smallest front element among K lists.
+
+### Complexity
+
+Let **N** = size of each list, **K** = number of lists. Total nodes **n = N·K**.
+
+| | Value |
+|---|--------|
+| **Time** | **`O(n log K)`** — each of n nodes pushed/popped from heap of size ≤ K |
+| **Space** | **`O(K)`** — heap holds at most K node pointers |
+
+**Alternative:** merge pairs with [m.cpp](m.cpp) — also `O(n log K)` time.
+
+### Output ([u.cpp](u.cpp))
+
+`Merged: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> NULL`
+
+---
+
+## Practice summary — time & space
+
+| File | Problem | Time | Extra space |
+|------|---------|------|-------------|
+| [q.cpp](q.cpp) | Intersection | `O(m+n)` | `O(1)` |
+| [r.cpp](r.cpp) | Delete N after M | `O(L)` | `O(1)` |
+| [s.cpp](s.cpp) | Swap by links | `O(n)` | `O(1)` |
+| [t.cpp](t.cpp) | Odd before even | `O(n)` | `O(1)` |
+| [u.cpp](u.cpp) | Merge k sorted | `O(n log K)` | `O(K)` |
+
+---
+
+## Module file map (practice)
+
+| File | Topic |
+|------|--------|
+| [q.cpp](q.cpp) | Y-list intersection |
+| [r.cpp](r.cpp) | Delete N after M |
+| [s.cpp](s.cpp) | Swap nodes |
+| [t.cpp](t.cpp) | Odd–even partition |
+| [u.cpp](u.cpp) | Merge k sorted lists |
