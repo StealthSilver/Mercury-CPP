@@ -1,6 +1,6 @@
 # MODULE 26 — Queue
 
-**Illustration code:** `a.cpp` (circular array queue) · `b.cpp` (queue with linked list) · `c.cpp` (circular queue class) · `d.cpp` (`std::queue` in the STL) · `e.cpp` (queue using 2 stacks)
+**Illustration code:** `a.cpp`–`f.cpp` (queue basics) · `g.cpp` (first non-repeating in stream) · `h.cpp` (interleave queues / halves) · `i.cpp` (queue reversal) · `j.cpp` (`std::deque` — double-ended queue)
 
 ---
 
@@ -349,4 +349,211 @@ So a long series of enqueues and dequeues costs **O(1)** per dequeue on average,
 
 Run `e.cpp` to compare FIFO order with the two-stack transfer step.
 
-STACK USING 2 QUEUES -> f.cpp
+---
+
+## Stack using two queues
+
+**Illustration code:** `f.cpp`
+
+The mirror of **`e.cpp`**: simulate a **LIFO stack** using only **two FIFO queues** — **`mainQ`** and **`helperQ`**.
+
+### Idea (push costs more, pop is cheap)
+
+| Operation | What to do |
+|-----------|------------|
+| **Push(x)** | Enqueue **`x`** on **`helperQ`**. Move every element from **`mainQ`** to **`helperQ`**. **Swap** the two queues. New top is at **`mainQ.front()`**. |
+| **Pop** | Dequeue from **`mainQ.front()`**. **O(1)**. |
+| **Top** | Return **`mainQ.front()`** (after pushes, the stack top is always at the front). **O(1)**. |
+
+```text
+push(1):  mainQ: [1]                    (front = top = 1)
+push(2):  helper [2], pour 1 -> [2,1], swap -> mainQ [2,1]   top = 2
+push(3):  helper [3], pour -> [3,2,1], swap -> mainQ [3,2,1] top = 3
+pop():    dequeue front -> 3  (LIFO)
+```
+
+```mermaid
+flowchart LR
+  subgraph push["push(x)"]
+    A["enqueue x on helperQ"] --> B["pour mainQ into helperQ"]
+    B --> C["swap mainQ and helperQ"]
+  end
+  subgraph pop["pop()"]
+    D["dequeue mainQ.front()"]
+  end
+```
+
+**Why it works:** Each **push** rotates the queue so the **newest** element moves to the **front**. The **front** of the queue always holds the stack **top**; **pop** removes it in **O(1)**.
+
+### Alternative (opposite costs)
+
+You can instead **push in O(1)** and **pop in O(n)** by moving **`size - 1`** elements to the helper queue, popping the last one, then swapping — similar to **`e.cpp`**’s pour-on-dequeue style.
+
+`f.cpp` uses **O(n) push / O(1) pop** so **`top()`** stays simple.
+
+### Time complexity
+
+| Operation | Time |
+|-----------|------|
+| **Push** | **O(n)** — pour all of **`mainQ`** into **`helperQ`** |
+| **Pop** / **Top** | **O(1)** |
+
+### Space
+
+**O(n)** — elements live in the two queues combined.
+
+### Pair with Module 25 / `e.cpp`
+
+| Problem | Tools | Typical trick |
+|---------|--------|----------------|
+| Queue from 2 stacks (`e.cpp`) | LIFO + LIFO | Pour when dequeuing |
+| Stack from 2 queues (`f.cpp`) | FIFO + FIFO | Pour when pushing |
+
+`f.cpp` defines **`StackTwoQueues`** with **`push`**, **`pop`**, **`top`**.
+
+Run `f.cpp` to see LIFO order with two `std::queue`s.
+
+---
+
+# Practice problems
+
+---
+
+## First non-repeating letter in a stream
+
+**Code:** `g.cpp`
+
+### Problem statement
+
+Characters arrive **one at a time** (a stream). After **each** new character, output the **first** character (from the start of the stream until now) that has appeared **exactly once** so far.
+
+If every character seen so far repeats at least twice, output **`'#'`** (or another sentinel your problem uses).
+
+**Example:** stream `"aabc"` → output after each char: **`a`**, **`#`**, **`b`**, **`b`**
+
+| Step | Stream so far | First unique |
+|------|---------------|--------------|
+| `a` | `a` | `a` |
+| `a` | `aa` | none → `#` |
+| `b` | `aab` | `b` |
+| `c` | `aabc` | `b` (still oldest with count 1) |
+
+### Approach
+
+- **`freq[c]`** — how many times character **`c`** appeared.
+- **`queue<char>`** — candidates in **order of first appearance** (FIFO).
+
+On each new character **`c`**:
+
+1. **`freq[c]++`**
+2. **`enqueue c`**
+3. **While** **`queue.front()`** has **`freq > 1`**, **dequeue** (no longer a unique candidate).
+
+The **front** of the queue (if any) is the **oldest** character that is still unique.
+
+```mermaid
+flowchart TD
+  A["read char c"] --> B["freq[c]++"]
+  B --> C["enqueue c"]
+  C --> D{"freq[front] > 1?"}
+  D -->|yes| E["dequeue front"]
+  E --> D
+  D -->|no| F["answer = front or '#'"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(1)** amortized per character — each char enqueued once and dequeued at most once |
+| **Space** | **O(1)** if alphabet size is fixed (e.g. 26 letters); **O(k)** for **`k`** distinct chars in stream |
+
+---
+
+## Interleave two queues / two halves
+
+**Code:** `h.cpp`
+
+### Problem A — Interleave two queues
+
+Given **`q1`** and **`q2`**, build a new sequence by taking elements **alternately**: first from **`q1`**, then from **`q2`**, until one is empty, then append the rest of the other.
+
+**Example:** `q1 = [1,2,3]`, `q2 = [4,5,6]` → **`[1,4,2,5,3,6]`**
+
+```text
+q1: 1 2 3
+q2: 4 5 6
+     | | |
+out: 1 4 2 5 3 6
+```
+
+### Problem B — Interleave two halves of one queue (even length)
+
+Given a queue of **even** size, split into **first half** and **second half**, then interleave.
+
+**Example:** `[11,12,13,14,15,16]` → halves `[11,12,13]` and `[14,15,16]` → **`[11,14,12,15,13,16]`**
+
+```text
+first:  11  12  13
+second: 14  15  16
+out:    11  14  12  15  13  16
+```
+
+### Approach
+
+Use extra **`queue`**s (or indices): dequeue from each side in turn and push to result.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each element moved a constant number of times |
+| **Space** | **O(n)** — result / temporary queues |
+
+---
+
+## Queue reversal
+
+**Code:** `i.cpp`
+
+### Problem statement
+
+Reverse the order of elements in a queue so **front** and **rear** swap roles (first becomes last).
+
+**Example:** front → rear **`1,2,3,4,5`** becomes **`5,4,3,2,1`**.
+
+### Approach (stack)
+
+A **stack** reverses order (LIFO):
+
+1. **Dequeue** all elements from the queue and **push** each onto a **stack**.
+2. **Pop** the stack and **enqueue** back into the queue.
+
+```text
+queue: 1 2 3  -> stack: 3 2 1  -> queue: 3 2 1
+```
+
+```mermaid
+flowchart LR
+  Q1["queue"] --> S["stack push all"]
+  S --> Q2["enqueue back"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** for the stack |
+
+Run **`g.cpp`**, **`h.cpp`**, and **`i.cpp`** for full implementations and sample output.
+
+Double Ended Queue -> j.cpp
+Deque in C++
+• push_back()
+• push_front( )
+• pop_ front()
+• pop_back()
+• front()
+• back()
+
