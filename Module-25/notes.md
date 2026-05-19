@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion)
 
 ---
 
@@ -281,3 +281,64 @@ Reversing a string can also be done in **O(n)** time with two pointers and **O(1
 `h.cpp` uses **`std::stack<char>`** and **`reverseWithStack(const string& s)`**.
 
 Run `h.cpp` to see the original string, the stack trace idea, and the reversed result.
+
+---
+
+## Reverse a stack (recursion, no extra container)
+
+**Illustration code:** `i.cpp`
+
+**Goal:** Flip the order inside one stack **in place**. If bottom → top is **`1, 2, 3`** (3 on top), after reversing bottom → top should be **`3, 2, 1`** (1 on top).
+
+**Constraint (as in the course):** Do **not** use another stack, vector, or array to hold elements. Only **`pop` / `push`** on the same stack, plus **recursion**.
+
+### Idea (two helpers)
+
+1. **`pushAtBottom(s, x)`** (from `g.cpp`) — insert `x` at the **bottom** using recursion.
+2. **`reverseStack(s)`**:
+   - If `s` is empty, return.
+   - Save **`x = top()`**, **`pop()`**.
+   - **`reverseStack(s)`** on the smaller stack.
+   - **`pushAtBottom(s, x)`** so `x` goes to the bottom of the already-reversed rest.
+
+On the way **down** the recursion you **strip** the stack; on the way **up** each value is placed at the **bottom**, which builds the reversed order.
+
+### Small trace
+
+Start: bottom `1`, top `3` (push order 1, 2, 3).
+
+| Step | Action | Stack (bottom → top) |
+|------|--------|----------------------|
+| | pop 3, recurse | 1, 2 |
+| | pop 2, recurse | 1 |
+| | pop 1, recurse | empty |
+| unwind | pushAtBottom(1) | 1 |
+| unwind | pushAtBottom(2) | 2, 1 |
+| unwind | pushAtBottom(3) | 3, 2, 1 |
+
+Top is now **1**; the old bottom **1** is now on top — order reversed.
+
+### Time complexity
+
+Let **`n`** be the number of elements.
+
+- Each **`pushAtBottom`** costs **O(k)** when the stack has size **`k`**.
+- **`reverseStack`** calls **`pushAtBottom`** once per element: **O(n) + O(n-1) + … + O(1) = O(n²)**.
+
+So this recursive method is **correct** and uses **no extra container**, but it is **slower** than copying into another stack (**O(n)**) or reversing an array with two pointers (**O(n)**).
+
+### Space complexity
+
+- **No** second stack / vector: **O(1)** auxiliary **container** space.
+- The **recursion** depth is **`n`**, so **O(n)** space on the **call stack** (implicit storage while pops are “held” in frames).
+
+That matches “no extra space” in interview/course wording: no explicit extra DS; recursion stack is allowed.
+
+`i.cpp` implements **`pushAtBottom`**, **`reverseStack`**, and prints bottom → top before and after.
+
+Run `i.cpp` to reverse an STL stack with only recursion and **`pushAtBottom`**
+
+Stock Span Problem -> h.cpp
+span = max no. of consecutive days (including current)
+for which price <= today's price
+
