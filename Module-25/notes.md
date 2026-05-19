@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion) · `j.cpp` (stock span problem)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion) · `j.cpp` (stock span problem) · `k.cpp` (next greater element) · `l.cpp` (valid parentheses) · `m.cpp` (duplicate parentheses) · `n.cpp` (max area in histogram)
 
 ---
 
@@ -426,3 +426,222 @@ For each day **`i`**:
 `j.cpp` implements **`vector<int> calculateSpan(const vector<int>& price)`** and prints **`price`** and **`span`** for the classic example.
 
 Run `j.cpp` for the full trace on the sample array.
+
+---
+
+## Next greater element (NGE)
+
+**Illustration code:** `k.cpp`
+
+### Problem statement
+
+Given an array **`arr[]`** of **`n`** elements, for **each index `i`** find the **next greater element** to the **right**:
+
+> **`nge[i]`** = the **first** value **`arr[j]`** with **`j > i`** and **`arr[j] > arr[i]`**.
+
+If no such **`j`** exists, **`nge[i] = -1`** (or use a sentinel your problem allows).
+
+**Output:** array **`nge[0 … n-1]`** of the same length as **`arr`**.
+
+**Contrast with stock span:** span looks **left** for consecutive days ≤ today; NGE looks **right** for the **first** value **strictly greater** than today.
+
+### Example
+
+`arr = [4, 5, 2, 25, 7, 23]`
+
+| `i` | `arr[i]` | First greater on the right | `nge[i]` |
+|----:|---------:|------------------------------|---------:|
+| 0 | 4 | 5 (index 1) | 5 |
+| 1 | 5 | 25 (index 3) | 25 |
+| 2 | 2 | 25 (index 3) | 25 |
+| 3 | 25 | none | -1 |
+| 4 | 7 | 23 (index 5) | 23 |
+| 5 | 23 | none | -1 |
+
+**Answer:** `nge = [5, 25, 25, -1, 23, -1]`
+
+### Picture (scan left → right)
+
+```text
+Index:  0   1   2    3    4   5
+arr:    4   5   2   25    7  23
+        |   |   |    |    |   |
+        4──►5   2──►25   7──►23
+            └──25      └──25
+                         (25 has no greater to the right → -1)
+```
+
+```mermaid
+flowchart LR
+  subgraph nge2["arr[2] = 2"]
+    A["index 3: 25 > 2 ✓"] --> B["nge[2] = 25"]
+  end
+```
+
+For **`arr[2] = 2`**, the answer is **25** at index 3, not 7 or 23 — we need the **nearest** greater element to the right.
+
+### Naive idea (slow)
+
+For each **`i`**, scan **`j = i + 1, i + 2, …`** until **`arr[j] > arr[i]`**.
+
+- **Time:** **O(n²)** worst case (e.g. sorted ascending — every element scans the rest).
+- **Space:** **O(1)** extra.
+
+### Monotonic stack (efficient)
+
+Traverse **`i = 0 … n-1`**. Keep a stack of **indices** whose elements are still waiting for their “next greater” (stack stores indices with **decreasing** values from bottom to top).
+
+For each **`i`**:
+
+1. **While** stack not empty and **`arr[stack.top()] < arr[i]`**  
+   → **`arr[i]`** is the next greater for **`stack.top()`** → set **`nge[stack.top()] = arr[i]`**, **pop**.
+2. **Push `i`** (current index has not found its answer yet).
+
+After the loop, indices still on the stack have **no** greater element to the right → **`nge[i] = -1`**.
+
+**Why it works:** When we see **`arr[i]`**, it is the **first** value to the right that is greater than everything we pop from the stack (those indices are in order, and we only pop while strictly smaller). Each index is **pushed once** and **popped once**.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** for the stack (worst case: decreasing array — every index waits on the stack) |
+
+`k.cpp` implements **`vector<int> nextGreaterElement(const vector<int>& arr)`** and prints **`arr`** and **`nge`** for the sample above.
+
+Run `k.cpp` for the monotonic-stack solution.
+
+---
+
+## Valid parentheses
+
+**Illustration code:** `l.cpp`
+
+### Problem statement
+
+Given a string **`s`** containing only the characters **`'('`**, **`')'`**, **`'{'`**, **`'}'`**, **`'['`**, **`']'`**, determine whether **`s`** is **valid**:
+
+1. Every opening bracket has a **matching** closing bracket of the **same type**.
+2. Brackets close in the **correct order** (a closing bracket must match the **most recent** unmatched opener).
+
+**Examples:**
+
+| `s` | Valid? | Why |
+|-----|--------|-----|
+| `"()"` | yes | matched pair |
+| `"()[]{}"` | yes | three separate pairs |
+| `"(]"` | no | `(` matched with `]` |
+| `"([)]"` | no | `[` closed only after `(` was closed wrongly |
+| `"{[]}"` | yes | nested then closed |
+
+### Why a stack?
+
+Opening brackets must be closed in **reverse order** (LIFO). Push each opener; on a closer, the top of the stack must be its **partner**.
+
+```text
+"{ [ ( ) ] }"
+  push { [ (
+  see )  -> top is (  OK, pop
+  see ]  -> top is [  OK, pop
+  see }  -> top is {  OK, pop
+  stack empty -> valid
+```
+
+```mermaid
+flowchart TD
+  A["see '(' or '[' or '{'"] --> B["push on stack"]
+  C["see ')' or ']' or '}'"] --> D{"stack empty?"}
+  D -->|yes| E["invalid"]
+  D -->|no| F{"top matches?"}
+  F -->|no| E
+  F -->|yes| G["pop"]
+```
+
+### Algorithm
+
+1. Create an empty stack (store opening chars, or map closers → openers).
+2. For each character **`c`** in **`s`**:
+   - If **`c`** is an **opener** → **push** `c`.
+   - If **`c`** is a **closer** → if stack empty or **`c`** does not match **`stack.top()`**, return **false**; else **pop**.
+3. After the loop, return **true** only if the stack is **empty** (no unmatched openers).
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — one pass, **O(1)** work per character |
+| **Space** | **O(n)** worst case — e.g. `"((((("` all openers on the stack |
+
+`l.cpp` implements **`bool isValid(const string& s)`** and tests several strings.
+
+Run `l.cpp` for valid / invalid examples.
+
+---
+
+## Duplicate parentheses
+
+**Illustration code:** `m.cpp`
+
+### Problem statement
+
+Given a string **`exp`** representing an arithmetic expression with operands (letters/digits), operators **`+ - * /`**, and parentheses **`( )`**, return **true** if the expression contains **duplicate (redundant) parentheses**.
+
+**Redundant** means there is a pair of brackets that wraps **nothing useful** — equivalently, a subexpression of the form **`( )`** with **no** operand or operator between the inner `(` and `)` when that `)` is processed, or extra wrapping like **`((a+b))`** where the outer pair adds no new structure.
+
+**Examples:**
+
+| Expression | Duplicate? |
+|------------|------------|
+| `(a+b)` | no |
+| `((a+b))` | **yes** — outer `(( … ))` is redundant |
+| `(a+(b)/c)` | no |
+| `(a+(b+c))` | no |
+| `((a+b)+c)` | no (operators between nested levels) |
+
+### Idea (stack)
+
+Scan left to right. Push **every** character (operands, operators, `(`).
+
+When you see **`')'`**:
+
+1. **Pop** and count until you pop the matching **`'('`**.
+2. If **count == 0**, nothing was between that `(` and `)` → pattern like **`()`** or **`((…))`** where the inner close left nothing → **duplicate parentheses** → return **true**.
+3. If count > 0, there was real content inside; continue.
+
+```text
+((a+b))
+  push ( (
+  push a + b
+  )  -> pop until (: popped +, b, a  count=3  OK
+  )  -> pop until (: count=0  DUPLICATE
+```
+
+### Algorithm
+
+```
+stack st
+for c in exp:
+  if c == ')':
+    count = 0
+    while st.top() != '(':
+      st.pop(); count++
+    st.pop()   // remove '('
+    if count == 0: return true
+  else:
+    st.push(c)
+return false
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each character pushed once, popped at most once |
+| **Space** | **O(n)** — stack holds up to the whole expression |
+
+`m.cpp` implements **`bool hasDuplicateParentheses(const string& exp)`** and prints results for sample expressions.
+
+Run `m.cpp` for duplicate vs non-duplicate cases.
+
+MAX AREA IN A HISTOGRAM -> n.cpp
