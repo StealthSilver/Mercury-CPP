@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — custom `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms on simple lists · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycle detect/remove · [i.cpp](i.cpp)–[j.cpp](j.cpp) — `std::list` and iterators.
+**Companion code:** [a.cpp](a.cpp) — custom `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms on simple lists · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycle detect/remove · [i.cpp](i.cpp)–[j.cpp](j.cpp) — STL · [k.cpp](k.cpp)–[m.cpp](m.cpp) — middle, merge sort, merge two sorted lists.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -1778,4 +1778,447 @@ distance(begin, it) = 1
 | [a.cpp](a.cpp) | Manual `Node*`, `head`, `tail` |
 | [i.cpp](i.cpp) | STL `list` with `push` / `pop` / `front` / `back` |
 | [j.cpp](j.cpp) | STL **iterators** — standard way to walk and edit in the middle |
+| [k.cpp](k.cpp) | Find middle (slow / fast) |
 
+---
+
+## Find the middle of a linked list
+
+**Problem:** Given the head of a singly linked list, return the **middle node** (or its value).
+
+**Reference:** [k.cpp](k.cpp) — `findMiddle(head)`  
+**Also used in:** [f.cpp](f.cpp) (palindrome — split list at middle).
+
+---
+
+### Approach 1 — count, then walk (two passes)
+
+| Step | Action |
+|------|--------|
+| 1 | Count nodes `L` |
+| 2 | Walk `L / 2` steps from head |
+
+| Time | Space |
+|------|--------|
+| `O(n)` | `O(1)` |
+
+Simple, but you traverse **twice**.
+
+---
+
+### Approach 2 — slow and fast pointers ([k.cpp](k.cpp)) ⭐
+
+Same **tortoise and hare** idea as [g.cpp](g.cpp), but stop when **fast** reaches the end instead of meeting **slow**.
+
+| Pointer | Move each step |
+|---------|----------------|
+| **slow** | `+1` |
+| **fast** | `+2` |
+
+**Loop:** `while (fast != nullptr && fast->next != nullptr)`
+
+When the loop ends, **`slow` is the middle** (with the convention below).
+
+```
+  odd:  1 -> 2 -> 3 -> 4 -> 5
+        s    f
+             s         f
+                  s              f (stop)
+        middle = 3
+
+  even: 1 -> 2 -> 3 -> 4
+        s    f
+             s         f (stop)
+        middle = 3  (second of the two middles)
+```
+
+#### Even vs odd length
+
+| Length | Nodes | Middle returned by [k.cpp](k.cpp) |
+|--------|-------|----------------------------------|
+| **Odd** `5` | `1→2→3→4→5` | **3** (true center) |
+| **Even** `4` | `1→2→3→4` | **3** (second middle; **2** is the other) |
+
+If you need the **first** middle on even length, change the loop to stop when `fast->next->next == nullptr` (variant — know your convention).
+
+---
+
+### Why slow / fast works (proof sketch)
+
+When the loop stops:
+
+- **fast** cannot take another **two** steps → **fast** is at the end or one step before the end.
+- **slow** has moved **half as many** `+1` steps as **fast** has moved `+2` steps from the same start.
+- So **slow** is at index **`⌈L/2⌉`** from the head (1-based), which is the **second middle** for even `L` and the exact middle for odd `L`.
+
+Total pointer moves are **`O(n)`** — each step advances **fast** toward the end once.
+
+---
+
+### Complexity
+
+| Approach | Time | Extra space |
+|----------|------|-------------|
+| Count + walk | `O(n)` | `O(1)` |
+| **Slow / fast ([k.cpp](k.cpp))** | **`O(n)`** | **`O(1)`** |
+
+Both are linear time; slow/fast uses **one pass**.
+
+---
+
+### Code ([k.cpp](k.cpp))
+
+```cpp
+Node* slow = head, *fast = head;
+while (fast && fast->next) {
+    slow = slow->next;
+    fast = fast->next->next;
+}
+return slow;  // middle node
+```
+
+---
+
+### Example output ([k.cpp](k.cpp))
+
+```
+Odd length:  1 -> 2 -> 3 -> 4 -> 5 -> NULL
+Middle node: 3
+
+Even length: 1 -> 2 -> 3 -> 4 -> NULL
+Middle node (2nd of two middles): 3
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Empty list | Return `nullptr` — check `head` first |
+| Wrong stop condition | Changes which middle you get on even length |
+| Off-by-one on count method | Walk `L/2` vs `(L-1)/2` depends on definition |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [k.cpp](k.cpp) | Find middle (slow / fast) |
+| [f.cpp](f.cpp) | Uses middle idea for palindrome |
+| [l.cpp](l.cpp) | Merge sort on linked list |
+
+---
+
+## Merge sort on a linked list
+
+**Problem:** Sort a singly linked list in **ascending** order.
+
+**Reference:** [l.cpp](l.cpp) — `mergeSort`, `split`, `merge`  
+**Related:** Module 21 merge sort on arrays — same **divide → conquer → combine** idea, different split/merge mechanics.
+
+---
+
+### Why merge sort on a linked list?
+
+| Sort | On array | On linked list |
+|------|----------|----------------|
+| **Quick sort** | Great in practice | Hard — no random index access for partition |
+| **Merge sort** | `O(n log n)` | **`O(n log n)`** — fits pointers naturally |
+| **Bubble / insertion** | `O(n²)` | `O(n²)` — works but slow |
+
+Linked lists shine when you can **split** and **merge** without shifting elements.
+
+---
+
+### Big picture (divide and conquer)
+
+| Step | Name | On linked list ([l.cpp](l.cpp)) |
+|------|------|----------------------------------|
+| 1 | **Divide** | `split(head)` — break into **left** and **right** halves |
+| 2 | **Conquer** | `mergeSort(left)`, `mergeSort(right)` recursively |
+| 3 | **Combine** | `merge(left, right)` — merge two **sorted** lists |
+
+**Base case:** `head == nullptr` or single node → already sorted → return `head`.
+
+```
+        38 -> 27 -> 43 -> 3 -> 9 -> 82 -> 10
+
+        split / recurse / merge
+
+        3 -> 9 -> 10 -> 27 -> 38 -> 43 -> 82
+```
+
+---
+
+### Step 1 — `split` (find middle and cut)
+
+Uses **slow / fast**, but **`fast` starts at `head->next`** (slightly different from [k.cpp](k.cpp)) so halves are **balanced** for merge sort.
+
+| Pointer | Role |
+|---------|------|
+| **slow** | Will end at **last node of left half** |
+| **fast** | Moves **2** steps per iteration |
+
+```cpp
+slow->next = nullptr;   // cut the list
+return rightHead;       // start of right half
+```
+
+```
+  before:  38 -> 27 -> 43 -> 3 -> 9 -> 82 -> 10
+
+  after split:
+    left:  38 -> 27 -> 43 -> 3
+    right: 9 -> 82 -> 10
+```
+
+---
+
+### Step 2 — `merge` (combine two sorted lists)
+
+Same two-pointer idea as merging in array merge sort — use a **dummy** node so building the result is easy.
+
+| While both lists non-empty | Attach smaller `data` node to tail |
+| After loop | Attach remaining non-empty list |
+
+```cpp
+if (a->data <= b->data)  // stable: take from a when equal
+```
+
+**Time:** `O(n)` for merging two lists of total length `n`.
+
+---
+
+### Step 3 — `mergeSort` (recursion)
+
+```cpp
+Node* mergeSort(Node* head) {
+    if (!head || !head->next) return head;
+    Node* right = split(head);
+    head = mergeSort(head);
+    right = mergeSort(right);
+    return merge(head, right);
+}
+```
+
+Recursion tree (conceptually same as array merge sort):
+
+```
+                    [38,27,43,3,9,82,10]
+                   /                    \
+            [38,27,43,3]              [9,82,10]
+            /        \                /      \
+        [38,27]    [43,3]         [9,82]    [10]
+         /  \       /  \            /  \
+      [38][27]  [43][3]         [9][82]
+         \  /     \  /            \  /
+        [27,38]  [3,43]          [9,82]
+            \      /                \    /
+            [3,27,38,43]          [9,10,82]
+                   \                /
+                    [3,9,10,27,38,43,82]
+```
+
+---
+
+### Complexity
+
+Let **n** = number of nodes.
+
+| | Value | Reason |
+|---|--------|--------|
+| **Time** | **`O(n log n)`** | `log n` levels of recursion; each level does `O(n)` total work across splits and merges |
+| **Space** | **`O(log n)`** | Recursion call stack (not counting the nodes themselves) |
+
+| vs array merge sort | Linked list |
+|---------------------|-------------|
+| Extra array for merge | **No extra array** — rewire pointers in `merge` |
+| Random access for mid | **Slow/fast split** |
+
+**Not** `O(1)` space overall because of recursion depth (iterative bottom-up merge sort on LL can be `O(1)` extra — advanced topic).
+
+---
+
+### Example ([l.cpp](l.cpp))
+
+**Input:** `38 -> 27 -> 43 -> 3 -> 9 -> 82 -> 10 -> NULL`
+
+**Output:**
+
+```
+Before: 38 -> 27 -> 43 -> 3 -> 9 -> 82 -> 10 -> NULL
+After:  3 -> 9 -> 10 -> 27 -> 38 -> 43 -> 82 -> NULL
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Forget `slow->next = nullptr` after split | List still connected — infinite recursion |
+| Wrong fast start (`head` vs `head->next`) | Unbalanced splits — still works but can skew tree |
+| Lose head of merged list | Use **dummy node** in `merge` |
+| Merge with `<` only instead of `<=` | May break stability for equal keys |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [k.cpp](k.cpp) | Find middle (slow / fast) |
+| [l.cpp](l.cpp) | Merge sort — split + merge |
+| [m.cpp](m.cpp) | Merge two sorted lists |
+| Module 21 | Merge sort on **arrays** |
+
+---
+
+## Merge two sorted linked lists
+
+**Problem:** You are given the heads of **two sorted** singly linked lists. Merge them into **one sorted** list by splicing nodes together. Return the head of the merged list.
+
+**Reference:** [m.cpp](m.cpp) — `mergeTwoSorted(a, b)`  
+**Same core logic as:** `merge()` inside [l.cpp](l.cpp) (combine step of merge sort).
+
+### Example
+
+| List 1 | List 2 | Merged |
+|--------|--------|--------|
+| `1 -> 2 -> 4` | `1 -> 3 -> 4` | `1 -> 1 -> 2 -> 3 -> 4 -> 4` |
+
+---
+
+### Idea — two pointers (like merge in array merge sort)
+
+| Pointer | Points to |
+|---------|-----------|
+| **`a`** | Current node in first list |
+| **`b`** | Current node in second list |
+| **`tail`** | Last node of the answer so far |
+
+Each step: attach the **smaller** front node to the result, advance that list.
+
+```
+  a: 1 -> 2 -> 4
+  b: 1 -> 3 -> 4
+
+  pick 1 from a → 1
+  pick 1 from b → 1 -> 1
+  pick 2 from a → 1 -> 1 -> 2
+  pick 3 from b → 1 -> 1 -> 2 -> 3
+  pick 4 from a → ...
+  attach rest of b → ... -> 4 -> 4
+```
+
+---
+
+### Dummy head trick
+
+Creating the first node is awkward. Use a **dummy** node; `tail` starts at `&dummy`.
+
+```cpp
+Node dummy{0, nullptr};
+Node* tail = &dummy;
+// ... build chain ...
+return dummy.next;   // real head
+```
+
+Same pattern as [l.cpp](l.cpp) and array merge sort with a sentinel index.
+
+---
+
+### Algorithm ([m.cpp](m.cpp))
+
+| Step | Action |
+|------|--------|
+| 1 | `tail = &dummy` |
+| 2 | While **`a` and `b`** both non-null |
+| 3 | If `a->data <= b->data`, link `a`, else link `b`; advance chosen list and `tail` |
+| 4 | Attach **remaining** list: `tail->next = a ? a : b` |
+| 5 | Return `dummy.next` |
+
+```cpp
+while (a && b) {
+    if (a->data <= b->data) {
+        tail->next = a;
+        a = a->next;
+    } else {
+        tail->next = b;
+        b = b->next;
+    }
+    tail = tail->next;
+}
+tail->next = a ? a : b;
+```
+
+Use **`<=`** to keep **stable** order when values are equal (take from `a` first).
+
+---
+
+### When one list is empty
+
+| Case | Result |
+|------|--------|
+| Both empty | `nullptr` |
+| Only `a` has nodes | merged list = `a` |
+| Only `b` has nodes | merged list = `b` |
+
+The final `tail->next = a ? a : b` handles this without extra loops.
+
+---
+
+### Complexity
+
+Let **n** = length of list `a`, **m** = length of list `b`.
+
+| | Value | Reason |
+|---|--------|--------|
+| **Time** | **`O(n + m)`** | Each node visited **once** |
+| **Extra space** | **`O(1)`** | Only pointers + dummy on stack — **no new nodes**, only rewire `next` |
+
+This is optimal time — you must look at every node at least once.
+
+---
+
+### Relation to [l.cpp](l.cpp)
+
+| | [m.cpp](m.cpp) | [l.cpp](l.cpp) |
+|---|----------------|----------------|
+| **Input** | Two **already sorted** lists | One unsorted list |
+| **Job** | Merge them once | Split, recurse, **merge** repeatedly |
+| **`merge` function** | The whole solution | **Combine** step after sorting halves |
+
+Learning [m.cpp](m.cpp) first makes the `merge()` in [l.cpp](l.cpp) easy to understand.
+
+---
+
+### Example output ([m.cpp](m.cpp))
+
+```
+List 1: 1 -> 2 -> 4 -> NULL
+List 2: 1 -> 3 -> 4 -> NULL
+Merged: 1 -> 1 -> 2 -> 3 -> 4 -> 4 -> NULL
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Forget remaining tail | Lose nodes from longer list |
+| Create all-new nodes | Wastes memory — **reuse** existing nodes |
+| Lose track of `tail` | Chain breaks — always advance `tail` after linking |
+| Use `<` only | Unstable merge for duplicate values |
+
+---
+
+### Module file map
+
+| File | Topic |
+|------|--------|
+| [m.cpp](m.cpp) | Merge two sorted lists |
+| [l.cpp](l.cpp) | Uses same merge in merge sort |
