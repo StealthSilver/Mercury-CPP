@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion) · `j.cpp` (stock span problem)
 
 ---
 
@@ -336,9 +336,93 @@ That matches “no extra space” in interview/course wording: no explicit extra
 
 `i.cpp` implements **`pushAtBottom`**, **`reverseStack`**, and prints bottom → top before and after.
 
-Run `i.cpp` to reverse an STL stack with only recursion and **`pushAtBottom`**
+Run `i.cpp` to reverse an STL stack with only recursion and **`pushAtBottom`**.
 
-Stock Span Problem -> h.cpp
-span = max no. of consecutive days (including current)
-for which price <= today's price
+---
 
+## Stock span problem
+
+**Illustration code:** `j.cpp`
+
+### Problem statement
+
+You are given an array **`price[]`** where **`price[i]`** is the stock price on **day `i`** (0-based), for **`n`** consecutive days.
+
+For **each day `i`**, compute **`span[i]`**:
+
+> **`span[i]`** = maximum number of **consecutive days ending at day `i`** (always **including day `i`**) such that on every day `j` in that range, **`price[j] ≤ price[i]`**.
+
+In words: walk **backward** from today while prices stay **at or below** today’s price; count how many days you can include (today counts as 1).
+
+**Output:** an array **`span[0 … n-1]`** of the same length as **`price`**.
+
+### Example
+
+`price = [100, 80, 60, 70, 60, 75, 85]`
+
+| Day `i` | Price | Valid stretch (prices ≤ today) | `span[i]` |
+|--------:|------:|--------------------------------|----------:|
+| 0 | 100 | {100} | 1 |
+| 1 | 80 | {80} (100 > 80) | 1 |
+| 2 | 60 | {60} | 1 |
+| 3 | 70 | {60, 70} | 2 |
+| 4 | 60 | {60} | 1 |
+| 5 | 75 | {60, 70, 60, 75} | 4 |
+| 6 | 85 | all seven days | 6 |
+
+**Answer:** `span = [1, 1, 1, 2, 1, 4, 6]`
+
+### Picture (bar view)
+
+Think of each price as a bar; for day **`i`**, span is how many bars you can cover going left **without** passing a bar **taller** than today’s bar.
+
+```text
+Day:     0    1    2    3    4    5    6
+Price: 100  80   60   70   60   75   85
+        |    |    |    |    |    |    |
+        █    █    █    █    █    █    █   (heights ∝ price)
+
+Day 3 (70):  ←── 60, 70  ──→  span = 2  (stop before 80)
+Day 5 (75):  ←── 60,70,60,75 ──→  span = 4  (stop before 80 at day 1)
+Day 6 (85):  ←── entire week ──→  span = 6
+```
+
+```mermaid
+flowchart LR
+  subgraph day3["Day 3, price 70"]
+    A["60 ✓"] --> B["70 ✓"]
+    B --> C["80 ✗ stop"]
+  end
+```
+
+### Naive idea (slow)
+
+For each **`i`**, walk **`j = i, i-1, …`** while **`price[j] ≤ price[i]`** and count.
+
+- **Time:** **O(n²)** worst case (e.g. increasing prices).
+- **Space:** **O(1)** extra.
+
+### Stack algorithm (efficient)
+
+Maintain a stack of **indices** of days whose prices form a **decreasing sequence** from bottom to top (monotonic stack).
+
+For each day **`i`**:
+
+1. **While** the stack is not empty and **`price[stack.top()] ≤ price[i]`**, **pop** (those days cannot be the “previous greater” for any future day after today’s bar).
+2. If the stack is **empty** after pops → every earlier day is ≤ today → **`span[i] = i + 1`**.
+3. Else → first day to the left with price **>** today is **`stack.top()`** →  
+   **`span[i] = i - stack.top()`**
+4. **Push `i`** onto the stack.
+
+**Why it works:** After step 1, **`stack.top()`** is the nearest index **left of `i`** with **`price[stack.top()] > price[i]`**. All days between that index and **`i`** have price ≤ **`price[i]`**, so the consecutive stretch length is **`i - stack.top()`**. If the stack is empty, there is no taller bar on the left, so the stretch is **`i + 1`** days.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each index is **pushed once** and **popped at most once** |
+| **Space** | **O(n)** — stack size in the worst case (e.g. strictly decreasing prices) |
+
+`j.cpp` implements **`vector<int> calculateSpan(const vector<int>& price)`** and prints **`price`** and **`span`** for the classic example.
+
+Run `j.cpp` for the full trace on the sample array.
