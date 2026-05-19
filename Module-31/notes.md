@@ -259,9 +259,11 @@ Worst case happens when many keys collide; good hash + resizing keeps average fa
 | Insert | `d.cpp` | add / update in chain |
 | Rehashing | `e.cpp` | resize when table fills |
 | Search | `f.cpp` | hash + walk chain |
-| `unordered_map` STL | `g.cpp` | key → value |
-| `unordered_set` STL | `h.cpp` | unique keys only |
-| Hash problems | `i.cpp`+ | frequency, two sum |
+| `unordered_map` STL | `g.cpp` | key → value, hash |
+| `unordered_set` STL | `h.cpp` | unique keys, hash |
+| `map` STL | `i.cpp` | key → value, sorted |
+| `set` STL | `j.cpp` | unique keys, sorted |
+| Hash problems | `k.cpp`+ | frequency, two sum |
 | Two sum / subarray sum | | complement in map |
 | Custom hash / struct keys | | `unordered_map` with struct |
 | `map` vs `unordered_map` problems | | pick the right container |
@@ -720,6 +722,159 @@ flowchart TD
 | `g.cpp` | `unordered_map` | key → value, hash, O(1) avg |
 | `h.cpp` | `unordered_set` | unique keys only, hash, O(1) avg |
 
+---
 
-Map -> i.cpp
-Set -> j.cpp
+## STL containers — ordered (`map` & `set`)
+
+From **Module 28** you saw that **`map`** and **`set`** use a **balanced binary search tree** (usually a **red-black tree**), **not** a hash table.
+
+| Container | Header | Stores | Internal | Keys sorted? |
+|-----------|--------|--------|----------|--------------|
+| **`map<K, V>`** | `<map>` | **Key + value** | BST | **Yes** |
+| **`set<K>`** | `<set>` | **Unique keys only** | BST | **Yes** |
+
+**Illustration code:** [`i.cpp`](i.cpp) · [`j.cpp`](j.cpp)
+
+---
+
+## `map` — definition & `i.cpp`
+
+### Definition
+
+A **`map`** is an ordered associative container: each **key** maps to exactly **one** **value**. Keys are stored in **sorted order** (default: increasing).
+
+```text
+map<string, int> marks:
+
+  key (sorted)    value
+  "Anita"    →    95
+  "Kiran"    →    76
+  "Ravi"     →    88
+
+Iteration always walks keys in sorted order.
+```
+
+### How it works (idea)
+
+```text
+        (Kiran, 76)
+       /           \
+  (Anita, 95)   (Ravi, 88)
+
+BST by key  →  insert/search/erase in O(log n)
+```
+
+### Main operations
+
+| Operation | Code | Time |
+|-----------|------|------|
+| Insert / update | `m[key] = val`, `m.insert({k,v})` | O(log n) |
+| Search | `m.count(key)`, `m.find(key)`, `m[key]` | O(log n) |
+| Delete | `m.erase(key)` | O(log n) |
+| Smallest key | `m.begin()->first` | O(log n) to first node |
+| First key ≥ x | `m.lower_bound(x)` | O(log n) |
+
+```cpp
+#include <map>
+map<int, string> m;
+m[30] = "C";
+m[10] = "A";
+m[20] = "B";
+// iteration: 10, 20, 30
+```
+
+### When to use `map`
+
+| Use `map` when… |
+|-----------------|
+| You need keys in **sorted order** |
+| You need **`lower_bound` / `upper_bound`** |
+| O(log n) is fine and order matters |
+
+**Use `unordered_map` when** you only need fast lookup and **do not** care about order.
+
+Run: `g++ -std=c++17 -o i i.cpp && ./i`
+
+---
+
+## `set` — definition & `j.cpp`
+
+### Definition
+
+A **`set`** stores **unique keys** in **sorted order**. There is **no separate value** — the key **is** the element.
+
+```text
+set<int> s;
+insert: 40, 10, 30, 10
+
+Stored (sorted):  10, 30, 40
+Duplicate 10 ignored.
+```
+
+### How it works (idea)
+
+Same **BST** idea as `map`, but each node holds **one key** (no value field).
+
+### Main operations
+
+| Operation | Code | Time |
+|-----------|------|------|
+| Insert | `s.insert(x)` | O(log n) |
+| Search | `s.count(x)`, `s.find(x)` | O(log n) |
+| Delete | `s.erase(x)` | O(log n) |
+| Smallest element | `*s.begin()` | O(log n) |
+| Largest element | `*s.rbegin()` | O(log n) |
+
+```cpp
+#include <set>
+set<int> s;
+s.insert(5);
+s.insert(2);
+if (s.count(5)) { /* present */ }
+```
+
+### When to use `set`
+
+| Use `set` when… |
+|-----------------|
+| You need **sorted unique** elements |
+| You need next/previous element in order |
+| You use `lower_bound` on a collection of keys |
+
+**Use `unordered_set` when** you only need fast membership test, no order.
+
+Run: `g++ -std=c++17 -o j j.cpp && ./j`
+
+---
+
+## All four STL containers — one table
+
+| | **`map`** | **`unordered_map`** | **`set`** | **`unordered_set`** |
+|--|-----------|---------------------|-----------|---------------------|
+| **File** | `i.cpp` | `g.cpp` | `j.cpp` | `h.cpp` |
+| **Stores** | key + value | key + value | key only | key only |
+| **Engine** | BST | hash table | BST | hash table |
+| **Sorted?** | Yes | No | Yes | No |
+| **Lookup** | O(log n) | O(1) avg | O(log n) | O(1) avg |
+| **Header** | `<map>` | `<unordered_map>` | `<set>` | `<unordered_set>` |
+
+```mermaid
+flowchart TB
+  subgraph ordered ["Ordered — O(log n)"]
+    MAP["map — key + value"]
+    SET["set — key only"]
+  end
+  subgraph hash ["Hash — O(1) avg"]
+    UMAP["unordered_map"]
+    USET["unordered_set"]
+  end
+```
+
+---
+
+### `i.cpp` / `j.cpp` — summary
+
+| File | Container | Remember |
+|------|-----------|----------|
+| `i.cpp` | `map` | sorted key → value, BST, `lower_bound` |
+| `j.cpp` | `set` | sorted unique keys, BST |
