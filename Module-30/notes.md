@@ -47,9 +47,33 @@ pop → 1
 
 ## What is a heap?
 
-A **heap** is a **complete binary tree** stored in an array that satisfies the **heap property**.
+A **heap** is a **complete binary tree (CBT)** stored in an **array/vector**, with a **heap property** (max or min). In C++, the usual implementation is a **`priority_queue`**.
 
-### Complete binary tree
+### Three layers (how to think about it)
+
+| Layer | What you see | Role |
+|-------|----------------|------|
+| **1. Visual** | **Complete binary tree** | Draw the tree; check shape + parent/child rules |
+| **2. In code** | **`vector` / array** (level-order) | How the tree is actually stored in memory |
+| **3. ADT** | **`priority_queue`** | API: `push`, `top`, `pop` — heap logic hidden inside |
+
+```text
+  You picture:          Code stores:              You use:
+
+       50                 [50,30,20,10,15,8]      priority_queue
+      /  \                      ↑                 push / top / pop
+    30    20               vector index 0 = root
+```
+
+> **Max-heap:** the **maximum** is always at the **root** of the tree (index `0` in the array).  
+> **Min-heap:** the **minimum** is always at the **root**.
+
+### Complete binary tree (CBT)
+
+A **CBT** is a binary tree where:
+
+- All levels are **fully filled**, **except** possibly the **last** level.
+- The last level is filled **from left to right** (no “gap” on the left with a missing right sibling).
 
 Every level is filled **left to right**, except possibly the last level (which is filled from the left).
 
@@ -66,7 +90,7 @@ Complete:                    NOT complete:
 
 ### Max-heap property
 
-For a **max-heap**, every node is **≥** both its children → the **maximum** is always at the **root**.
+For a **max-heap**: **parent ≥ both children** (at every node) → the **maximum** is always at the **root**.
 
 ```text
 Max-heap (valid):
@@ -84,7 +108,7 @@ Max-heap (valid):
 
 ### Min-heap property
 
-For a **min-heap**, every node is **≤** both children → the **minimum** is at the **root**.
+For a **min-heap**: **parent ≤ both children** (at every node) → the **minimum** is at the **root**.
 
 ```text
 Min-heap (valid):
@@ -605,3 +629,25 @@ priority_queue<int, vector<int>, greater<int>> minPq;  // min-heap
 minPq.push(10);
 minPq.top();    // smallest
 ```
+
+HEAPS 
+
+we visualise hte heap as COmplete Binary tree
+inside the code we write this tree as a vector/array
+the implementation is as Priority queue
+
+in max heap int eh tree the max will be the root
+in min heap in teh tree the min will be the root
+
+Heap is a Complete BT (CBT)
+• CBT is a BT where all levels are filled except maybe the last one, which is filled from left to right
+• Parent >= Children
+//Max Heap
+
+Building the heap data structure -> c.cpp
+
+Heaps
+Building the Heap Data Structure
+• push) //insert
+• pop() //pop max or min
+• top() //get max or
