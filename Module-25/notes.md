@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack)
 
 ---
 
@@ -187,6 +187,97 @@ There is **no** **`clear()`** member. To empty a stack, **`pop()`** in a loop or
 
 Run `f.cpp` to see **`std::stack<int>`** and **`std::stack<int, std::vector<int>>`** used from `<stack>`.
 
-PUSH AT BOTTOM OF STACK -> h.cpp
+---
 
-psuhAtBottom(&stack, value)
+## Push at the bottom of a stack
+
+**Illustration code:** `g.cpp`
+
+A normal stack only supports **push at the top**. Sometimes you need **`pushAtBottom(stack, value)`**: insert `value` so it becomes the **bottom** element (the one that would be popped **last**), and every existing element moves one position “up” toward the top.
+
+Example: stack bottom → top is `1, 2, 3` (3 on top). After **`pushAtBottom(s, 0)`**, bottom → top should be **`0, 1, 2, 3`**.
+
+You cannot reach the bottom directly. The classic fix uses **recursion** and only **top / pop / push**:
+
+1. If the stack is **empty**, **`push(value)`** — that value is the bottom.
+2. Otherwise **pop** the top into a variable, call **`pushAtBottom(s, value)`** on the smaller stack, then **push** the saved top back.
+
+That unwinds so the new value ends up under everything that was already there.
+
+**Complexity:** **O(n)** time for `n` elements on the stack, and **O(n)** extra space from the recursion depth (same order as the number of pops).
+
+### Pass by value vs pass by reference (STL containers)
+
+In C++, function parameters like **`std::stack<int> s`** or **`std::vector<int> v`** are **passed by value** unless you say otherwise: the function gets a **copy**. Changes to that copy do **not** affect the caller’s stack.
+
+For **`pushAtBottom`**, you must modify the **original** stack, so the parameter is **`std::stack<int>& s`** (pass by **reference**). Read-only inspection can use **`const std::stack<int>&`**.
+
+| Parameter style | Effect |
+|-----------------|--------|
+| `stack<int> s` | Copy; caller unchanged |
+| `stack<int>& s` | Alias; caller sees pushes/pops |
+| `const stack<int>& s` | Read-only alias |
+
+`g.cpp` defines **`void pushAtBottom(stack<int>& s, int value)`** and uses **`stack<int>&`** where the stack must change. For printing without destroying the original, a **copy** is passed by value on purpose.
+
+Run `g.cpp` to trace **`pushAtBottom`** on an STL stack.
+
+---
+
+## Reverse a string using a stack
+
+**Illustration code:** `h.cpp`
+
+**Goal:** Turn `"hello"` into `"olleh"` by using only stack operations (push from the string, pop into the answer).
+
+### Algorithm
+
+1. **Push** every character of the string onto a stack, **left to right** (index `0`, then `1`, …, `n - 1`).
+2. **Pop** until the stack is empty and append each popped character to a new string (or print them).
+
+Because a stack is **LIFO**, the **last** character pushed is the **first** popped. That is exactly the reverse of the push order.
+
+### The “math” (why it reverses)
+
+Let the string have length **`n`** and characters **`s[0], s[1], …, s[n-1]`**.
+
+After the push loop, the **top** of the stack is **`s[n-1]`**, then below it **`s[n-2]`**, …, bottom **`s[0]`**.
+
+Pop order:
+
+| Step | Popped | Becomes next char of reversed string |
+|------|--------|--------------------------------------|
+| 1 | `s[n-1]` | 1st |
+| 2 | `s[n-2]` | 2nd |
+| … | … | … |
+| n | `s[0]` | n-th |
+
+So the output string is **`s[n-1]s[n-2]…s[0]`**, which is the **reverse** of the original.
+
+**Small example:** `s = "hello"` (`n = 5`)
+
+- Push: `h, e, l, l, o` → stack top is `'o'`.
+- Pop: `o, l, l, e, h` → **`"olleh"`**.
+
+### Time complexity
+
+Let **`n = s.length()`**.
+
+- **Push loop:** `n` iterations, **O(1)** push each → **O(n)**.
+- **Pop loop:** `n` iterations, **O(1)** pop each → **O(n)**.
+
+**Total time: O(n)** (linear in the length of the string).
+
+### Space complexity
+
+The stack holds up to **`n`** characters at once (all of them before you start popping).
+
+**Extra space: O(n)** for the stack. (The output string also needs **O(n)** if you store it; that is the reversed result itself, not “hidden” auxiliary work beyond the answer.)
+
+### Note
+
+Reversing a string can also be done in **O(n)** time with two pointers and **O(1)** extra space (`swap` ends inward). The stack version is a standard way to **practice LIFO**; use it when the problem expects a stack or when you are chaining stack-based steps.
+
+`h.cpp` uses **`std::stack<char>`** and **`reverseWithStack(const string& s)`**.
+
+Run `h.cpp` to see the original string, the stack trace idea, and the reversed result.
