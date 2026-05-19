@@ -1,6 +1,6 @@
 # MODULE 27 — Greedy Algorithms
 
-**Illustration code:** `a.cpp` (activity selection + indices) · `b.cpp` (`maxActivities` — count only)
+**Illustration code:** `a.cpp` (activity selection + indices) · `b.cpp` (`maxActivities` — count only) · `c.cpp` (`std::pair`) · `d.cpp` (fractional knapsack)
 
 ---
 
@@ -412,5 +412,235 @@ Same as before: **O(n log n)** time (sort), **O(1)** extra space for the loop va
 
 Run `b.cpp` for the sample `start = [10,12,20]`, `end = [20,25,30]`.
 
-Pair in C++ -> c.cpp
-STL container to store 2 objects
+---
+
+## `pair` in C++ (store two values together)
+
+**Illustration code:** `c.cpp`
+
+A **`std::pair`** holds **exactly two** objects of (possibly different) types. It lives in the STL header:
+
+```cpp
+#include <utility>   // pair, make_pair
+```
+
+It is a **small struct-like type**, not a full container like `vector` — but you often see it called an “STL utility” for grouping two related values.
+
+### Declaration
+
+```cpp
+pair<int, int> p;              // two ints
+pair<string, int> nameAge;     // string + int
+pair<int, int> interval = {10, 20};  // start, end
+```
+
+Members are always:
+
+| Member | Meaning |
+|--------|---------|
+| **`first`** | First value |
+| **`second`** | Second value |
+
+### Creating pairs
+
+```cpp
+pair<int, int> p1(3, 7);                    // constructor
+pair<int, int> p2 = make_pair(3, 7);      // make_pair (types inferred)
+pair<int, int> p3 = {3, 7};               // C++11 brace init
+auto p4 = make_pair(3, 7);                // auto + make_pair
+```
+
+### Access and modify
+
+```cpp
+cout << p.first << " " << p.second;
+p.first = 100;
+```
+
+C++17 **structured bindings**:
+
+```cpp
+auto [s, e] = p;   // s = p.first, e = p.second
+```
+
+### Why pairs are useful
+
+| Use case | Example |
+|----------|---------|
+| **Activity / interval** | `{start, end}` |
+| **Sort with two keys** | `vector<pair<int,int>>` sort by `.second` |
+| **Map entries** | `map` stores `pair<const Key, Value>` internally |
+| **Return two values** | `return {count, index};` |
+
+For **activity selection**, instead of two separate arrays you can write:
+
+```cpp
+vector<pair<int,int>> acts;  // {start, end}
+acts.push_back({10, 20});
+sort(acts.begin(), acts.end(),
+     [](const pair<int,int>& a, const pair<int,int>& b) {
+         return a.second < b.second;  // sort by end time
+     });
+```
+
+### Comparison
+
+If `first` types are comparable, `pair` supports **`==`**, **`<`**, etc. Comparison is **lexicographic**: compare `first`, then `second` if tied.
+
+```cpp
+{1, 5} < {2, 0}   // true (1 < 2)
+{1, 5} < {1, 3}   // false (1 == 1, 5 < 3 is false)
+```
+
+### Complexity
+
+| Operation | Time |
+|-----------|------|
+| Create / read / write `.first`, `.second` | **O(1)** |
+| Sort `n` pairs | **O(n log n)** |
+
+Space: **O(1)** per pair (two stored values).
+
+`c.cpp` demonstrates creation, access, sorting intervals, and structured bindings.
+
+Run `c.cpp` for `std::pair` examples.
+
+---
+
+## Fractional knapsack (greedy)
+
+**Illustration code:** `d.cpp`
+
+### Problem statement
+
+You have a knapsack of capacity **`W`**. There are **`n`** items; item **`i`** has:
+
+- **weight** \(w_i\)
+- **value** \(v_i\)
+
+Unlike the **0/1 knapsack**, you may take **a fraction** of an item (any real amount between **0** and **100%** of that item).
+
+**Goal:** maximize **total value** in the knapsack without exceeding total weight **W**.
+
+### Example
+
+```text
+value  = [60, 100, 120]
+weight = [10,  20,  30]
+W = 50
+```
+
+| Item | \(w_i\) | \(v_i\) | Value per unit weight \(v_i / w_i\) |
+|------|--------|--------|--------------------------------------|
+| 0 | 10 | 60 | **6.0** |
+| 1 | 20 | 100 | **5.0** |
+| 2 | 30 | 120 | **4.0** |
+
+**Greedy take (highest ratio first):**
+
+1. All of item **0**: weight **10**, value **60** — remaining capacity **40**
+2. All of item **1**: weight **20**, value **100** — remaining **20**
+3. **Fraction** of item **2**: take \(\frac{20}{30}\) of it → value \(120 \times \frac{20}{30} = 80\)
+
+\[
+\text{Total value} = 60 + 100 + 80 = \mathbf{240}
+\]
+
+\[
+\text{Total weight} = 10 + 20 + 20 = 50 = W
+\]
+
+**Answer: 240**
+
+```mermaid
+flowchart LR
+  R["Sort by v/w descending"] --> T["Take full items while room"]
+  T --> F["Take fraction of next item"]
+```
+
+---
+
+### Greedy strategy
+
+Define the **value density** (profit per unit weight):
+
+\[
+\rho_i = \frac{v_i}{w_i}
+\]
+
+1. **Sort** items by **`ρ_i`** in **decreasing** order.
+2. Greedily take as much as possible of the next item (full item if it fits, otherwise a **fraction** to fill the knapsack).
+3. Stop when capacity is **0** or all items are used.
+
+```text
+capacity left: 50
+take item 0 (ρ=6):  -10  -> 40 left,  +60 value
+take item 1 (ρ=5):  -20  -> 20 left,  +100 value
+take 2/3 of item 2 (ρ=4): -20 -> 0 left, +80 value
+```
+
+---
+
+### Why greedy is optimal (math sketch)
+
+Suppose an optimal solution takes fractions \(x_i \in [0,1]\) of each item (amount \(x_i w_i\) weight).
+
+**Objective:**
+
+\[
+\max \sum_{i=1}^{n} x_i v_i \quad \text{subject to} \quad \sum_{i=1}^{n} x_i w_i \le W,\; 0 \le x_i \le 1
+\]
+
+This is a **linear program**. The feasible region is a polytope; the maximum of a linear function over a polytope occurs at a **vertex** where items are taken in full or not at all — except possibly **one** item that is **split**.
+
+**Exchange argument:** If the solution takes less than full amount of item **a** and also takes some of item **b** with **lower** density \(\rho_b < \rho_a\), move weight from **b** to **a**:
+
+- Removing \(\Delta w\) from **b** loses value \(\rho_b \Delta w\).
+- Adding \(\Delta w\) to **a** gains \(\rho_a \Delta w\).
+- Net gain \((\rho_a - \rho_b)\Delta w > 0\) — contradiction unless **b** is empty.
+
+So any optimal solution fills the knapsack with items in **non-increasing \(\rho_i\)**, taking full items until capacity runs out, then at most **one** fractional item. That is exactly the greedy algorithm.
+
+**Note:** **0/1 knapsack** (whole items only) is **not** solved by this greedy rule; fractional knapsack is special because divisibility makes the LP structure work.
+
+---
+
+### Algorithm
+
+```
+for each item i: ratio[i] = value[i] / weight[i]
+sort items by ratio descending
+ans = 0, cap = W
+for each item in sorted order:
+    if cap >= weight[i]:
+        take full item: ans += value[i], cap -= weight[i]
+    else:
+        take fraction cap/weight[i]: ans += value[i] * (cap / weight[i])
+        break
+return ans
+```
+
+Use **`double`** for fractions and the answer when capacities/values are integers but fractions appear.
+
+---
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n log n)** — sorting by ratio; loop **O(n)** |
+| **Space** | **O(n)** — store `(ratio, value, weight)` or indices |
+
+---
+
+### Fractional vs 0/1 knapsack
+
+| | Fractional | 0/1 |
+|--|------------|-----|
+| Take part of item? | **Yes** | **No** |
+| Greedy by \(v/w\) | **Optimal** | **Not always optimal** |
+| Typical solution | Greedy sort | DP **O(nW)** |
+
+`d.cpp` implements **`double fractionalKnapsack(vector<int> value, vector<int> weight, int W)`** for the sample above.
+
+Run `d.cpp` — expected output **240**.
