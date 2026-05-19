@@ -1,6 +1,6 @@
 # MODULE 29 — Binary Search Trees (BST)
 
-**Illustration code:** `a.cpp` (inorder) · `b.cpp` (search / balanced vs skewed) · `c.cpp` (build from array) · `d.cpp` (insert) · `e.cpp` (search) · `f.cpp` (delete) · `g.cpp`–`z.cpp` (more)
+**Illustration code:** `a.cpp`–`q.cpp` · `r.cpp` (range sum) · `s.cpp` (closest to K) · `t.cpp` (Kth smallest) · `u.cpp` (two BST sum) · `v.cpp` (max sum BST) · `w.cpp`–`z.cpp` (more)
 
 ---
 
@@ -847,3 +847,739 @@ flowchart TD
   F --> C2["1 child"]
   F --> C3["2 children → successor"]
 ```
+
+---
+
+## Inorder successor (BST)
+
+**Illustration code:** [`g.cpp`](g.cpp)
+
+Used mainly in **BST delete** when a node has **two children** — you copy the successor’s value into the node, then delete the old successor.
+
+### What is it?
+
+**Inorder successor** of a node `N` = the node that appears **immediately after** `N` in an **inorder** traversal (next larger value in a BST).
+
+```text
+Inorder:  1  3  6  7  8  10  13  14
+              ^     ^
+              N     successor of 3 is 6
+```
+
+### In a BST — how to find it
+
+If `N` has a **right subtree**, the successor is the **leftmost (smallest) node** in that right subtree:
+
+```text
+        8
+       / \
+      3   10        Successor of 3:
+     / \    \       1. go to right child → 6
+    1   6    14     2. go left as far as possible → 6
+         \
+          7
+
+Right subtree of 3: rooted at 6
+Leftmost in that subtree: 6  ← inorder successor
+```
+
+**Steps:**
+
+1. `succ = N->right`
+2. While `succ->left != nullptr`, `succ = succ->left`
+3. Done — `succ` is the inorder successor
+
+```cpp
+Node* inorderSuccessor(Node* node) {
+    Node* succ = node->right;
+    while (succ && succ->left) {
+        succ = succ->left;
+    }
+    return succ;
+}
+```
+
+### Why the successor has no left child
+
+The successor is the **minimum** node in the **right subtree**, so there is **nothing smaller** below it on the left:
+
+```text
+        6          ← successor
+       / \
+      ?   ?        ← cannot have a left child
+                   (would be smaller than 6)
+
+Successor has NO left child (always).
+It may have 0 or 1 right child.
+```
+
+| Property | Successor node |
+|----------|----------------|
+| **Left child** | **None** (it is the leftmost in its subtree) |
+| **Right child** | Optional — **0 or 1** right child only |
+
+That is why deleting the successor after copying is **easy** — it falls into delete **case 1 or 2** (leaf or one child), never two children.
+
+### If there is no right subtree
+
+If `N` has **no right child**, the successor is **not** below `N`. You must go **up** to an ancestor (first ancestor where `N` is in the left subtree). Used less often in basic delete code when you always pick successor from the right child.
+
+```text
+Successor of 7 (no right child in small tree):
+
+        8
+       /
+      3
+     / \
+    1   6
+         \
+          7
+
+Inorder: 1 3 6 7 8  →  successor of 7 is 8 (parent path upward)
+```
+
+For **delete with two children**, `N` always has a **right subtree** (because it also has a left child), so the **right-subtree minimum** method always works.
+
+### Inorder predecessor (mirror)
+
+**Inorder predecessor** = **rightmost** node in the **left** subtree (go left once, then right until null). Used as an alternative in delete case 3.
+
+```text
+Predecessor of 3 = largest in left subtree = 1? 
+Left subtree of 3: 1 — predecessor is 1 (go left to 1, then right as far as possible)
+```
+
+### Use in delete (case 3)
+
+```text
+Delete node 3 with two children:
+
+  1. Find successor = 6 (leftmost in right subtree)
+  2. Copy 6 into node 3's position (value replace)
+  3. Delete old node 6 from right subtree (easy — no left child)
+```
+
+| | |
+|--|--|
+| **Time to find successor** | **O(h)** — height of right subtree |
+| **Space** | **O(1)** iterative loop |
+
+Run: `g++ -std=c++17 -o g g.cpp && ./g`
+
+---
+
+## Print in range (BST)
+
+**Illustration code:** [`h.cpp`](h.cpp)
+
+Print all values in a BST that lie in **[low, high]** (inclusive).
+
+Because the tree is **sorted** in inorder, answers appear in **sorted order**.
+
+### Pruning idea (efficient)
+
+```text
+At node N:
+
+  if N.data < low   →  only search RIGHT
+  if N.data > high  →  only search LEFT
+  else              →  print N, search BOTH sides
+```
+
+```text
+Range [6, 10] on sample BST:
+
+        8
+       / \
+      3   10
+     / \    \
+    1   6    14
+       \    /
+        7  13
+
+Output: 6 7 8 10
+```
+
+### Algorithm
+
+```cpp
+void printInRange(Node* root, int low, int high) {
+    if (!root) return;
+    if (root->data >= low) printInRange(root->left, low, high);
+    if (root->data >= low && root->data <= high)
+        cout << root->data << " ";
+    if (root->data <= high) printInRange(root->right, low, high);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(h + k)** — `k` = nodes in range; worst **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o h h.cpp && ./h`
+
+---
+
+## Root to leaf paths
+
+**Illustration code:** [`i.cpp`](i.cpp)
+
+A **root-to-leaf path** starts at the **root** and ends at a **leaf**. Print **every** such path.
+
+```text
+        8
+       / \
+      3   10
+     / \    \
+    1   6    14
+
+Paths:
+  8 -> 3 -> 1
+  8 -> 3 -> 6
+  8 -> 10 -> 14
+```
+
+### Algorithm (DFS + backtrack)
+
+1. Push node on `path`.
+2. If **leaf** → print `path`.
+3. Recurse left / right.
+4. **Pop** before return.
+
+```cpp
+void paths(Node* root, vector<int>& path) {
+    if (!root) return;
+    path.push_back(root->data);
+    if (!root->left && !root->right) print(path);
+    else { paths(root->left, path); paths(root->right, path); }
+    path.pop_back();
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o i i.cpp && ./i`
+
+---
+
+## Validate BST
+
+**Illustration code:** [`j.cpp`](j.cpp)
+
+Check if a binary tree satisfies the **BST property** everywhere.
+
+### Valid vs invalid
+
+```text
+Valid:                      Invalid:
+
+        8                           8
+       / \                         / \
+      3   10                       3   10
+     / \    \                     / \    \
+    1   6    14                  1   9    14
+                                      ^
+                               9 > 8 but in left subtree
+```
+
+### Method 1 — range (recommended)
+
+```cpp
+bool isBST(Node* root, long minV, long maxV) {
+    if (!root) return true;
+    if (root->data <= minV || root->data >= maxV) return false;
+    return isBST(root->left, minV, root->data) &&
+           isBST(root->right, root->data, maxV);
+}
+```
+
+### Method 2 — inorder strictly increasing
+
+Each inorder value must be **greater than** the previous.
+
+| Method | Time | Space |
+|--------|------|-------|
+| Range | O(n) | O(h) |
+| Inorder | O(n) | O(h) |
+
+Run: `g++ -std=c++17 -o j j.cpp && ./j`
+
+---
+
+### h / i / j — summary
+
+| Topic | File | Key idea |
+|-------|------|----------|
+| **Print in range** | `h.cpp` | Pruned inorder traversal |
+| **Root to leaf** | `i.cpp` | DFS + backtrack path |
+| **Validate BST** | `j.cpp` | Range or inorder check |
+
+---
+
+## Sorted array to balanced BST
+
+**Illustration code:** [`k.cpp`](k.cpp)
+
+Given a **sorted array**, build a **height-balanced BST** so search stays **O(log n)**.
+
+### Key idea
+
+Always pick the **middle** element as the root — then left and right halves have **equal size** (or differ by 1).
+
+```text
+Array:  1  2  3  4  5  6  7
+              ^
+            mid=4 → root
+
+Left half [1,2,3] → left subtree
+Right half [5,6,7] → right subtree
+```
+
+```text
+        4
+      /   \
+     2     6
+    / \   / \
+   1  3  5   7
+```
+
+### Algorithm
+
+```cpp
+Node* build(vector<int>& a, int l, int r) {
+    if (l > r) return nullptr;
+    int mid = l + (r - l) / 2;
+    Node* root = new Node(a[mid]);
+    root->left  = build(a, l, mid - 1);
+    root->right = build(a, mid + 1, r);
+    return root;
+}
+```
+
+| Step | Action |
+|------|--------|
+| 1 | `mid` = middle index |
+| 2 | `a[mid]` becomes root |
+| 3 | Recurse on `l .. mid-1` (left BST) |
+| 4 | Recurse on `mid+1 .. r` (right BST) |
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each element becomes one node |
+| **Space** | **O(log n)** — recursion depth ≈ tree height |
+
+Run: `g++ -std=c++17 -o k k.cpp && ./k`
+
+---
+
+## Convert BST to balanced BST
+
+**Illustration code:** [`l.cpp`](l.cpp)
+
+A **valid BST** can be **skewed** (height **O(n)**) if values were inserted in sorted order. **Rebalance** it without changing the **inorder** sequence (same sorted order).
+
+### Two-step recipe
+
+```text
+Step 1: Inorder traversal → sorted array (BST inorder is sorted)
+Step 2: buildBalanced(array)  →  balanced BST (same values)
+```
+
+```text
+Before (skewed):          After (balanced):
+
+    1                          4
+     \                        / \
+      2                      2   6
+       \                    / \ / \
+        3                  1  3 5  7
+         \
+          ...
+
+height O(n)                 height O(log n)
+```
+
+### Algorithm
+
+1. `inorderCollect(root, vec)` — **O(n)**
+2. `root = buildBalanced(vec, 0, n-1)` — **O(n)**
+3. Free old skewed tree if replacing root
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** — array + **O(log n)** recursion on rebuild |
+
+Run: `g++ -std=c++17 -o l l.cpp && ./l`
+
+---
+
+## Size of largest BST in a binary tree
+
+**Illustration code:** [`m.cpp`](m.cpp)
+
+Given a **general binary tree** (not necessarily a BST), find the **largest subtree** that **is** a valid BST. Return its **node count**.
+
+```text
+           10
+          /  \
+         5   15
+        / \
+       4   8        ← 8 breaks BST under 5
+      / \
+     2   5
+    / \
+   1   3
+
+Largest BST subtree: rooted at 4 (nodes 4,2,5,1,3) → size 5
+```
+
+### Post-order idea
+
+For each node, combine **left** and **right** subtree info:
+
+| Field | Meaning |
+|-------|---------|
+| `isBST` | Is this subtree a valid BST? |
+| `size` | If BST → node count; else → max BST size in children |
+| `minVal`, `maxVal` | Range of values in subtree (if BST) |
+
+```text
+If left.isBST && right.isBST &&
+   left.max < root.data < right.min:
+     this subtree is BST
+     size = left.size + right.size + 1
+Else:
+     size = max(left.size, right.size)   // best in children
+     isBST = false
+```
+
+```cpp
+struct Info { bool isBST; int size, minVal, maxVal; };
+// empty child: isBST=true, size=0, min=INT_MAX, max=INT_MIN
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — visit each node once |
+| **Space** | **O(h)** — recursion |
+
+Run: `g++ -std=c++17 -o m m.cpp && ./m`
+
+---
+
+## Merge two BSTs
+
+**Illustration code:** [`n.cpp`](n.cpp)
+
+Given two BSTs `t1` and `t2`, return one BST containing **all keys** in sorted order (merged result).
+
+### Approach (3 steps)
+
+```text
+1. Inorder t1 → sorted array A
+2. Inorder t2 → sorted array B
+3. Merge A and B → sorted C
+4. buildBalanced(C) → balanced merged BST
+```
+
+```text
+BST1: 1 2 3        BST2: 5 7 9
+
+Merged inorder: 1 2 3 5 7 9
+
+        5
+      /   \
+     2     7
+    / \     \
+   1   3     9
+```
+
+### Merge two sorted arrays
+
+```cpp
+while (i < n && j < m) {
+    if (A[i] <= B[j]) C.push_back(A[i++]);
+    else C.push_back(B[j++]);
+}
+// append remaining
+```
+
+| | |
+|--|--|
+| **Time** | **O(m + n)** |
+| **Space** | **O(m + n)** — merged array |
+
+> **Note:** You can also merge using two pointers without full arrays (inorder iterators), but the **array + rebuild** method is the clearest to learn.
+
+Run: `g++ -std=c++17 -o n n.cpp && ./n`
+
+---
+
+### k / l / m / n — summary
+
+| Problem | File | Technique |
+|---------|------|-----------|
+| Sorted array → balanced BST | `k.cpp` | Middle element as root, recurse on halves |
+| Balance a BST | `l.cpp` | Inorder → array → rebuild balanced |
+| Largest BST subtree | `m.cpp` | Post-order `Info` (isBST, size, min, max) |
+| Merge 2 BSTs | `n.cpp` | Two inorders + merge + balanced build |
+
+---
+
+## Self-balancing BSTs
+
+A **self-balancing BST** automatically keeps tree **height small** (about **log n**) after **insert** and **delete**, so search / insert / delete stay **O(log n)**.
+
+| Plain BST | Self-balancing BST |
+|-----------|-------------------|
+| Can become **skewed** | Stays **balanced** |
+| Height **O(n)** worst | Height **O(log n)** |
+| Insert sorted data → chain | Rotations / recoloring fix shape |
+
+**Examples:** **AVL trees**, **Red-Black trees** (used in `std::map`, `std::set` in C++).
+
+```text
+Same 7 keys inserted in order:
+
+Skewed BST:          AVL / Red-Black:
+
+    1                    4
+     \                  / \
+      2                2   6
+       \              / \ / \
+        3            1  3 5  7
+         \
+          ...
+height 6              height 2
+```
+
+---
+
+## AVL trees
+
+**Illustration code:** [`o.cpp`](o.cpp) (insert + rotations) · [`p.cpp`](p.cpp) (validate AVL)
+
+### Definition
+
+An **AVL tree** is a BST where **every node** is **height-balanced**:
+
+```text
+Balance Factor (BF) = height(left) - height(right)
+
+|BF| <= 1  at EVERY node
+```
+
+| BF | Meaning |
+|----|---------|
+| **-1, 0, 1** | Balanced |
+| **2 or -2** | Unbalanced → need **rotation** |
+
+Each node stores its **height** (or compute on the fly).
+
+### Why AVL is strict
+
+AVL keeps heights **very close** — lookup is **faster** (fewer comparisons), but **more rotations** on insert/delete than Red-Black.
+
+### Rotations (4 cases)
+
+When `|BF| = 2` at node `N`, fix using **rotations**:
+
+| Case | Shape | Fix |
+|------|-------|-----|
+| **LL** | Insert in **left** of **left** child | **Right** rotation at `N` |
+| **RR** | Insert in **right** of **right** child | **Left** rotation at `N` |
+| **LR** | Insert in **right** of **left** child | **Left** rotate child, then **right** rotate `N` |
+| **RL** | Insert in **left** of **right** child | **Right** rotate child, then **left** rotate `N` |
+
+```text
+LL case (insert 30 into 10-20):     Right rotate at 10:
+
+    10                                  20
+      \                                /  \
+       20                             10   30
+        \
+         30
+```
+
+```text
+LR case:                Step 1 left rot      Step 2 right rot
+    10                      10                  25
+      \                       \                 /  \
+       30        ->           25      ->      10   30
+      /                         \
+     25                          30
+```
+
+### AVL insert algorithm
+
+1. Insert like normal **BST**.
+2. Walk back up; **update heights**.
+3. If `|BF| == 2` at any node → **rotate** (single or double).
+4. Stop when balanced.
+
+```cpp
+Node* insertAVL(Node* root, int key) {
+    if (!root) return new Node(key);
+    if (key < root->data) root->left = insertAVL(root->left, key);
+    else if (key > root->data) root->right = insertAVL(root->right, key);
+    return balance(root);  // update height + rotate if needed
+}
+```
+
+### AVL delete (overview)
+
+1. Delete like BST (successor for two children).
+2. Walk up; update heights and **rebalance** (rotations) same as insert.
+
+### Important problem — check if tree is AVL
+
+Post-order: subtree is AVL only if left & right are AVL **and** `|BF| <= 1`.
+
+See **`p.cpp`**.
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| Search | **O(log n)** | O(1) iterative |
+| Insert | **O(log n)** | **O(log n)** |
+| Delete | **O(log n)** | **O(log n)** |
+| Validate AVL | **O(n)** | **O(h)** |
+
+Run: `g++ -std=c++17 -o o o.cpp && ./o` · `g++ -std=c++17 -o p p.cpp && ./p`
+
+---
+
+## Red-Black trees
+
+**Illustration code:** [`q.cpp`](q.cpp)
+
+### Definition
+
+A **Red-Black tree** is a BST where each node has a **color**: **RED** or **BLACK**, following **5 rules**:
+
+| # | Rule |
+|---|------|
+| 1 | Every node is **RED** or **BLACK** |
+| 2 | **Root** is **BLACK** |
+| 3 | Every **leaf** (null) is **BLACK** |
+| 4 | **No two consecutive RED** nodes (RED parent → BLACK children) |
+| 5 | Every path from node to descendant leaf has the **same black-height** |
+
+```text
+Black-height = number of BLACK nodes on any root-to-leaf path
+(not counting the node itself, often counting null leaves as black)
+```
+
+Rules 4 and 5 guarantee height **<= 2 log(n+1)** → **O(log n)** operations.
+
+### Why Red-Black is popular
+
+- **Fewer rotations** than AVL on average (insert/delete faster to fix).
+- Used in **C++ `std::map`**, **`std::set`**, **Java TreeMap**.
+- Slightly **less strict** balance than AVL → faster updates, slightly taller trees.
+
+### Red-Black vs AVL
+
+| | **AVL** | **Red-Black** |
+|--|---------|---------------|
+| Balance | **Stricter** (`|BF| <= 1`) | **Relaxed** (color rules) |
+| Lookup | **Faster** (shorter) | Slightly more comparisons |
+| Insert/delete | More rotations | **Fewer** rotations |
+| Use case | Databases (read-heavy) | **STL maps/sets** |
+
+### Insert fix-up (idea)
+
+1. Insert new node as **RED** (rule 5 preserved locally).
+2. If parent is **BLACK** → done.
+3. If parent is **RED** → **violation** → fix:
+
+| Situation | Fix |
+|-----------|-----|
+| **Uncle is RED** | Recolor parent, uncle, grandparent; move problem up |
+| **Uncle is BLACK** (triangle/zig-zag) | Rotate parent, then grandparent + recolor |
+| **Uncle is BLACK** (line) | Rotate grandparent + recolor |
+
+```text
+Insert 25 (RED) under RED parent:
+
+Recolor case: parent & uncle RED → flip to BLACK,
+grandparent RED, continue fixing upward
+
+Rotation case: rotate + recolor to remove consecutive REDs
+```
+
+4. Force **root BLACK** at end (rule 2).
+
+See **`q.cpp`** for step-by-step insert output.
+
+### Delete (overview)
+
+Delete like BST, then **fix double-black** violations up the tree (more cases than insert — advanced topic).
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| Search | **O(log n)** | O(1) |
+| Insert | **O(log n)** | **O(log n)** |
+| Delete | **O(log n)** | **O(log n)** |
+
+Run: `g++ -std=c++17 -o q q.cpp && ./q`
+
+---
+
+### Self-balancing BST — summary
+
+| Topic | File | Key idea |
+|-------|------|----------|
+| **AVL insert** | `o.cpp` | BF + LL/RR/LR/RL rotations |
+| **AVL validate** | `p.cpp` | Check `|BF| <= 1` everywhere |
+| **Red-Black insert** | `q.cpp` | RED/BLACK rules + recolor + rotate |
+| **STL** | — | `map` / `set` use Red-Black internally |
+
+```mermaid
+flowchart TD
+  I["Insert in self-balancing BST"] --> B["BST insert"]
+  B --> F{"Balanced?"}
+  F -->|AVL| R["Rotations by BF"]
+  F -->|RB| C["Recolor + rotate"]
+  R --> OK["Height O(log n)"]
+  C --> OK
+```
+
+
+PROBLEM 1 -> r.cpp
+
+ Given the root node of a binary search tree and two integers low and
+high, return the sum of values of all nodes with a value in the inclusive range [low,
+high].
+
+PROBLEM 2 -> s.cpp
+
+We have a binary search tree and a target node K. The task is to find the
+node with minimum absolute difference with given target value K.
+
+PROBLEM 3 -> t.cpp
+
+Given the root of a binary search tree, and an integer k, return the kth
+smallest value (1-indexed) of all the values of the nodes in the tree.
+
+
+PROBLEM 4 -> u.cpp
+
+Given two binary search trees, return True if and only if there is a node in
+the first tree and a node in the second tree whose values sum up to a given integer
+target.
+
+PROBLEM 5 -> v.cpp
+
+Given a binary tree root, return the maximum sum of all keys of any
+sub-tree which is also a Binary Search Tree (BST).
+Assume a BST is defined as follows:
+● The left subtree of a node contains only nodes with keys less than the node's
+key.
+● The right subtree of a node contains only nodes with keys greater than the
+node's key.
+● Both the left and right subtrees must also be binary search trees.
