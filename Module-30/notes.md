@@ -1,6 +1,6 @@
 # MODULE 30 — Heaps & Priority Queue
 
-**Illustration code:** `a.cpp` (PQ demo) · `b.cpp` (STL API) · `c.cpp` (heap from scratch) · `d.cpp` (PQ with `Student` & `pair`) · `e.cpp`–`z.cpp` (more)
+**Illustration code:** `a.cpp`–`e.cpp` · `f.cpp`–`h.cpp` (PQ problems) · `i.cpp` (window max — heap) · `j.cpp` (window max — deque) · `k.cpp`–`z.cpp` (more)
 
 ---
 
@@ -540,16 +540,9 @@ Balance sizes → median from both tops
 
 ---
 
-## Heap sort (connection to Module 13)
+## Heap sort (brief)
 
-**Heap sort** uses a heap to sort in place:
-
-1. Build max-heap → **O(n)**
-2. Repeatedly swap root with end, shrink heap, heapify down → **n × O(log n)**
-
-**Total: O(n log n)** time, **O(1)** extra space (if array is in-place).
-
-C++ `std::sort` is usually faster in practice (IntroSort hybrid); heap sort is still important to understand **heap mechanics**.
+Uses a **max-heap** to sort in place — **O(n log n)** time, **O(1)** extra space. Full explanation, comparison with quick/merge sort, and code: **[Heap sort → `e.cpp`](#heap-sort)** (below).
 
 ---
 
@@ -584,7 +577,8 @@ C++ `std::sort` is usually faster in practice (IntroSort hybrid); heap sort is s
 | STL API + max/min heap | `b.cpp` | `priority_queue` operations, `greater<>` |
 | Heap from scratch | `c.cpp` | `vector` + heapify up/down |
 | PQ with objects & pairs | `d.cpp` | `Student`, `pair`, custom `Compare` |
-| Top K problems | `e.cpp`+ | Heap size K |
+| Heap sort | `e.cpp` | Build heap + extract max |
+| Top K problems | `f.cpp`+ | Heap size K |
 | Merge K sorted | | Min-heap |
 | Heap implementation | | Array + heapify up/down |
 
@@ -1013,6 +1007,489 @@ Remember: in priority_queue, Compare returns true if a is LOWER priority than b
 
 Run: `g++ -std=c++17 -o d d.cpp && ./d`
 
-HEAP SORT -> e.cpp
+---
 
-this is not the first priority as the TC is nlogn and the oquic and merge sort works the same way
+## Heap sort
+
+**Illustration code:** [`e.cpp`](e.cpp)
+
+**Heap sort** sorts an array by turning it into a **max-heap**, then repeatedly moving the **largest** element (root) to the **end** of the unsorted part.
+
+> **Not first choice in production:** time is **O(n log n)** — same as **merge sort** and **quick sort** (average). In C++ you normally use **`std::sort`**. Learn heap sort to master **heapify** and to know a sort with **O(1)** extra space and **O(n log n) worst case** (unlike quick sort’s O(n²) worst).
+
+---
+
+### Algorithm (two phases)
+
+```text
+Array:  [ 4, 10, 3, 5, 1 ]
+
+Phase 1 — Build max-heap (heapify down from last parent to root)
+          O(n)
+
+        10
+       /  \
+      5    4
+     / \
+    1   3
+
+Array:  [ 10, 5, 4, 1, 3 ]
+
+Phase 2 — Repeat until sorted (n-1 times)
+          swap arr[0] with arr[heapSize-1]
+          shrink heap by 1
+          heapifyDown(0) on smaller heap
+          O(n log n) total
+```
+
+| Step | Action |
+|------|--------|
+| 1 | **Build max-heap** on whole array (`i` from `n/2-1` down to `0`, `heapifyDown`) |
+| 2 | Swap **root** with **last** index of current heap |
+| 3 | Heap size −= 1 (that last slot is now sorted) |
+| 4 | **Heapify down** at root on reduced heap |
+| 5 | Repeat steps 2–4 while `heapSize > 1` |
+
+```cpp
+void heapSort(vector<int>& a) {
+    int n = a.size();
+    for (int i = n / 2 - 1; i >= 0; --i)
+        heapifyDown(a, n, i);           // build max-heap
+
+    for (int heapSize = n; heapSize > 1; --heapSize) {
+        swap(a[0], a[heapSize - 1]);    // max goes to end
+        heapifyDown(a, heapSize - 1, 0);
+    }
+}
+```
+
+(`heapifyDown` is the same idea as in [`c.cpp`](c.cpp).)
+
+---
+
+### Complexity
+
+| | Heap sort | Merge sort | Quick sort | `std::sort` |
+|--|-----------|------------|------------|-------------|
+| **Time (average)** | O(n log n) | O(n log n) | O(n log n) | O(n log n) |
+| **Time (worst)** | **O(n log n)** | O(n log n) | O(n²) | O(n log n) typical |
+| **Extra space** | **O(1)** | O(n) | O(log n) stack | implementation-defined |
+| **Stable?** | No | Yes | No | No (typical) |
+| **Use in practice** | Rare | Merge step / linked lists | Often taught | **Default choice** |
+
+```text
+Same big-O time as merge & quick → not “faster” in theory
+Why study it anyway?
+  • Connects heaps (Module 30) to sorting (Module 13/22)
+  • In-place O(1) extra memory
+  • Guaranteed O(n log n) without merge buffer
+```
+
+---
+
+### Walkthrough on `[4, 10, 3, 5, 1]`
+
+| After step | Array (heap part | sorted tail) |
+|------------|-------------------|
+| Build heap | `[10, 5, 4, 1, 3]` | |
+| Swap root↔end | `[3, 5, 4, 1 \| 10]` | 10 fixed |
+| … | … | … |
+| Done | `[1, 3, 4, 5, 10]` | fully sorted |
+
+Parentheses in `e.cpp` output mark values already in the sorted tail.
+
+---
+
+### When to use which sort
+
+| Situation | Prefer |
+|-----------|--------|
+| General C++ coding | **`std::sort`** |
+| Need **stable** sort | `std::stable_sort` / merge sort |
+| **Linked list** | Merge sort |
+| **In-place**, worst-case guarantee | Heap sort |
+| Learning heaps | **Heap sort** (`e.cpp`) |
+
+Run: `g++ -std=c++17 -o e e.cpp && ./e`
+
+---
+
+## Practice problems (heap / PQ)
+
+| # | Problem | File | Heap type |
+|---|---------|------|-----------|
+| 1 | K nearest cars | `f.cpp` | Max-heap of size K |
+| 2 | Connect N ropes (min cost) | `g.cpp` | Min-heap |
+| 3 | K weakest rows in matrix | `h.cpp` | Min-heap |
+
+---
+
+## Problem 1 — K nearest cars
+
+**Illustration code:** [`f.cpp`](f.cpp) · (LeetCode 973 style — closest to a point)
+
+You are at **`CO = (cx, cy)`**. Given many car positions **`(x, y)`**, return the **K cars nearest** to `CO`.
+
+### Example
+
+```text
+CO = (3, 3)     K = 2
+
+C1 = (5, -1)    C2 = (-2, 4)    C3 = (3, 2)    C4 = (8, 8)
+
+Nearest 2 → C3, C1  (see f.cpp for distances)
+```
+
+### Math — distance
+
+Euclidean distance from `CO` to car `(x, y)`:
+
+```text
+d = √((x - cx)² + (y - cy)²)
+```
+
+For **comparing** distances we use **squared distance** (no `sqrt` needed — squaring keeps order the same for non-negative values):
+
+```text
+d² = (x - cx)² + (y - cy)²
+
+Smaller d²  ⟺  smaller d
+```
+
+**Example — C1 `(5, -1)` from `CO (3, 3)`:**
+
+```text
+d² = (5 - 3)² + (-1 - 3)² = 2² + (-4)² = 4 + 16 = 20
+```
+
+**C2 `(-2, 4)`:**
+
+```text
+d² = (-2 - 3)² + (4 - 3)² = (-5)² + 1² = 25 + 1 = 26
+```
+
+So **C1 is closer** than C2.
+
+### Algorithm — max-heap of size K
+
+**Idea:** Keep only the **K closest** cars seen so far. The **farthest** among those K is on top of a **max-heap** (by distance). If a new car is closer than that farthest, replace it.
+
+| Step | Action |
+|------|--------|
+| 1 | For each car, compute `d²` |
+| 2 | Push `(d², car)` into max-heap (largest `d²` on top) |
+| 3 | If heap size **> K**, `pop()` (remove farthest among current K+1) |
+| 4 | After all cars, heap holds **K nearest** |
+
+```text
+Why max-heap of size K (not sort all n)?
+
+  n cars, only need K best  →  O(n log K) with size-K heap
+  Full sort                 →  O(n log n)
+```
+
+### Complexity
+
+| | Value |
+|---|--------|
+| **Time** | **O(n log K)** — n cars, heap size ≤ K |
+| **Space** | **O(K)** |
+
+Run: `g++ -std=c++17 -o f f.cpp && ./f`
+
+---
+
+## Problem 2 — Connect N ropes (minimum cost)
+
+**Illustration code:** [`g.cpp`](g.cpp) · (LeetCode 1167 — min cost to connect sticks/ropes)
+
+Given rope lengths, you may join **any two** ropes at a time. Cost of one join = **sum of the two lengths**. New rope length = that sum. Find **minimum total cost** to connect all into one rope.
+
+### Example
+
+```text
+Lengths: 14, 3, 2, 6
+
+Join 2 + 3 = 5     cost 5     ropes left: 5, 6, 14
+Join 5 + 6 = 11    cost 11    ropes left: 11, 14
+Join 11 + 14 = 25  cost 25    one rope left
+
+Total cost = 5 + 11 + 25 = 41
+```
+
+### Greedy idea (why always merge two **smallest**)
+
+If you merge a **long** rope early, that length gets **added again** in later merges (like paying interest on a big number). Merging **small** ropes first keeps intermediate sums small.
+
+> **Always pick the two shortest remaining ropes** → **min-heap**.
+
+### Algorithm — min-heap
+
+| Step | Action |
+|------|--------|
+| 1 | Put all lengths in a **min-heap** |
+| 2 | While more than one rope: |
+| | a. `pop` smallest → `a` |
+| | b. `pop` smallest → `b` |
+| | c. `cost += a + b`, `push(a + b)` back |
+| 3 | Return total `cost` |
+
+```text
+Heap at start:  [2, 3, 6, 14]
+Pop 2, 3  → push 5,  cost 5
+Pop 5, 6  → push 11, cost 5+11=16
+Pop 11,14 → push 25, cost 16+25=41
+```
+
+This is the same greedy pattern as **Huffman coding** (build optimal merge tree).
+
+### Complexity
+
+| | Value |
+|---|--------|
+| **Time** | **O(n log n)** — each of n ropes pushed/popped a constant number of times |
+| **Space** | **O(n)** — heap holds rope lengths |
+
+Run: `g++ -std=c++17 -o g g.cpp && ./g`
+
+---
+
+## Problem 3 — K weakest soldiers (rows in a matrix)
+
+**Illustration code:** [`h.cpp`](h.cpp) · (LeetCode 1337)
+
+An `m × n` matrix: **`1` = soldier**, **`0` = civilian**. Each row is sorted (**1`s then 0`s**).
+
+**Row `i` is weaker than row `j` if:**
+
+1. Soldier count in row `i` **<** soldier count in row `j`, **or**
+2. Same soldier count and **`i < j`** (smaller index wins tie).
+
+Return indices of the **K weakest** rows.
+
+### Example matrix
+
+```text
+Row 0:  1 1 0 0   →  2 soldiers
+Row 1:  1 1 1 1   →  4 soldiers
+Row 2:  1 0 0 0   →  1 soldier
+Row 3:  1 1 0 0   →  2 soldiers
+
+K = 2  →  weakest rows: 2, then 0
+         (row 2 has 1 soldier; among rows with 2 soldiers, row 0 < row 3)
+Answer: [2, 0]
+```
+
+### Math — weakness as a pair
+
+Treat each row as **`(soldiers, rowIndex)`**:
+
+```text
+Row A weaker than Row B  ⟺  pair(A) < pair(B) in lexicographic order
+
+  (soldiers_A, index_A) < (soldiers_B, index_B)
+  if soldiers_A < soldiers_B
+  OR (soldiers_A == soldiers_B AND index_A < index_B)
+```
+
+C++ `pair<int,int>` with `operator<` does exactly this: compare first, then second.
+
+### Count soldiers in a row
+
+Because 1s come before 0s, count 1s until first 0 (or use `upper_bound` / linear scan):
+
+```text
+[1, 1, 0, 0]  →  2 soldiers   (O(n) per row, or O(log n) with binary search)
+```
+
+### Algorithm — min-heap of all rows, pop K
+
+| Step | Action |
+|------|--------|
+| 1 | For each row `i`, compute `soldiers` |
+| 2 | Push `(soldiers, i)` into **min-heap** (`greater<>`) |
+| 3 | Pop **K** times → those row indices are the K weakest |
+
+**Alternative:** Max-heap of size K storing `(soldiers, i)` with custom compare — **O(m log K)** when `m` rows, `K` small.
+
+For clarity, `h.cpp` uses **min-heap + pop K** (**O(m log m)**).
+
+### Complexity
+
+| | Value |
+|---|--------|
+| **Time** | **O(m·n)** to count soldiers + **O(m log m)** for heap (`m` rows) |
+| **Space** | **O(m)** — heap of row pairs |
+
+With binary search per row: **O(m log n + m log m)**.
+
+Run: `g++ -std=c++17 -o h h.cpp && ./h`
+
+---
+
+### Problems f–h — summary
+
+| File | Pattern | Time | Space |
+|------|---------|------|-------|
+| `f.cpp` | Max-heap size K (nearest) | O(n log K) | O(K) |
+| `g.cpp` | Min-heap (merge smallest) | O(n log n) | O(n) |
+| `h.cpp` | Min-heap on `(soldiers, row)` | O(m·n + m log m) | O(m) |
+
+---
+
+## Problem 4 — Sliding window maximum
+
+**Illustration code:** [`i.cpp`](i.cpp) (max-heap) · [`j.cpp`](j.cpp) (deque) · (LeetCode 239)
+
+Given an array `nums` and window size **`K`**, return the **maximum** of **every contiguous subarray** of length `K`.
+
+### Example
+
+```text
+nums = [ 1,  3, -1, -3,  5,  3,  6,  7 ]
+         |_______|
+Window size K = 3
+
+Window [0..2]  →  max(1,3,-1)   =  3
+Window [1..3]  →  max(3,-1,-3)  =  3
+Window [2..4]  →  max(-1,-3,5)  =  5
+Window [3..5]  →  max(-3,5,3)   =  5
+Window [4..6]  →  max(5,3,6)    =  6
+Window [5..7]  →  max(3,6,7)    =  7
+
+Answer: [3, 3, 5, 5, 6, 7]
+```
+
+There are **`n - K + 1`** windows when `nums` has length `n`.
+
+---
+
+### Naive sliding window (idea only — not in code)
+
+For each start index `i` from `0` to `n-K`:
+
+```text
+Scan i .. i+K-1 and pick the maximum
+```
+
+| | |
+|--|--|
+| **Time** | **O(n · K)** — each window scans K elements |
+| **Space** | **O(1)** |
+
+Fine when **K** is tiny; too slow when **K** is large.
+
+---
+
+## Approach 1 — Max-heap + sliding window (`i.cpp`)
+
+**Idea:** The window always spans indices **`[i-K+1 .. i]`** as `i` moves right. Keep a **max-heap** of pairs **`(value, index)`** for elements in the current window. The heap top is the window maximum.
+
+**Problem:** When the left end leaves the window, that old index is still in the heap.
+
+**Fix — lazy removal:** Before reading the top, **pop** while `top.index ≤ i - K` (stale / outside window).
+
+| Step | When `i` moves |
+|------|----------------|
+| 1 | `push (nums[i], i)` |
+| 2 | While heap top index **≤ i - K**, `pop()` (left end already left) |
+| 3 | If `i ≥ K-1`, answer is `top().value` |
+
+```text
+i=2  window [0,1,2]  heap may hold (3,1),(-1,2),(1,0) → top (3,1) → 3
+i=3  index 0 leaves → pop (1,0) if on top → max still 3
+```
+
+### Why a max-heap?
+
+Same “who is the best in this set?” idea as other PQ problems — **largest value** has highest priority. We store **index** with value so we know when an entry is **too old**.
+
+### Complexity (`i.cpp`)
+
+| | Value |
+|---|--------|
+| **Time** | **O(n log n)** worst case (each of n elements pushed; up to n pops) |
+| **Space** | **O(n)** — heap may hold stale entries briefly |
+
+Run: `g++ -std=c++17 -o i i.cpp && ./i`
+
+---
+
+## Approach 2 — Monotonic deque (`j.cpp`) — optimal
+
+**Idea:** `deque` stores **indices** of useful candidates. Values at those indices are in **decreasing** order (front = largest in window).
+
+```text
+nums[i] enters  →  drop from BACK any index with smaller value (they can never be max while i is in window)
+index i-K leaves →  pop from FRONT if front index is outside window
+front of deque   →  index of current window maximum
+```
+
+### Why drop smaller values from the back?
+
+If `nums[j] < nums[i]` and `j` is before `i`, then while **`i` is inside the window**, `j` can **never** be the maximum (a newer, larger `i` blocks it). So `j` is useless — remove it.
+
+```text
+Window ... 5, 3, 6
+When 6 arrives, 3 and 5 before it are dominated by 6 for future windows that include 6
+```
+
+### Walkthrough (K=3)
+
+See step-by-step deque state in `j.cpp` output. First window max appears at `i=2`:
+
+```text
+i=2  window [1,3,-1]     deque front index 1 → max 3
+i=4  window [-1,-3,5]    front → 5
+i=7  window [3,6,7]      front → 7
+```
+
+### Algorithm steps
+
+```cpp
+for i in 0 .. n-1:
+    while deque not empty and deque.front <= i - K:
+        pop_front()                    // out of window
+    while deque not empty and nums[deque.back] <= nums[i]:
+        pop_back()                     // useless smaller
+    push_back(i)
+    if i >= K-1:
+        ans.push(nums[deque.front])
+```
+
+### Complexity (`j.cpp`)
+
+| | Value |
+|---|--------|
+| **Time** | **O(n)** — each index pushed once, popped at most once from front and back |
+| **Space** | **O(K)** — deque size ≤ K |
+
+Run: `g++ -std=c++17 -o j j.cpp && ./j`
+
+---
+
+### Heap vs deque — which to use?
+
+| | **Heap (`i.cpp`)** | **Deque (`j.cpp`)** |
+|--|-------------------|---------------------|
+| **Time** | O(n log n) | **O(n)** |
+| **Space** | O(n) | O(K) |
+| **Concept** | PQ module — lazy delete stale | Classic optimal interview solution |
+| **When** | Already using heaps; n not huge | **Preferred** in contests |
+
+```mermaid
+flowchart LR
+  W["Window slides right"] --> H["Heap: push + lazy pop old index"]
+  W --> D["Deque: drop useless small from back, drop old from front"]
+  H --> A["Window max"]
+  D --> A
+```
+
+---
+
+### Problems i–j — summary
+
+| File | Method | Time | Space |
+|------|--------|------|-------|
+| `i.cpp` | Max-heap `(value, index)` | O(n log n) | O(n) |
+| `j.cpp` | Monotonic deque | **O(n)** | O(K) |
