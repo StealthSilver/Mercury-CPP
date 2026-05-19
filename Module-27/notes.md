@@ -1,6 +1,6 @@
 # MODULE 27 — Greedy Algorithms
 
-**Illustration code:** `a.cpp` (activity selection + indices) · `b.cpp` (`maxActivities` — count only) · `c.cpp` (`std::pair`) · `d.cpp` (fractional knapsack)
+**Illustration code:** `a.cpp`–`d.cpp` (greedy basics) · `e.cpp`–`g.cpp` (practice) · `h.cpp` (job sequencing)
 
 ---
 
@@ -644,3 +644,226 @@ Use **`double`** for fractions and the answer when capacities/values are integer
 `d.cpp` implements **`double fractionalKnapsack(vector<int> value, vector<int> weight, int W)`** for the sample above.
 
 Run `d.cpp` — expected output **240**.
+
+---
+
+# More greedy problems
+
+---
+
+## Minimize sum of absolute difference pairs
+
+**Code:** `e.cpp`
+
+### Problem statement
+
+Given two arrays **`A`** and **`B`** of the **same length** `n`, pair each element of **`A`** with **exactly one** element of **`B`** (a bijection) so that
+
+\[
+\sum_{i=1}^{n} \left| A_{\pi(i)} - B_i \right|
+\]
+
+is **minimized** (for some permutation \(\pi\)).
+
+### Greedy idea
+
+**Sort both arrays**, then pair **`A[i]` with `B[i]`** after sorting.
+
+**Why:** If `A` and `B` are sorted and some pair crosses (`A[i]` with `B[j]`, `A[k]` with `B[l]` where `i < k` but `A[i] > A[k]`), swapping partners never increases the sum (rearrangement / exchange argument on sorted order).
+
+```text
+A sorted: 1  4  7  8
+B sorted: 2  3  6  9
+pairs:   |1-2| + |4-3| + |7-6| + |8-9| = 1+1+1+1 = 4
+```
+
+### Algorithm
+
+1. Sort **`A`**, sort **`B`**
+2. Sum **`|A[i] - B[i]|`**
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n log n)** |
+| **Space** | **O(1)** extra if sorting in place |
+
+---
+
+## Maximum length chain of pairs
+
+**Code:** `f.cpp`
+
+### Problem statement
+
+Each item is a pair **`(a, b)`** with **`a < b`**.  
+Pair **`(c, d)`** can follow **`(a, b)`** in a chain if **`b < c`** (first pair ends before second starts).
+
+Find the **longest** chain (not necessarily using all pairs).
+
+**Example:** `[[1,2], [4,5], [7,8]]` → chain length **3**.
+
+```text
+(1,2) -> (4,5) -> (7,8)
+  2 < 4    5 < 7
+```
+
+### Greedy strategy
+
+1. **Sort** pairs by **second** element **`b`** ascending (if tie, sort **`a`** ascending).
+2. Take the first pair; let **`end = b`** of last chosen.
+3. For each next pair **`(a, b)`**, if **`a > end`**, add it to the chain and set **`end = b`**.
+
+Always picking the pair with **smallest possible `b`** that still extends the chain leaves room for more pairs later.
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n log n)** |
+| **Space** | **O(1)** extra (or **O(n)** if copying pairs) |
+
+---
+
+## Indian coin change (minimum coins)
+
+**Code:** `g.cpp`
+
+### Problem statement
+
+Infinite coins of denominations:
+
+**`[1, 2, 5, 10, 20, 50, 100, 500, 2000]`**
+
+Given amount **`V`**, find the **minimum number of coins** to make exactly **`V`**.
+
+Indian currency is a **canonical coin system**: greedy “take the largest coin ≤ remaining” always gives the minimum count.
+
+### Greedy algorithm
+
+```
+sort denominations descending (already sorted)
+count = 0
+while V > 0:
+    pick largest coin c <= V
+    use V / c of them (add to count)
+    V %= c
+return count
+```
+
+**Example:** `V = 590`
+
+| Step | Coin | Count | Remaining |
+|------|------|-------|-----------|
+| 1 | 500 | 1 | 90 |
+| 2 | 50 | 1 | 40 |
+| 3 | 20 | 1 | 20 |
+| 4 | 20 | 1 | 0 |
+
+**Answer: 4 coins** (500 + 50 + 20 + 20)
+
+### Why greedy works here
+
+For Indian denominations, each coin value is large enough relative to smaller coins that you never do better by substituting smaller coins for one larger one. **Not true for arbitrary coins** (e.g. coins `[1, 3, 4]` and `V = 6` → greedy `4+1+1` = 3 coins, optimal `3+3` = 2).
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(d)** — `d` = number of denominations (constant for India) |
+| **Space** | **O(1)** |
+
+Run **`e.cpp`**, **`f.cpp`**, and **`g.cpp`** for implementations and sample output.
+
+---
+
+## Job sequencing (maximize profit)
+
+**Code:** `h.cpp`
+
+### Problem statement
+
+You have **`n`** jobs. Job **`i`** has:
+
+- **profit** \(p_i\)
+- **deadline** \(d_i\) — it must finish by time \(d_i\) (each job takes **1** unit of time)
+- Only **one** job runs at a time
+
+Each job uses **one** time slot: if scheduled at time \(t\), it occupies slot \(t\) and must have \(t \le d_i\) (job finishes by its deadline).
+
+**Goal:** schedule a subset of jobs to **maximize total profit**.
+
+### Example
+
+| Job | Profit | Deadline |
+|-----|--------|----------|
+| A | 100 | 2 |
+| B | 10 | 1 |
+| C | 15 | 2 |
+| D | 27 | 1 |
+
+At most **2** time slots exist (max deadline = 2). Greedy by **profit**:
+
+1. **A (100, d=2)** → place in slot **2** (latest ≤ 2)
+2. **D (27, d=1)** → slot **1**
+3. **C, B** — no free slot ≤ their deadline
+
+**Total profit = 100 + 27 = 127**
+
+```text
+time:   slot 1   slot 2
+        [ D ]    [ A ]
+profit:  27      100
+```
+
+### Greedy strategy
+
+1. **Sort** jobs by **profit descending** (do the most valuable jobs first).
+2. Let **`maxD`** = maximum deadline.
+3. Create **`maxD`** time slots (indices `0 … maxD-1` or `1 … maxD`).
+4. For each job in sorted order, try to place it in the **latest** free slot **≤ deadline** (fills from the right so earlier slots stay free for jobs with tight deadlines).
+
+```mermaid
+flowchart TD
+  S["Sort by profit descending"] --> L["For each job"]
+  L --> T["Find latest free slot t <= deadline"]
+  T -->|found| A["Add profit, mark slot used"]
+  T -->|not found| K["Skip job"]
+```
+
+**Why latest slot?** Reserving early slots for jobs that only have early deadlines leaves flexibility; high-profit jobs with late deadlines can still use slot `deadline`.
+
+### Algorithm
+
+```
+sort jobs by profit descending
+maxD = max(deadline)
+slots[0..maxD-1] = free
+
+ans = 0
+for each job (p, d) in sorted order:
+    for t = d-1 down to 0:        // 0-indexed slots
+        if slots[t] is free:
+            slots[t] = used
+            ans += p
+            break
+return ans
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n²)** — sort **O(n log n)** + for each job scan up to **maxD** slots; often written **O(n log n + n·maxD)** |
+| **Space** | **O(maxD)** for slot array |
+
+With a **Disjoint Set Union (DSU)** on slots, the inner loop can be faster in practice, but the greedy above is the standard teaching version.
+
+### Greedy correctness (sketch)
+
+If the highest-profit job not yet scheduled is **J**, there is an optimal schedule that places **J** in the **latest** feasible slot: any other slot only frees an **earlier** time, which cannot help jobs with **later** deadlines and never hurts placing **J** as late as allowed. Remove **J** and repeat → optimal substructure + greedy choice.
+
+`h.cpp` implements **`int jobSequencing(vector<int> profit, vector<int> deadline)`** with the classic sample.
+
+Run `h.cpp` — expected total profit **127** on the table above.
