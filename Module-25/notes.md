@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`) · `e.cpp` (stack with linked list) · `f.cpp` (`std::stack` in the STL) · `g.cpp` (push at bottom) · `h.cpp` (reverse a string with stack) · `i.cpp` (reverse a stack, recursion) · `j.cpp` (stock span problem) · `k.cpp` (next greater element) · `l.cpp` (valid parentheses) · `m.cpp` (duplicate parentheses) · `n.cpp` (max area in histogram)
+**Illustration code:** `a.cpp`–`n.cpp` (stack concepts & classic problems) · `o.cpp` (palindrome linked list) · `p.cpp` (decode string) · `q.cpp` (simplify path) · `r.cpp` (trapping rain water)
 
 ---
 
@@ -738,3 +738,193 @@ flowchart LR
 
 Run `n.cpp` for the stack-based max-area solution.
 
+---
+
+# Practice problems (stack & linked list)
+
+---
+
+## Problem 1 — Palindrome linked list
+
+**Code:** `o.cpp`
+
+### Problem statement
+
+Given the **head** of a **singly linked list**, return **`true`** if the sequence of values reads the same **forward and backward**, else **`false`**.
+
+**Examples:**
+
+| List | Palindrome? |
+|------|-------------|
+| `1 → 2 → 2 → 1` | yes |
+| `1 → 2` | no |
+| `1` | yes |
+
+### Approach (two pointers + reverse half)
+
+1. **Slow / fast pointers** — fast moves 2 steps, slow 1 step; when fast reaches end, **slow** is at the **middle**.
+2. **Reverse** the list starting from **slow** (second half).
+3. Compare **first half** (from `head`) with **reversed second half** node by node.
+
+```text
+Before:  1 -> 2 -> 2 -> 1
+         ^slow     ^fast
+
+After reverse 2nd half:  1 -> 2    1 -> 2
+         p1->          p2->
+```
+
+```mermaid
+flowchart LR
+  A["find middle: slow/fast"] --> B["reverse 2nd half"]
+  B --> C["compare both halves"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — one pass to middle, one reverse, one compare |
+| **Space** | **O(1)** — only pointers (no extra list / stack of all nodes) |
+
+---
+
+## Problem 2 — Decode string
+
+**Code:** `p.cpp`
+
+### Problem statement
+
+Given an **encoded** string, return its **decoded** form.
+
+**Rule:** **`k[encoded_string]`** means repeat **`encoded_string`** exactly **`k`** times. **`k`** is a positive integer (may be multi-digit, e.g. `12`). Input is **valid** (well-formed brackets, no extra spaces). Letters appear only inside brackets (except when building nested parts).
+
+**Examples:**
+
+| Input | Output |
+|-------|--------|
+| `"3[a]2[bc]"` | `"aaabcbc"` |
+| `"3[a2[c]]"` | `"accaccacc"` |
+| `"2[abc]3[cd]ef"` | `"abcabccdcdcdef"` |
+
+### Approach (two stacks)
+
+Use **`stack<int> counts`** and **`stack<string> strings`**:
+
+- Read digits → build **`k`**.
+- **`[`** → push current **`k`** and current built string; reset for inner level.
+- **`]`** → pop **`k`** and **`prev`**, set **`cur = prev + cur repeated k times`**.
+- Letter → append to current string.
+
+```text
+"3[a2[c]]"
+  push 3, ""  on '['
+  push 2, "a" on '['
+  cur = "c"   then ']' -> "acc"
+  ']'         -> "accaccacc"
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n × maxK)** in worst case output size (e.g. `1000[a]`); **O(length of output)** to build the answer |
+| **Space** | **O(n)** — stacks + current strings (nested depth) |
+
+---
+
+## Problem 3 — Simplify Unix path
+
+**Code:** `q.cpp`
+
+### Problem statement
+
+Given an **absolute** Unix path, **simplify** it:
+
+- Starts with **`/`** (root).
+- **`/`** separates components.
+- **`.`** = current directory (ignore).
+- **`..`** = parent directory (go up one level; ignore at root).
+- Collapse **multiple `/`** into one.
+- Result has **no** trailing **`/`** (except root **`"/"`**).
+
+**Examples:**
+
+| Input | Output |
+|-------|--------|
+| `"/home//foo/"` | `"/home/foo"` |
+| `"/home/user/Documents/../Pictures"` | `"/home/user/Pictures"` |
+| `"/../"` | `"/"` |
+| `"/a/./b/../../c/"` | `"/c"` |
+
+### Approach (stack of directory names)
+
+Split on **`/`**. For each token:
+
+- empty or **`.`** → skip  
+- **`..`** → pop stack if not empty  
+- else → push name  
+
+Rebuild: **`/` + name1 + `/` + name2 + …**
+
+```text
+/home/user/Documents/../Pictures
+
+stack: home -> user -> Documents
+  ..  pop Documents
+  Pictures push
+=> /home/user/Pictures
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — `n` = length of path (split + one stack pass) |
+| **Space** | **O(n)** — stack holds at most all components |
+
+---
+
+## Problem 4 — Trapping rain water
+
+**Code:** `r.cpp`
+
+### Problem statement
+
+Given **`n`** non-negative integers **`height[i]`** (bar widths = 1), compute **how much water** is trapped after rain between bars.
+
+Water at index **`i`** is bounded by **min(leftMax, rightMax) − height[i]** (if positive).
+
+**Example:** `height = [0,1,0,2,1,0,1,3,2,1,2,1]` → **6** units.
+
+```text
+        █
+    █   █ █   █
+█   █ █ █ █ █ █ █
+0 1 0 2 1 0 1 3 2 1 2 1
+      ^ water in valleys
+```
+
+### Approach (monotonic stack)
+
+Stack stores **indices** with **increasing** heights. When **`height[i]`** is **greater** than **`height[stack.top()]`**, we found a **right wall** for a “valley”:
+
+1. Pop bottom index **`mid`** of the valley.
+2. If stack empty, no left wall → no water.
+3. **Distance** = `i - stack.top() - 1`, **bounded height** = `min(height[i], height[stack.top()]) - height[mid]`.
+4. Add **`bounded_height × distance`** to answer.
+
+```mermaid
+flowchart TD
+  A["see taller bar at i"] --> B["pop valley bottom mid"]
+  B --> C["water += (min(left,right)-h[mid]) * width"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each index pushed / popped once |
+| **Space** | **O(n)** — stack |
+
+**Note:** Two-pointer (**O(1)** space) also works; `r.cpp` uses the **stack** version to match this module.
