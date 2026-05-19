@@ -1,6 +1,6 @@
 # MODULE 28 — Binary Trees
 
-**Illustration code:** `a.cpp` (build from preorder) · `b.cpp`–`e.cpp` (traversals) · `f.cpp` (height) · `g.cpp` (count nodes) · `h.cpp` (sum) · `i.cpp` (diameter O(n²)) · `j.cpp` (diameter O(n)) · `k.cpp`–`z.cpp` (more topics)
+**Illustration code:** `a.cpp`–`t.cpp` · `u.cpp` (uni-valued) · `v.cpp` (invert) · `w.cpp` (delete leaves) · `x.cpp` (duplicate subtrees) · `y.cpp` (max path sum) · `z.cpp` (more)
 
 ---
 
@@ -1404,5 +1404,1182 @@ flowchart TD
 
 Both approaches give the **same answer** on the sample tree: **4 edges**, **5 nodes**.
 
-Subtree of another Tree -> j.cpp
-Return true if there is a subtree of root with the same structure and node values of subRoot and false otherwise.
+---
+
+## Subtree of another tree
+
+**Illustration code:** [`k.cpp`](k.cpp)
+
+> **Note:** `j.cpp` is used for **diameter (O(n))**. This problem is in **`k.cpp`**.
+
+**Problem:** Given two binary trees `root` and `subRoot`, return **`true`** if there is a **subtree** of `root` with the **same structure and same node values** as `subRoot`, else **`false`**.
+
+A **subtree** of `root` is a node in `root` plus **all of its descendants** (same idea as in the subtree section above).
+
+### Example trees
+
+**Main tree (`root`):**
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+```
+
+**`subRoot` — matches** (subtree rooted at **2**):
+
+```text
+    2
+   / \
+  4   5
+
+Answer: true
+```
+
+**`subRoot` — does not match** (wrong shape: `4` is right child, not left):
+
+```text
+  2
+   \
+    4
+
+Answer: false
+```
+
+```text
+Match case:                    No-match case:
+
+    1                            1
+   / \                          / \
+  [2]  3                       2   3
+ / \  \                         \   \
+4  5  6                         4   6
+  ^
+subtree = subRoot               2's shape ≠ subRoot
+```
+
+---
+
+### Step 1 — Check if two trees are identical
+
+Helper **`isSameTree(a, b)`**:
+
+1. If both `nullptr` → **true**.
+2. If one is `nullptr` → **false**.
+3. Else → values equal **and** `isSameTree(left)` **and** `isSameTree(right)`.
+
+```cpp
+bool isSameTree(Node* a, Node* b) {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    return a->data == b->data
+        && isSameTree(a->left, b->left)
+        && isSameTree(a->right, b->right);
+}
+```
+
+---
+
+### Step 2 — Try every node of `root` as a candidate
+
+Helper **`isSubtree(root, subRoot)`**:
+
+1. If `subRoot == nullptr` → **true** (empty pattern matches anywhere).
+2. If `root == nullptr` → **false** (cannot place non-empty subtree).
+3. If **`isSameTree(root, subRoot)`** → **true**.
+4. Else → try **`root->left`** or **`root->right`**.
+
+```cpp
+bool isSubtree(Node* root, Node* subRoot) {
+    if (!subRoot) return true;
+    if (!root) return false;
+    if (isSameTree(root, subRoot)) return true;
+    return isSubtree(root->left, subRoot)
+        || isSubtree(root->right, subRoot);
+}
+```
+
+### Algorithm walkthrough (match case)
+
+```text
+Try at 1: compare with subRoot(2) → no
+Try at 2: compare with subRoot(2) → YES (2,4,5 match) → return true
+```
+
+### Algorithm walkthrough (no-match case)
+
+```text
+Try at 1, 2, 4, 5, 3, 6 — none identical to subRoot(2,/,4) → return false
+```
+
+```mermaid
+flowchart TD
+  A["isSubtree(root, sub)"] --> B{"root & sub both exist?"}
+  B -->|sub null| T["return true"]
+  B -->|root null| F["return false"]
+  B -->|both exist| C{"isSameTree(root, sub)?"}
+  C -->|yes| T2["return true"]
+  C -->|no| D["isSubtree(left) OR isSubtree(right)"]
+```
+
+| | |
+|--|--|
+| **Time** | **O(m × n)** — try up to **m** nodes in `root`; each `isSameTree` is **O(n)** |
+| **Space** | **O(h)** — recursion stack (`h` = height of `root`) |
+
+**Improvement (optional):** serialize both trees to strings (preorder with `null` markers) and check if `sub` string is a substring — **O(m + n)** average, more code.
+
+Run: `g++ -std=c++17 -o k k.cpp && ./k`
+
+---
+
+## `map` in C++ (STL)
+
+**Illustration code:** [`l.cpp`](l.cpp)
+
+A **`map<Key, Value>`** is an STL container that stores **key → value** pairs.
+
+- Each **key** appears **at most once**.
+- Keys are kept in **sorted order** (by default, increasing `Key`).
+- Implemented as a **balanced BST** (usually red-black tree) → ordered, logarithmic operations.
+
+```text
+map<int, string> ages;
+
+  key     value
+   10  ->  "A"
+   20  ->  "B"
+   30  ->  "C"
+
+Internally sorted by key: 10, 20, 30
+```
+
+> **Related:** `unordered_map` is **hash-based** — average **O(1)** lookup, but keys are **not sorted**. Use `map` when you need **order**; use `unordered_map` when you only need fast lookup.
+
+---
+
+### Header and declaration
+
+```cpp
+#include <map>
+using namespace std;
+
+map<int, int> m;              // empty map: key int, value int
+map<string, int> freq;        // string -> count
+map<char, int> mp;
+```
+
+| Type | Meaning |
+|------|---------|
+| `Key` | What you look up (must be **comparable**) |
+| `Value` | Data stored for that key |
+
+---
+
+### Insert and update
+
+```cpp
+m[key] = val;                 // insert OR update value for key
+m.insert({key, val});         // insert; fails if key already exists
+m.insert(make_pair(key, val));
+```
+
+| Operation | Behavior |
+|-----------|----------|
+| `m[key] = val` | If `key` is new → **insert**. If `key` exists → **overwrite** value. |
+| `m.insert({k, v})` | Inserts only if `k` is **not** already present. |
+
+```text
+m[10] = 100;
+m[20] = 200;
+m[10] = 999;    // updates 10 -> 999 (does not create duplicate key)
+```
+
+---
+
+### Access a value
+
+```cpp
+cout << m[key];               // value for key (creates key with 0 if missing!)
+int x = m.at(key);            // value for key (throws if key missing — safer)
+```
+
+**Important:** `m[key]` on a **missing** key **inserts** it with a **default value** (e.g. `0` for `int`).
+
+Use **`count`** or **`find`** first if you only want to read:
+
+```cpp
+if (m.count(key)) {
+    cout << m[key];
+}
+```
+
+---
+
+### Check if key exists — `count`
+
+```cpp
+m.count(key);   // 1 if key present, 0 if not present
+```
+
+| Return | Meaning |
+|--------|---------|
+| **1** | Key **exists** |
+| **0** | Key **does not** exist |
+
+```cpp
+if (m.count(10)) {
+    cout << "10 is in the map\n";
+}
+```
+
+**Time:** **O(log n)** per `count` / `find` / `[]` / `insert`.
+
+---
+
+### Loop over a map
+
+Keys are visited in **sorted order**.
+
+**Range-for (C++11):**
+
+```cpp
+for (auto it : m) {
+    cout << it.first << " -> " << it.second << "\n";
+}
+```
+
+**Iterator style:**
+
+```cpp
+for (auto it = m.begin(); it != m.end(); ++it) {
+    cout << it->first << " -> " << it->second << "\n";
+}
+```
+
+| Member | Meaning |
+|--------|---------|
+| `it.first` or `it->first` | **Key** |
+| `it.second` or `it->second` | **Value** |
+
+```text
+map: { 30->c, 10->a, 20->b }   (stored sorted)
+
+Loop prints:
+  10 -> a
+  20 -> b
+  30 -> c
+```
+
+---
+
+### Other useful operations
+
+| Function | Meaning |
+|----------|---------|
+| `m.size()` | Number of key-value pairs |
+| `m.empty()` | `true` if map has no elements |
+| `m.erase(key)` | Remove pair with this key |
+| `m.clear()` | Remove all pairs |
+| `m.find(key)` | Iterator to pair, or `m.end()` if not found |
+
+```cpp
+auto it = m.find(20);
+if (it != m.end()) {
+    cout << it->second;
+}
+```
+
+---
+
+### Example — frequency count
+
+Count how many times each value appears (common in tree/array problems):
+
+```cpp
+vector<int> arr = {1, 2, 1, 3, 2, 1};
+map<int, int> freq;
+
+for (int x : arr) {
+    freq[x]++;          // if x new, inserts with 0 then adds 1
+}
+
+// freq[1]=3, freq[2]=2, freq[3]=1
+```
+
+```text
+arr: 1  2  1  3  2  1
+
+freq map after loop:
+  1 -> 3
+  2 -> 2
+  3 -> 1
+```
+
+---
+
+### Time and space complexity
+
+| Operation | `map` | `unordered_map` (for comparison) |
+|-----------|-------|----------------------------------|
+| Insert / update | **O(log n)** | **O(1)** average |
+| `count` / `find` | **O(log n)** | **O(1)** average |
+| Delete | **O(log n)** | **O(1)** average |
+| Loop all | **O(n)** | **O(n)** |
+| **Space** | **O(n)** | **O(n)** |
+
+`n` = number of keys stored.
+
+---
+
+### `map` vs `vector` — when to use
+
+| Use **vector** | Use **map** |
+|----------------|-------------|
+| Dense indices `0 … n-1` | Keys are **sparse** or **not integers** |
+| Need index by position | Need **lookup by key** |
+| Order = insertion index | Need keys in **sorted order** |
+
+---
+
+### Quick reference
+
+```cpp
+#include <map>
+map<int, int> m;
+
+m[10] = 100;                  // insert / update
+cout << m[10];                // access (100)
+cout << m.count(10);          // 1
+cout << m.count(99);          // 0
+
+for (auto p : m) {
+    cout << p.first << " " << p.second << "\n";
+}
+```
+
+Run: `g++ -std=c++17 -o l l.cpp && ./l`
+
+---
+
+## Horizontal distance (HD)
+
+Before **top view** and **bottom view**, we assign each node a **horizontal distance (HD)** — its **column** if you draw the tree on a grid.
+
+**Rules:**
+
+| Node | HD |
+|------|-----|
+| **Root** | **0** |
+| **Left child** | **parent HD − 1** |
+| **Right child** | **parent HD + 1** |
+
+```text
+        1 (0)
+       / \
+  (-1)2   3(1)
+     / \   \
+ (-2)4  5(0) 6(2)
+```
+
+| Node | Path from root | HD |
+|------|----------------|-----|
+| 1 | root | **0** |
+| 2 | left of 1 | **−1** |
+| 3 | right of 1 | **1** |
+| 4 | left of 2 | **−2** |
+| 5 | right of 2 | **0** |
+| 6 | right of 3 | **2** |
+
+```text
+Columns (HD):   -2   -1    0    1    2
+                 |    |     |    |    |
+                 4    2     1    3    6
+                      \    |
+                       5   (5 also in column 0, below 1)
+```
+
+Nodes with the **same HD** lie on one **vertical line** (same column).  
+**Top view** picks the **topmost** node on each line; **bottom view** picks the **bottommost**.
+
+Uses a **`map<int, int>`** from **HD → node value** (see `l.cpp`). Keys are sorted, so printing the map left to right gives the view order.
+
+---
+
+## Top view of a binary tree
+
+**Illustration code:** [`m.cpp`](m.cpp)
+
+**Top view** = nodes you would see if you look at the tree **from above** (only the **first / topmost** node on each vertical line / HD).
+
+### Idea
+
+- Traverse the tree (usually **BFS / level order**).
+- For each **HD**, store a node only the **first time** you see that HD (shallowest = topmost).
+- Print `map` keys from **smallest HD to largest** (left to right).
+
+```text
+Side view (columns):          Top view (what you see):
+
+      1                             4  2  1  3  6
+     / \                            ^  ^  ^  ^  ^
+    2   3                           one per column
+   / \   \
+  4   5   6
+
+HD:  -2 -1  0  1  2
+Pick: 4  2  1  3  6   (top node in each column)
+```
+
+| HD | Nodes on that line (top → bottom) | **Top view** picks |
+|----|-----------------------------------|--------------------|
+| −2 | 4 | **4** |
+| −1 | 2 | **2** |
+| 0 | 1, 5 | **1** (5 is hidden under 1) |
+| 1 | 3 | **3** |
+| 2 | 6 | **6** |
+
+**Answer (left to right):** `4  2  1  3  6`
+
+### Algorithm (BFS + map)
+
+1. Queue stores `(node, hd)`; start with `(root, 0)`.
+2. While queue not empty:
+   - Pop `(cur, hd)`.
+   - If `hd` **not** in map → `map[hd] = cur->data` (**first time = topmost**).
+   - Push `(cur->left, hd - 1)` and `(cur->right, hd + 1)` if they exist.
+3. Loop `map` from `begin()` to `end()` and print values.
+
+```cpp
+map<int, int> top;
+queue<pair<Node*, int>> q;
+q.push({root, 0});
+
+while (!q.empty()) {
+    Node* cur = q.front().first;
+    int hd = q.front().second;
+    q.pop();
+
+    if (!top.count(hd)) {
+        top[hd] = cur->data;
+    }
+    if (cur->left)  q.push({cur->left,  hd - 1});
+    if (cur->right) q.push({cur->right, hd + 1});
+}
+```
+
+```text
+BFS order with HD:
+
+Level 0:  1(0)     -> top[0]=1
+Level 1:  2(-1), 3(1)   -> top[-1]=2, top[1]=3
+Level 2:  4(-2), 5(0), 6(2) -> top[-2]=4; 0 exists skip; top[2]=6
+```
+
+| | |
+|--|--|
+| **Time** | **O(n log n)** — visit **n** nodes; map ops **O(log n)** each |
+| **Space** | **O(n)** — queue + map |
+
+Run: `g++ -std=c++17 -o m m.cpp && ./m`
+
+---
+
+## Bottom view of a binary tree
+
+**Illustration code:** [`n.cpp`](n.cpp)
+
+**Bottom view** = nodes you would see if you look **from below** — the **last / deepest** node on each vertical line (each HD).
+
+### Idea
+
+- Same **HD** rules as top view.
+- On **BFS**, **always overwrite** `map[hd] = cur->data` (deeper levels replace shallower ones).
+- Print map left to right.
+
+```text
+HD:  -2 -1  0  1  2
+Pick: 4  2  5  3  6   (bottom node in each column)
+
+Column 0: 1 on top, 5 below  -> bottom view shows 5
+```
+
+| HD | Nodes (top → bottom) | **Bottom view** picks |
+|----|----------------------|------------------------|
+| −2 | 4 | **4** |
+| −1 | 2 | **2** |
+| 0 | 1, 5 | **5** |
+| 1 | 3 | **3** |
+| 2 | 6 | **6** |
+
+**Answer (left to right):** `4  2  5  3  6`
+
+### Algorithm (BFS + map)
+
+1. Queue `(node, hd)`; start `(root, 0)`.
+2. While queue not empty:
+   - Pop `(cur, hd)`.
+   - **`map[hd] = cur->data`** always (later / deeper nodes overwrite).
+   - Push children with `hd − 1` / `hd + 1`.
+3. Print map in key order.
+
+```cpp
+map<int, int> bottom;
+// same BFS, but always:
+bottom[hd] = cur->data;   // overwrite → deepest wins
+```
+
+```text
+BFS updates:
+
+Level 0: bottom[0]=1
+Level 1: bottom[-1]=2, bottom[1]=3
+Level 2: bottom[-2]=4, bottom[0]=5 (overwrites 1), bottom[2]=6
+```
+
+| | |
+|--|--|
+| **Time** | **O(n log n)** |
+| **Space** | **O(n)** |
+
+Run: `g++ -std=c++17 -o n n.cpp && ./n`
+
+---
+
+### Top view vs bottom view
+
+| | **Top view (`m.cpp`)** | **Bottom view (`n.cpp`)** |
+|--|------------------------|---------------------------|
+| **See from** | Above | Below |
+| **Pick per HD** | **First** node (topmost) | **Last** node (bottommost) |
+| **Map update** | `if (!map.count(hd))` | Always `map[hd] = data` |
+| **Sample answer** | `4 2 1 3 6` | `4 2 5 3 6` |
+| **Only difference on sample** | HD **0** → **1** | HD **0** → **5** |
+
+```mermaid
+flowchart LR
+  subgraph col0["HD = 0"]
+    N1["1 (top)"]
+    N5["5 (bottom)"]
+    N1 --- N5
+  end
+  TV["Top view: 1"]
+  BV["Bottom view: 5"]
+  col0 --> TV
+  col0 --> BV
+```
+
+Both use **horizontal distance** + **BFS** + **`map<int,int>`** from `l.cpp`.
+
+---
+
+## Kth level of a binary tree
+
+**Illustration code:** [`p.cpp`](p.cpp)
+
+> **File note:** `m.cpp` / `n.cpp` are **top view** and **bottom view**. Kth level is in **`p.cpp`**.
+
+**Problem:** Print all nodes at **level `K`** (root is usually **level 0**).
+
+### Levels on sample tree
+
+```text
+        1          level 0
+       / \
+      2   3        level 1
+     / \   \
+    4   5   6      level 2
+
+K = 0  →  1
+K = 1  →  2, 3
+K = 2  →  4, 5, 6
+K = 3  →  (empty)
+```
+
+### Mathematics
+
+- **Level** = number of edges from the **root** to the node.
+- At level `K`, there are at most **2^K** nodes (perfect binary tree); in any tree, **≤ n** nodes total.
+- **BFS** processes level `0`, then `1`, … — when `currentLevel == K`, collect every node dequeued at that level.
+
+```text
+Queue idea (level order):
+
+  Start: [1]
+  Level 0: process 1        → if K==0, output 1
+  Level 1: process 2, 3     → if K==1, output 2, 3
+  Level 2: process 4, 5, 6  → if K==2, output 4, 5, 6
+```
+
+### Algorithm (BFS)
+
+1. If `root == nullptr`, return.
+2. Push `root` into a **queue**; `level = 0`.
+3. While queue not empty:
+   - `size = queue.size()` (nodes on this level).
+   - Repeat `size` times: pop front; if `level == K`, record value; push children.
+   - `level++`.
+4. Return / print collected values.
+
+```cpp
+queue<Node*> q;
+q.push(root);
+int level = 0;
+while (!q.empty()) {
+    int size = q.size();
+    for (int i = 0; i < size; i++) {
+        Node* cur = q.front(); q.pop();
+        if (level == K) ans.push_back(cur->data);
+        if (cur->left)  q.push(cur->left);
+        if (cur->right) q.push(cur->right);
+    }
+    level++;
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — every node enqueued and dequeued once |
+| **Space** | **O(w)** — max **width** of one level; worst **O(n)** (complete tree last level) |
+
+**Why O(n) time:** sum of nodes over all levels = **n**.
+
+Run: `g++ -std=c++17 -o p p.cpp && ./p`
+
+---
+
+## Lowest common ancestor (LCA)
+
+Given a binary tree and two nodes **`p`** and **`q`**, the **LCA** is the **deepest** node that has **both `p` and `q`** in its subtrees (a node can be an ancestor of itself).
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+LCA(4, 5) = 2     (both under 2)
+LCA(4, 6) = 1     (paths split at root)
+LCA(2, 3) = 1
+```
+
+```text
+Path to 4:  1 → 2 → 4
+Path to 5:  1 → 2 → 5
+Common prefix: 1 → 2  →  LCA = 2
+```
+
+---
+
+## LCA — Approach 1: root-to-node paths
+
+**Illustration code:** [`q.cpp`](q.cpp)
+
+> Course outline listed `n.cpp`; **`n.cpp` is bottom view** — paths LCA is in **`q.cpp`**.
+
+### Idea
+
+1. Build **`pathP`**: nodes from **root → p**.
+2. Build **`pathQ`**: nodes from **root → q**.
+3. Walk both paths **from the start** while nodes are **equal**; the **last equal** node is the LCA.
+
+### Algorithm steps
+
+1. `findPath(root, p, pathP)` — DFS/backtrack: push node; if target found return true; else recurse; on failure **pop**.
+2. Same for `q` → `pathQ`.
+3. Index `i = 0`; while `pathP[i] == pathQ[i]`, `lca = pathP[i]`, `i++`.
+4. Return `lca`.
+
+```cpp
+bool findPath(Node* root, int target, vector<Node*>& path) {
+    if (!root) return false;
+    path.push_back(root);
+    if (root->data == target) return true;
+    if (findPath(root->left, target, path) ||
+        findPath(root->right, target, path))
+        return true;
+    path.pop_back();
+    return false;
+}
+```
+
+### Mathematics / complexity
+
+- Let **n** = number of nodes, **h** = height.
+- Each path has length **≤ h + 1**; building both paths touches at most **n** nodes total → **O(n)** time.
+- Two vectors store at most **O(h)** pointers each; skewed tree **h = n** → **O(n) space**.
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** — path storage (worst case full chain) |
+
+Run: `g++ -std=c++17 -o q q.cpp && ./q`
+
+---
+
+## LCA — Approach 2: parent pointers (O(1) extra space)
+
+**Illustration code:** [`o.cpp`](o.cpp)
+
+### Idea
+
+If each node stores a **`parent`** pointer (built once in **O(n)**):
+
+1. Find **depth** of `p` and `q` by walking **up** to root.
+2. Move the **deeper** node up until depths are **equal**.
+3. Move **both** up one step at a time until **`p == q`** — that node is the LCA.
+
+No **`vector`** of paths → only a few pointers → **O(1) auxiliary space** (excluding the tree itself).
+
+```text
+LCA(4, 6):
+
+depth(4)=3, depth(6)=3
+Walk together: 4,6 → 2,3 → meet at 1? 
+
+Actually:
+  4: 4→2→1  depth 3
+  6: 6→3→1  depth 3
+  Step: (4,6) -> (2,3) -> (1,1)  LCA = 1
+```
+
+### Algorithm
+
+```cpp
+int depth(Node* x) {
+    int d = 0;
+    while (x) { d++; x = x->parent; }
+    return d;
+}
+
+// align depths, then climb together until p == q
+```
+
+### Alternative: recursive LCA (no parent, no path array)
+
+Also in `o.cpp` — one post-order DFS:
+
+```cpp
+Node* lca(Node* root, Node* p, Node* q) {
+    if (!root || root == p || root == q) return root;
+    Node* L = lca(root->left, p, q);
+    Node* R = lca(root->right, p, q);
+    if (L && R) return root;
+    return L ? L : R;
+}
+```
+
+| Method | Time | Extra space |
+|--------|------|-------------|
+| **Parent pointers** | **O(n)** preprocess + **O(h)** per query | **O(1)** |
+| **Recursive** | **O(n)** | **O(h)** call stack |
+
+**Recursive logic (math):**
+
+- If `p` and `q` lie in **different** subtrees of `root`, then `root` is the LCA.
+- If both are in the **left** subtree, LCA is in the left; if both in **right**, LCA is in the right.
+- Each node visited **constant** work → **O(n)** total.
+
+Run: `g++ -std=c++17 -o o o.cpp && ./o`
+
+---
+
+### LCA & Kth level — summary
+
+| Topic | File | Time | Space |
+|-------|------|------|-------|
+| **Kth level** | `p.cpp` | O(n) | O(w) queue width |
+| **LCA paths** | `q.cpp` | O(n) | O(n) path vectors |
+| **LCA parent / recursive** | `o.cpp` | O(n) | O(1) extra / O(h) stack |
+
+---
+
+## Minimum distance between two nodes
+
+**Illustration code:** [`r.cpp`](r.cpp)
+
+**Distance** between nodes `p` and `q` = **number of edges** on the **shortest path** between them.
+
+### Key formula (uses LCA)
+
+Let **LCA** = lowest common ancestor of `p` and `q`.
+
+```text
+dist(p, q) = dist(p, LCA) + dist(q, LCA)
+```
+
+Paths go **up** from `p` to LCA, then **down** to `q` — no repeated edges.
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+dist(4, 5):  LCA = 2
+  4 → 2  = 1 edge
+  5 → 2  = 1 edge
+  total  = 2   (path 4—2—5)
+
+dist(4, 6):  LCA = 1
+  4 → 1  = 2 edges (4—2—1)
+  6 → 1  = 2 edges (6—3—1)
+  total  = 4   (path 4—2—1—3—6)
+```
+
+### Algorithm (paths + LCA)
+
+1. Build `pathP` from root → `p`, `pathQ` from root → `q` (same as `q.cpp`).
+2. Walk while `pathP[i] == pathQ[i]`; last match is **LCA** at index `i-1`.
+3. `dist = (pathP.size() - i) + (pathQ.size() - i)`.
+
+```cpp
+// i = first index where paths differ
+int dist = (pathP.size() - i) + (pathQ.size() - i);
+```
+
+### Mathematics
+
+- Path lengths ≤ **h + 1**; finding paths **O(n)**.
+- After LCA found, distance is **sum of two path suffixes** — no extra traversal.
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** — two path vectors (worst skewed tree) |
+
+Run: `g++ -std=c++17 -o r r.cpp && ./r`
+
+---
+
+## Kth ancestor of a node
+
+**Illustration code:** [`s.cpp`](s.cpp)
+
+**K-th ancestor** of node `N` = node you reach by moving **up** `K` parent links.
+
+| K | Meaning (node 4 in sample tree) |
+|---|--------------------------------|
+| **1** | Parent → **2** |
+| **2** | Grandparent → **1** |
+| **3** | None (above root) |
+
+```text
+        1   ← 2nd ancestor of 4
+       /
+      2   ← 1st ancestor of 4
+     /
+    4   ← start
+```
+
+### Approach A — path from root
+
+1. Build path `root → N`: e.g. `[1, 2, 4]`.
+2. **K-th ancestor** = `path[path.size() - 1 - K]`.
+3. If index invalid → no ancestor.
+
+```text
+path = [1, 2, 4],  size = 3
+
+K=1: index 3-1-1 = 1  →  path[1] = 2
+K=2: index 0         →  path[0] = 1
+```
+
+### Approach B — parent pointers
+
+Move `cur = cur->parent` exactly **K** times — **O(K)** per query, **O(1)** extra space.
+
+### Algorithm (path)
+
+```cpp
+findPath(root, nodeVal, path);
+if (k >= path.size()) return -1;
+return path[path.size() - 1 - k]->data;
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** to build path |
+| **Space** | **O(h)** path length |
+
+Run: `g++ -std=c++17 -o s s.cpp && ./s`
+
+---
+
+## Transform to sum tree
+
+**Illustration code:** [`t.cpp`](t.cpp)
+
+Convert the tree so **each node’s new value** = **sum of all node values** in its **left subtree** + **right subtree** (using **original** values before change).
+
+- **Leaf** → **0** (empty left + empty right).
+- **Original value** of a node is **not** included in its own new value.
+
+### Example
+
+```text
+Original:                 Sum tree:
+
+        1                         20
+       / \                       /  \
+      2   3          →           9    6
+     / \   \                   / \    \
+    4   5   6                 0   0    0
+```
+
+| Node | Left subtree sum | Right subtree sum | New value |
+|------|------------------|-------------------|-----------|
+| 4 | 0 | 0 | **0** |
+| 5 | 0 | 0 | **0** |
+| 2 | 4 | 5 | **9** |
+| 6 | 0 | 0 | **0** |
+| 3 | 0 | 6 | **6** |
+| 1 | 2+4+5 = **11** | 3+6 = **9** | **20** |
+
+### Why post-order?
+
+Children must be converted **before** parent, so we know each child’s **subtree sums** (in original values) when updating the parent.
+
+### Algorithm (post-order)
+
+```cpp
+int toSumTree(Node* root) {
+    if (!root) return 0;
+    int leftSum  = toSumTree(root->left);
+    int rightSum = toSumTree(root->right);
+    int old = root->data;
+    root->data = leftSum + rightSum;
+    return old + leftSum + rightSum;  // total sum of this subtree (original)
+}
+```
+
+```text
+Return value = sum of ALL original values in this subtree
+  (used by parent to compute its new data)
+
+Post-order visit: 4, 5, 2, 6, 3, 1
+```
+
+### Mathematics
+
+- Each node visited **once** → **O(n)** time.
+- Recursion depth **h** → **O(h)** space.
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o t t.cpp && ./t`
+
+---
+
+### r / s / t — summary
+
+| Topic | File | Idea |
+|-------|------|------|
+| **Min distance** | `r.cpp` | LCA + path suffix lengths |
+| **Kth ancestor** | `s.cpp` | Path index or climb `parent` K times |
+| **Sum tree** | `t.cpp` | Post-order: `data = leftSum + rightSum` |
+
+---
+
+## Problem 1 — Uni-valued binary tree
+
+**Illustration code:** [`u.cpp`](u.cpp)
+
+**Uni-valued** = **every node** has the **same value**.
+
+```text
+Uni-valued:          NOT uni-valued:
+
+    5                    1
+   / \                  / \
+  5   5                1   2
+ /                      \
+5                       1
+
+all 5                  has 1 and 2
+```
+
+### Algorithm
+
+1. Remember value of **root** as `ref`.
+2. **DFS** every node; if any `node->data != ref`, return **false**.
+3. If full traversal passes, return **true**.
+
+```cpp
+bool dfs(Node* root, int ref) {
+    if (!root) return true;
+    if (root->data != ref) return false;
+    return dfs(root->left, ref) && dfs(root->right, ref);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — visit each node once |
+| **Space** | **O(h)** — recursion stack |
+
+Run: `g++ -std=c++17 -o u u.cpp && ./u`
+
+---
+
+## Problem 2 — Invert binary tree
+
+**Illustration code:** [`v.cpp`](v.cpp)
+
+**Invert** = mirror the tree — swap **left** and **right** at **every** node.
+
+```text
+Before:              After:
+
+    1                    1
+   / \                  / \
+  2   3                3   2
+ / \                      / \
+4   5                    5   4
+```
+
+### Algorithm
+
+1. If `root == nullptr`, return.
+2. **Swap** `root->left` and `root->right`.
+3. **Invert** left subtree; **invert** right subtree.
+
+```cpp
+void invert(Node* root) {
+    if (!root) return;
+    swap(root->left, root->right);
+    invert(root->left);
+    invert(root->right);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o v v.cpp && ./v`
+
+---
+
+## Problem 3 — Delete leaves with target value
+
+**Illustration code:** [`w.cpp`](w.cpp)
+
+Delete every **leaf** with value **`target`**. If deleting a leaf makes its **parent** a new leaf with value **`target`**, delete that too — **repeat** until no such leaf remains.
+
+```text
+target = 2
+
+        1                      1
+       / \                    / \
+      2   1        →         1   1
+     / \   \                      \
+    2   2   2                      2
+
+Remove bottom 2s first; then middle 2s become leaves → removed
+```
+
+### Algorithm (post-order)
+
+1. `root->left  = deleteLeaves(root->left,  target)`
+2. `root->right = deleteLeaves(root->right, target)`
+3. If `root` is a **leaf** and `root->data == target` → delete and return `nullptr`
+4. Else return `root`
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o w w.cpp && ./w`
+
+---
+
+## Problem 4 — Duplicate subtrees
+
+**Illustration code:** [`x.cpp`](x.cpp)
+
+Two subtrees are **duplicate** if they have the **same shape** and **same values**.
+
+```text
+        1
+       / \
+      2   3
+     /     \
+    4       2
+           /
+          4
+
+Both "2 with right child 4" subtrees match
+```
+
+### Algorithm
+
+1. **Serialize** each subtree to a string (preorder + `#` for null).
+2. **Post-order DFS**; build key for current node.
+3. **`map<string,int> freq`** — when count becomes **2**, add root to answer.
+
+| | |
+|--|--|
+| **Time** | **O(n)** typical |
+| **Space** | **O(n)** — map + strings |
+
+Run: `g++ -std=c++17 -o x x.cpp && ./x`
+
+---
+
+## Problem 5 — Maximum path sum
+
+**Illustration code:** [`y.cpp`](y.cpp)
+
+**Path** = connected nodes along edges (no repeats). **Need not** pass through root.
+
+```text
+       -10
+       /  \
+      9   20
+         /  \
+        15   7
+
+Best: 15 + 20 + 7 = 42
+```
+
+### Algorithm (post-order)
+
+At each node:
+
+```text
+through = leftGain + node->val + rightGain   (update global max)
+return  = node->val + max(leftGain, rightGain)  (one arm upward)
+```
+
+Use `max(0, gain)` so negative subtrees are not taken.
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o y y.cpp && ./y`
+
+---
+
+### Problems u–y — summary
+
+| # | Problem | File | Technique |
+|---|---------|------|-----------|
+| 1 | Uni-valued tree | `u.cpp` | DFS compare to root |
+| 2 | Invert tree | `v.cpp` | Swap children |
+| 3 | Delete target leaves | `w.cpp` | Post-order prune |
+| 4 | Duplicate subtrees | `x.cpp` | Serialize + `map` |
+| 5 | Max path sum | `y.cpp` | Post-order gain |
+
