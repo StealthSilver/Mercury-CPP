@@ -1,6 +1,6 @@
 # MODULE 26 — Queue
 
-**Illustration code:** `a.cpp`–`f.cpp` (queue basics) · `g.cpp` (first non-repeating in stream) · `h.cpp` (interleave queues / halves) · `i.cpp` (queue reversal) · `j.cpp` (`std::deque` — double-ended queue)
+**Illustration code:** `a.cpp`–`l.cpp` (queue/deque concepts) · `m.cpp` (time to buy tickets) · `n.cpp` (gas station) · `o.cpp` (reverse first K in queue) · `p.cpp` (LRU cache)
 
 ---
 
@@ -548,12 +548,350 @@ flowchart LR
 
 Run **`g.cpp`**, **`h.cpp`**, and **`i.cpp`** for full implementations and sample output.
 
-Double Ended Queue -> j.cpp
-Deque in C++
-• push_back()
-• push_front( )
-• pop_ front()
-• pop_back()
-• front()
-• back()
+---
 
+## Double-ended queue (`std::deque`)
+
+**Illustration code:** `j.cpp`
+
+A **deque** (double-ended queue, pronounced “deck”) lets you add and remove from **both ends** in **O(1)** time. In C++ use:
+
+```cpp
+#include <deque>
+```
+
+### vs `queue` and `stack`
+
+| Structure | Insert | Remove | Ends used |
+|-----------|--------|--------|-----------|
+| **`std::queue`** | rear only | front only | one in, one out (FIFO) |
+| **`std::stack`** | top only | top only | one end (LIFO) |
+| **`std::deque`** | **front or back** | **front or back** | **both** |
+
+```text
+        push_front               push_back
+             \                       /
+              v                     v
+         [ 10 | 20 | 30 | 40 ]
+              ^                     ^
+             front                 back
+        pop_front                pop_back
+```
+
+`std::queue` and `std::stack` are **adapters**; their default underlying container is **`std::deque`** because it supports fast growth at both ends.
+
+### Main operations (`j.cpp`)
+
+| Member | Effect |
+|--------|--------|
+| **`push_back(x)`** | Insert **`x`** at the **back** |
+| **`push_front(x)`** | Insert **`x`** at the **front** |
+| **`pop_back()`** | Remove last element |
+| **`pop_front()`** | Remove first element |
+| **`back()`** | Reference to last element |
+| **`front()`** | Reference to first element |
+| **`empty()`**, **`size()`** | State |
+| **`clear()`** | Remove all elements (deque has this; `queue` adapter does not) |
+
+**Note:** **`pop_front()`** and **`pop_back()`** return **`void`** — read **`front()`** / **`back()`** first if you need the value.
+
+### Diagram: building a deque
+
+```text
+start:        [ ]
+push_back(3): [ 3 ]
+push_back(4): [ 3 | 4 ]
+push_front(2):[ 2 | 3 | 4 ]
+push_front(1):[ 1 | 2 | 3 | 4 ]
+pop_front():  [ 2 | 3 | 4 ]     front() = 2
+pop_back():   [ 2 | 3 ]         back()  = 3
+```
+
+```mermaid
+flowchart LR
+  PF["push_front"] --> D["deque"]
+  PB["push_back"] --> D
+  D --> POF["pop_front"]
+  D --> POB["pop_back"]
+```
+
+### When to use a deque
+
+- Need **FIFO** or **LIFO** at **either** end (sliding window, palindrome check with ends).
+- **BFS** with deque (0-1 BFS) when you push to front or back depending on edge weight.
+- Implementing **`queue`** / **`stack`** yourself with one container.
+
+### Complexity (typical)
+
+| Operation | Time |
+|-----------|------|
+| **`push_front`**, **`push_back`**, **`pop_front`**, **`pop_back`**, **`front`**, **`back`** | **O(1)** |
+| **Random access** **`d[i]`** | **O(1)** (unlike `list`) |
+
+### Space
+
+**O(n)** for **`n`** elements stored in the deque.
+
+`j.cpp` demonstrates every operation listed above with **`std::deque<int>`** and prints the deque after each step.
+
+Run `j.cpp` for the full STL deque walkthrough.
+
+---
+
+## Queue using `deque`
+
+**Illustration code:** `k.cpp`
+
+A normal **FIFO queue** only needs **one end for insert** and **the other for remove**. A **`std::deque`** supports both in **O(1)**:
+
+| Queue operation | `deque` call |
+|-----------------|--------------|
+| **Enqueue** (add at rear) | **`push_back(x)`** |
+| **Dequeue** (remove from front) | **`pop_front()`** |
+| **Front** (peek) | **`front()`** |
+
+```text
+enqueue 10, 20, 30:
+
+  front                         back
+    |                             |
+   [10] -> [20] -> [30]
+
+dequeue -> removes 10 (pop_front)
+```
+
+```mermaid
+flowchart LR
+  E["enqueue: push_back"] --> D["deque"]
+  D --> F["dequeue: pop_front"]
+```
+
+This is exactly how **`std::queue`** is implemented by default: it is a **container adapter** on top of **`std::deque`**.
+
+```cpp
+#include <queue>
+std::queue<int> q;  // default: deque<int> inside
+```
+
+`k.cpp` wraps a **`deque<int>`** in class **`QueueDeque`** and also shows **`std::queue<int, deque<int>>`**.
+
+### Complexity
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| enqueue / dequeue / front | **O(1)** | **O(n)** total for `n` elements |
+
+---
+
+## Stack using `deque`
+
+**Illustration code:** `l.cpp`
+
+A **LIFO stack** uses **only one end** for push and pop. With a deque, use the **back**:
+
+| Stack operation | `deque` call |
+|-----------------|--------------|
+| **Push** | **`push_back(x)`** |
+| **Pop** | **`pop_back()`** |
+| **Top** (peek) | **`back()`** |
+
+```text
+push 10, 20, 30:
+
+  bottom                    top
+    |                        |
+   [10] -> [20] -> [30]
+                    ^
+                  back()
+
+pop -> pop_back() removes 30
+```
+
+You *could* use the **front** end instead (push_front / pop_front) as long as push and pop use the **same** end — **back** is the usual convention and matches **`std::stack`**.
+
+```cpp
+#include <stack>
+std::stack<int> s;  // default: deque<int> inside
+```
+
+`l.cpp` defines **`StackDeque`** and demonstrates **`std::stack<int, deque<int>>`**.
+
+### Complexity
+
+| Operation | Time | Space |
+|-----------|------|-------|
+| push / pop / top | **O(1)** | **O(n)** |
+
+### Why deque for both?
+
+| Need | Ends used on `deque` |
+|------|----------------------|
+| Queue (FIFO) | in at **back**, out at **front** |
+| Stack (LIFO) | in and out at **back** |
+
+One container type can back **both** adapters in the C++ standard library — that is why **`deque`** is the default underlying container for **`queue`** and **`stack`**.
+
+Run **`k.cpp`** and **`l.cpp`** for side-by-side demos.
+
+---
+
+# LeetCode-style problems
+
+---
+
+## Problem 1 — Time required to buy tickets
+
+**Code:** `m.cpp`
+
+### Problem statement
+
+**`n`** people stand in a line (index **`0`** = front, **`n-1`** = back).  
+**`tickets[i]`** = how many tickets person **`i`** wants.
+
+Each **second**, the person at the **front** buys **one** ticket (takes 1 second), then:
+- If they still need more tickets → go to the **back** of the line instantly.
+- If they are done → **leave** the line.
+
+Return the **total seconds** until person **`k`** finishes buying all their tickets.
+
+**Example:** `tickets = [2,3,2]`, `k = 2`
+
+```text
+Sec 1: front 0 buys -> [1,3,2] line order after rotate: 1,2,0
+Sec 2: front 1 buys -> ...
+...
+Person k=2 finishes when their count hits 0.
+```
+
+### Approach A — math (no simulation)
+
+Person **`k`** buys **`tickets[k]`** times. Each time they reach the front costs one second.
+
+- For **`i ≤ k`**: person **`i`** buys **`min(tickets[i], tickets[k])`** times before **`k`** is done.
+- For **`i > k`**: person **`i`** buys at most **`tickets[k] - 1`** times (they cannot buy when **`k`** buys their last ticket).
+
+**Answer:** sum of those mins.
+
+### Approach B — queue simulation
+
+Store **`(index, remaining)`** in a queue; each second pop front, decrement, re-push if remaining > 0; stop when person **`k`** hits 0.
+
+### Complexity
+
+| | Math | Simulation |
+|--|------|------------|
+| **Time** | **O(n)** | **O(total tickets)** |
+| **Space** | **O(1)** | **O(n)** queue |
+
+---
+
+## Problem 2 — Gas station (circular route)
+
+**Code:** `n.cpp`
+
+### Problem statement
+
+**`n`** gas stations on a **circle**. At station **`i`** you get **`gas[i]`** fuel. Traveling to station **`(i+1) % n`** costs **`cost[i]`**.
+
+Start at some station with **empty** tank. Return the **starting index** if you can complete **one full clockwise lap**, else **`-1`**. Solution is unique if it exists.
+
+**Example:** `gas = [1,2,3,4,5]`, `cost = [3,4,5,1,2]` → start at index **3**.
+
+### Approach
+
+1. If **`sum(gas) < sum(cost)`** → impossible → **`-1`**.
+2. Otherwise a solution exists. One pass:
+   - **`tank += gas[i] - cost[i]`**
+   - If **`tank < 0`**, you cannot have started anywhere from **`start+1` .. i`** → set **`start = i+1`**, **`tank = 0`**.
+
+```text
+net[i] = gas[i] - cost[i]
+if total net < 0 -> -1
+else start = index after last "break" in partial sum
+```
+
+```mermaid
+flowchart TD
+  A["total gas >= total cost?"] -->|no| B["return -1"]
+  A -->|yes| C["one pass: tank, reset start when tank < 0"]
+  C --> D["return start"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** |
+
+---
+
+## Problem 3 — Reverse first K elements of a queue
+
+**Code:** `o.cpp`
+
+### Problem statement
+
+Given queue **`q`** and integer **`K`**, reverse **only the first `K`** elements; keep the rest in the same relative order.
+
+**Example:** `[1,2,3,4,5]`, **`K=3`** → **`[3,2,1,4,5]`**
+
+Allowed ops: **`push`**, **`pop`**, **`front`**, **`size`** only.
+
+### Approach (queue + stack)
+
+1. Dequeue **`K`** elements → **push** onto a **stack** (reverses order).
+2. Dequeue remaining **`n-K`** → temporary **queue** **`rest`**.
+3. Pop stack → **enqueue** to **`q`** (reversed first K).
+4. Move **`rest`** back to **`q`**.
+
+```text
+[1,2,3,4,5]  K=3
+stack <- 1,2,3  => 3,2,1 on stack
+rest  <- 4,5
+q <- pop stack => 3,2,1 then 4,5
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(n)** stack + helper queue |
+
+---
+
+## Problem 4 — LRU cache
+
+**Code:** `p.cpp`
+
+### Problem statement
+
+Design **LRU cache** with capacity **`cap`**:
+
+- **`get(key)`** — return value or **`-1`**; marks key as **recently used**.
+- **`put(key, value)`** — insert/update; if size **`> cap`**, remove **least recently used** key.
+
+**`get`** and **`put`** must be **O(1)** average time.
+
+### Approach — hash map + doubly linked list (or `list`)
+
+- **`unordered_map<key, list<pair>::iterator>`** — find node in **O(1)**.
+- **`list`** stores **`(key, value)`** in order: **front = LRU**, **back = MRU**.
+- **`get` / `put`**: find node, move to **back** (splice).
+- **`put`** new key at back; if over capacity, **pop front** and erase from map.
+
+```mermaid
+flowchart LR
+  MAP["unordered_map"] --> LIST["list: LRU ... MRU"]
+  GET["get/put"] --> MOVE["move node to back"]
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(1)** average per `get` / `put` |
+| **Space** | **O(capacity)** |
+
+Run **`m.cpp`**, **`n.cpp`**, **`o.cpp`**, **`p.cpp`** for complete solutions and tests.
