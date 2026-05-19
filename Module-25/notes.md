@@ -644,4 +644,97 @@ return false
 
 Run `m.cpp` for duplicate vs non-duplicate cases.
 
-MAX AREA IN A HISTOGRAM -> n.cpp
+---
+
+## Largest rectangle in a histogram (max area)
+
+**Illustration code:** `n.cpp`
+
+### Problem statement
+
+Given an array **`heights[]`** where **`heights[i]`** is the height of the **`i`‑th** bar (width of each bar is **1**), find the **maximum area** of a **rectangle** that:
+
+- Lies **entirely inside** the histogram (no part above a bar’s height).
+- Uses the **heights of consecutive bars** as its base (rectangle spans a contiguous index range).
+
+**Area** for a rectangle spanning indices **`L … R`** with minimum bar height **`h`** on that range:
+
+\[
+\text{area} = h \times (R - L + 1)
+\]
+
+(Each bar has width 1.)
+
+### Example
+
+`heights = [2, 1, 5, 6, 2, 3]`
+
+```text
+      █
+      █
+  █   █
+  █   █   █
+  █ █ █ █ █
+  2 1 5 6 2 3   (indices 0..5)
+```
+
+- Best rectangle: height **5**, width **2** (bars at indices **2** and **3**) → area **5 × 2 = 10**.
+- **Answer: 10**
+
+Another classic: `[6, 2, 5, 4, 5, 1, 6]` → **12** (height **5**, width **3** over indices 2–4).
+
+### Picture (one bar as the “short” side)
+
+Fix bar **`i`** with height **`h`**. The widest rectangle that uses **`h`** as the **shortest** bar is limited by:
+
+- **Left:** last bar **left of `i`** with height **< `h`**
+- **Right:** first bar **right of `i`** with height **< `h`**
+
+```text
+        h is the minimum on [L..R]
+  ... < h  |  all >= h  |  < h ...
+           L           i           R
+```
+
+Width = **`R - L + 1`**, area = **`h × width`**.
+
+### Naive idea (slow)
+
+For each index **`i`**, expand left and right while bars ≥ **`heights[i]`**, compute area.
+
+- **Time:** **O(n²)** worst case (e.g. all bars same height).
+- **Space:** **O(1)** extra.
+
+### Monotonic stack (efficient)
+
+Use a stack of **indices** with **increasing** heights (bottom → top).
+
+Loop **`i` from `0` to `n`** (treat **`i == n`** as a sentinel with height **0** to flush the stack):
+
+1. While stack not empty and **`heights[stack.top()] > heights[i]`** (current bar is shorter — we found the **right** boundary for the popped bar):
+   - **`h = heights[stack.top()]`**, **pop** index **`top`**.
+   - **Width** = if stack empty → **`i`** (extends to left edge), else **`i - stack.top() - 1`**.
+   - **`area = h × width`**, update maximum.
+2. If **`i < n`**, **push `i`**.
+
+After pop, **`stack.top()`** is the index of the nearest shorter bar on the **left**; **`i`** is the first shorter bar on the **right**.
+
+```mermaid
+flowchart LR
+  subgraph pop["Pop bar height h"]
+    L["left limit: stack.top()+1"] --> W["width = i - stack.top() - 1"]
+    W --> A["area = h * width"]
+  end
+```
+
+### Complexity
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each index pushed once, popped at most once |
+| **Space** | **O(n)** — stack size |
+
+`n.cpp` implements **`int largestRectangleArea(const vector<int>& heights)`** and prints the max area for sample histograms.
+
+Run `n.cpp` for the stack-based max-area solution.
+
