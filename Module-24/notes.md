@@ -1,7 +1,7 @@
 # DSA with C++ — Module 24 Notes
 
 **Topic:** Linked lists — definition, head/tail, `push_front` / `push_back`, `pop_front` / `pop_back`, `insert`, `removeAt`, destructor, and the `->` pointer operator.  
-**Companion code:** [a.cpp](a.cpp) — complete `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — focused demos (search, reverse, remove Nth, palindrome).
+**Companion code:** [a.cpp](a.cpp) — custom `List` class · [b.cpp](b.cpp)–[f.cpp](f.cpp) — algorithms on simple lists · [g.cpp](g.cpp)–[h.cpp](h.cpp) — cycle detect/remove · [i.cpp](i.cpp)–[j.cpp](j.cpp) — `std::list` and iterators.
 
 **Prerequisite:** Module 11 (arrays as a linear, contiguous structure; indexing and traversal).
 
@@ -995,6 +995,7 @@ Second call in [e.cpp](e.cpp): `n = 1` removes `40` → `10 -> 20 -> NULL`.
 | [d.cpp](d.cpp) | Reverse in place |
 | [e.cpp](e.cpp) | Remove Nth from end |
 | [f.cpp](f.cpp) | Palindrome check |
+| [g.cpp](g.cpp) | Cycle detection (Floyd) |
 
 ---
 
@@ -1163,4 +1164,618 @@ Is palindrome? false
 | Wrong middle (off-by-one) | Wrong split → wrong answer |
 | Forget odd-length middle | Comparing middle twice — use **`while (p2 != nullptr)`** |
 | Lose nodes after reverse | Memory leak — free second half in [f.cpp](f.cpp) after check |
+
+## Detect a cycle in a linked list (Floyd's algorithm)
+
+**Problem:** Given the head of a linked list, determine if the list has a **cycle** — some node’s `next` points back to a previous node in the chain (infinite loop if you follow `next`).
+
+**Call:** `hasCycle(head)` in [g.cpp](g.cpp)  
+**Also called:** **Tortoise and Hare**, **Floyd's cycle-finding algorithm**.
+
+### Example
+
+| List | Has cycle? |
+|------|------------|
+| `1 -> 2 -> 3 -> NULL` | **No** — `next` eventually is `nullptr` |
+| `1 -> 2 -> 3 -> 4 -> 2 -> ...` | **Yes** — tail links back into the list |
+
+---
+
+### Idea — two pointers
+
+| Pointer | Move each step |
+|---------|----------------|
+| **slow** | `+1` (`slow = slow->next`) |
+| **fast** | `+2` (`fast = fast->next->next`) |
+
+Start both at **`head`**. Repeat until:
+
+| Condition | Meaning |
+|-----------|---------|
+| **`fast == nullptr`** or **`fast->next == nullptr`** | Fast hit the end → **no cycle** |
+| **`slow == fast`** | Pointers meet inside the structure → **cycle exists** |
+
+```
+  acyclic:  1 -> 2 -> 3 -> NULL
+            s,f
+                 s  f
+                      s     f
+                            f falls off → stop → no cycle
+
+  cyclic:   1 -> 2 -> 3 -> 4
+                 ^         |
+                 +---------+
+            slow +1, fast +2 each round → eventually same node
+```
+
+---
+
+### Algorithm ([g.cpp](g.cpp))
+
+| Step | Action |
+|------|--------|
+| 1 | If `head == nullptr` → `false` |
+| 2 | `slow = fast = head` |
+| 3 | While `fast` and `fast->next` are not null |
+| 4 | Advance `slow` by 1, `fast` by 2 |
+| 5 | If `slow == fast` → `true` |
+| 6 | Loop ends without meeting → `false` |
+
+---
+
+### Mathematical proof (why slow and fast must meet if a cycle exists)
+
+Label:
+
+| Symbol | Meaning |
+|--------|---------|
+| **μ** | Number of nodes from **head** to the **cycle entrance** (first node that is part of the loop) |
+| **λ** | **Cycle length** (number of nodes in the loop) |
+| **n** | Total nodes reachable from head; if a cycle exists, after μ + k·λ steps you are still inside the structure |
+
+#### Lemma 1 — If both pointers are inside the cycle, fast closes on slow
+
+Once **slow** has entered the cycle, on each iteration:
+
+- **slow** moves **1** step forward along `next`
+- **fast** moves **2** steps forward
+
+So **fast** gains **1** step relative to **slow** on the cycle each iteration (the gap along forward `next` links shrinks by 1, modulo λ).
+
+The distance from **fast** to **slow** measured **forward** along the cycle decreases by **1** each step (wrap around λ). After at most **λ** iterations from any starting offset inside the cycle, that forward distance becomes **0** → **`slow == fast`**.
+
+#### Lemma 2 — Both pointers eventually enter the cycle
+
+- **slow** reaches the cycle entrance after **μ** steps.
+- **fast** moves twice as fast, so after **μ** steps of **slow**, **fast** has taken **2μ** steps total.
+
+Since **2μ ≥ μ**, **fast** is at least as far along the list as **slow** when **slow** enters the cycle. **Fast** is already inside the cycle (or enters at the same time). From that point onward, Lemma 1 applies.
+
+#### Theorem — Floyd's detection is correct
+
+**If there is a cycle:**  
+After **slow** enters the cycle, within **λ** more slow-steps, **slow** and **fast** meet → algorithm returns **`true`**.
+
+**If there is no cycle:**  
+The list ends at `nullptr`. **fast** reaches the end in at most about **⌈L/2⌉** fast-moves (L = list length) because it moves twice as fast → loop condition fails → **`false`**.
+
+**Conclusion:** The algorithm returns **`true` iff** the linked list contains a cycle.
+
+#### Meeting time bound (optional)
+
+Let **L** be the number of nodes from head to `nullptr` if acyclic, or **μ + λ** if cyclic.
+
+| Case | Iterations (order) |
+|------|-------------------|
+| **No cycle** | `O(L)` — fast exits first |
+| **Cycle** | `O(μ + λ) ≤ O(L)` — meet within λ steps after slow enters cycle |
+
+Overall **time `O(n)`** where **n** is the number of nodes in the list.
+
+---
+
+### Complexity
+
+| | Value | Reason |
+|---|--------|--------|
+| **Time** | **`O(n)`** | At most a constant × (μ + λ) pointer moves; μ + λ ≤ n |
+| **Extra space** | **`O(1)`** | Only `slow` and `fast` pointers |
+
+#### Compare to other methods
+
+| Method | Time | Extra space |
+|--------|------|-------------|
+| **Hash set of visited addresses** | `O(n)` | `O(n)` |
+| **Floyd ([g.cpp](g.cpp))** | `O(n)` | **`O(1)`** |
+
+---
+
+### Example ([g.cpp](g.cpp))
+
+```
+Acyclic list: 1 -> 2 -> 3 -> NULL
+Has cycle? false
+
+Cyclic list (1->2->3->4->2...): ...
+Has cycle? true
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Same speed for both pointers | They never meet on a cycle unless they start together |
+| Not checking `fast->next` before `fast->next->next` | Segfault when `fast` is last node |
+| Compare before moving | Off-by-one; [g.cpp](g.cpp) moves then compares inside loop |
+| Freeing a cyclic list without breaking the loop | Infinite loop in cleanup — break cycle first (see [g.cpp](g.cpp)) |
+
+---
+
+### Module file map (continued)
+
+| File | Topic |
+|------|--------|
+| [g.cpp](g.cpp) | Cycle detection (Floyd) |
+| [h.cpp](h.cpp) | Find cycle entrance and remove cycle |
+
+---
+
+## Remove a cycle in a linked list
+
+**Problem:** A linked list has a cycle (some `next` points backward). **Break** the cycle so the list becomes a normal chain ending in `nullptr`.
+
+**Reference:** [h.cpp](h.cpp) — `findCycleEntrance`, `removeCycle`  
+**Builds on:** [g.cpp](g.cpp) (Floyd detection).
+
+### Overview — two phases
+
+| Phase | Goal | From [g.cpp](g.cpp)? |
+|-------|------|----------------------|
+| **1** | Detect that a cycle exists; get a meeting node inside the cycle | Yes — slow/fast until `slow == fast` |
+| **2** | Find the **cycle entrance** (first node on the loop) | New — reset `slow = head`, move both +1 |
+| **3** | **Remove** cycle — set `last->next = nullptr` where `last` is the node before entrance on the loop | Walk from entrance |
+
+---
+
+### Phase 1 — detect cycle (recap)
+
+Same as [g.cpp](g.cpp):
+
+- `slow` moves +1, `fast` moves +2
+- If `fast` hits `nullptr` → **no cycle** → stop
+- If `slow == fast` → **cycle exists** → keep `fast` at meeting point, go to Phase 2
+
+---
+
+### Phase 2 — find the cycle entrance
+
+**Steps:**
+
+| Step | Action |
+|------|--------|
+| 1 | After Phase 1, `slow` and `fast` meet somewhere **inside** the cycle |
+| 2 | Set **`slow = head`** (start from list head again) |
+| 3 | Leave **`fast`** at the meeting point |
+| 4 | Move **`slow` and `fast` one step at a time** (`+1` each) until `slow == fast` |
+| 5 | That node is the **cycle entrance** — first node that is part of the loop |
+
+```
+  list:  1 -> 2 -> 3 -> 4
+              ^         |
+              +---------+
+
+  Phase 1 meet: somewhere inside {2,3,4}
+  Phase 2: slow from head, fast from meet, both +1
+           → both arrive at node 2 (entrance) together
+```
+
+**Why this is the “connection point”:** The entrance is where the list **first joins** the cycle — not necessarily where Phase 1 first collided.
+
+---
+
+### Phase 3 — remove the cycle
+
+| Step | Action |
+|------|--------|
+| 1 | `entrance =` node from Phase 2 |
+| 2 | Walk `curr` starting at `entrance` until `curr->next == entrance` |
+| 3 | `curr` is the **last node on the cycle** (tail of the loop) |
+| 4 | `curr->next = nullptr` — breaks the back-edge |
+
+After removal, you can traverse from `head` and eventually reach `nullptr`.
+
+---
+
+### Mathematical proof — Phase 2 (entrance correctness)
+
+Use the same labels as in [g.cpp](g.cpp):
+
+| Symbol | Meaning |
+|--------|---------|
+| **μ** | Nodes from **head** to **cycle entrance** `E` |
+| **λ** | Cycle length |
+| **Meeting point** `M` | Where slow and fast first coincide (Phase 1) |
+
+#### Distances at the moment of first meeting
+
+When they first meet:
+
+- **slow** has taken **`s`** steps from head: **`s = μ + k`** for some integer **`k ≥ 0`** (μ steps to `E`, then **k** more steps around the cycle to `M`).
+- **fast** has taken **`2s`** steps.
+
+So **`M`** is **k** steps **forward** from **`E`** along the cycle.
+
+#### Key congruence
+
+From Floyd’s algebra (same as CLRS / standard lecture notes):
+
+\[
+\mu \equiv -k \pmod{\lambda}
+\]
+
+Meaning: **`μ` steps from head** reaches **`E`**, and **`k` steps forward from `M`** also reaches **`E`**.
+
+#### Phase 2 — why they meet at `E`
+
+After Phase 1:
+
+- **slow** at **head** (0 steps from head).
+- **fast** at **`M`** (**μ + k** steps from head).
+
+Each Phase 2 step adds **1** to both:
+
+| After `t` steps | slow | fast |
+|-----------------|------|------|
+| `t` | `t` from head | `μ + k + t` from head |
+
+They are equal first when **`t = μ`**:
+
+- **slow** is at **`E`** (μ steps from head).
+- **fast** started at **`M`** (k steps after **`E`** on the cycle) and also moves **μ** steps → **`k + μ`** steps from **`E`** along the cycle. Since **`μ ≡ -k (mod λ)`**, **`k + μ`** is a multiple of **λ**, so **fast** is back at **`E`** too.
+
+So Phase 2’s meeting node is exactly the **cycle entrance** `E`.
+
+---
+
+### Mathematical proof — Phase 3 (removal is correct)
+
+The cycle is all nodes from **`E`** following `next` until returning to **`E`**.
+
+The unique node **`L`** with **`L->next == E`** is the **last node on the cycle**. Setting **`L->next = nullptr`** removes only the back-edge into the loop; everything before **`E`** stays a simple chain; **`E … L`** becomes a tail ending in `nullptr`.
+
+The list is acyclic afterward.
+
+---
+
+### Complexity
+
+Let **n** = number of nodes reachable from head.
+
+| Phase | Time | Extra space |
+|-------|------|-------------|
+| **1 — detect** | `O(n)` | `O(1)` |
+| **2 — find entrance** | `O(n)` | `O(1)` |
+| **3 — find tail of loop & break** | `O(λ) ≤ O(n)` | `O(1)` |
+| **Total** | **`O(n)`** | **`O(1)`** |
+
+---
+
+### Example ([h.cpp](h.cpp))
+
+List: `1 -> 2 -> 3 -> 4 -> 2` (cycle back to node 2)
+
+| Stage | Result |
+|-------|--------|
+| **Entrance** | node with value **2** |
+| **After `removeCycle`** | `1 -> 2 -> 3 -> 4 -> NULL` |
+
+```
+Before remove (cycle): 1 -> 2 -> 3 -> 4 -> 2 -> ...
+Cycle entrance data: 2
+After remove (acyclic): 1 -> 2 -> 3 -> 4 -> NULL
+Has cycle now? no
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Skip Phase 1 | Do not know if a cycle exists |
+| Move fast by 2 in Phase 2 | Must move **both by 1** to find entrance |
+| Set wrong `next` to null | Break edge where `curr->next == entrance` |
+| Free list before breaking cycle | Infinite loop in cleanup |
+
+---
+
+### [g.cpp](g.cpp) vs [h.cpp](h.cpp)
+
+| File | Returns / does |
+|------|----------------|
+| [g.cpp](g.cpp) | `true` / `false` — cycle exists? |
+| [h.cpp](h.cpp) | Finds **entrance**, **removes** back-edge → acyclic list |
+
+## `std::list` — linked list in the STL
+
+**Reference:** [i.cpp](i.cpp)
+
+C++ already provides a **linked-list container** in the Standard Template Library. You do not need to write `Node` / `List` from scratch for everyday use — but building [a.cpp](a.cpp) teaches how it works under the hood.
+
+### Include and type
+
+```cpp
+#include <list>
+using namespace std;
+
+list<int> lst;   // doubly linked list of ints
+```
+
+| Note | Detail |
+|------|--------|
+| **Name** | `list` (lowercase) — it is a **class template**, not your custom `List` |
+| **Header** | `#include <list>` |
+| **Internal structure** | Usually a **doubly linked list** (each node has `prev` and `next`) |
+
+So `push_front` / `push_back` / `pop_front` / `pop_back` can all be **`O(1)`** — unlike your singly linked [a.cpp](a.cpp) where `pop_back` was `O(n)`.
+
+---
+
+### Custom [a.cpp](a.cpp) vs `std::list`
+
+| Feature | Your `List` ([a.cpp](a.cpp)) | `std::list` ([i.cpp](i.cpp)) |
+|---------|------------------------------|------------------------------|
+| **Links** | Singly linked (`next` only) | Doubly linked (typical) |
+| **`push_front` / `push_back`** | `O(1)` with head + tail | `O(1)` |
+| **`pop_front`** | `O(1)` | `O(1)` |
+| **`pop_back`** | `O(n)` (walk to predecessor) | **`O(1)`** |
+| **Memory** | You manage `new` / `delete` | Container manages nodes |
+| **Learning** | Full control, interviews | Production / quick use |
+
+---
+
+### Common member functions
+
+| Function | What it does | Notes |
+|----------|--------------|--------|
+| **`push_front(val)`** | Insert **before** first element | List becomes `val -> ...` |
+| **`push_back(val)`** | Insert **after** last element | Append at tail |
+| **`pop_front()`** | Remove first element | **Empty list → undefined behavior** — check `empty()` first |
+| **`pop_back()`** | Remove last element | Same empty caveat |
+| **`size()`** | Return number of elements | `O(1)` in C++11 and later |
+| **`front()`** | Reference to **first** element | Read or modify; list must be non-empty |
+| **`back()`** | Reference to **last** element | Read or modify; list must be non-empty |
+| **`empty()`** | `true` if `size() == 0` | Use before `front()` / `back()` / pop |
+
+---
+
+### How each maps to ideas from this module
+
+| STL call | Same idea as |
+|----------|----------------|
+| `push_front` | [a.cpp](a.cpp) `push_front` |
+| `push_back` | [a.cpp](a.cpp) `push_back` |
+| `pop_front` | [a.cpp](a.cpp) `pop_front` |
+| `pop_back` | [a.cpp](a.cpp) `pop_back` (but STL is `O(1)`) |
+| `front` / `back` | Like reading `head->data` / `tail->data` without removing |
+
+There is **no** `operator[]` — you cannot write `lst[i]`. Traverse with a range-`for` loop or iterators (see [i.cpp](i.cpp)).
+
+---
+
+### Traverse and print ([i.cpp](i.cpp))
+
+```cpp
+for (int x : lst) {
+    cout << x << " ";
+}
+```
+
+Or:
+
+```cpp
+for (auto it = lst.begin(); it != lst.end(); ++it) {
+    cout << *it << " ";
+}
+```
+
+---
+
+### Example walkthrough ([i.cpp](i.cpp))
+
+| Step | `list` contents (conceptual) |
+|------|------------------------------|
+| `push_back(30)`, `push_back(40)` | `30 <-> 40` |
+| `push_front(20)`, `push_front(10)` | `10 <-> 20 <-> 30 <-> 40` |
+| `front()` | `10` |
+| `back()` | `40` |
+| `pop_front()` | `20 <-> 30 <-> 40` |
+| `pop_back()` | `20 <-> 30` |
+| `size()` | `2` |
+
+### Output ([i.cpp](i.cpp))
+
+```
+After pushes (size=4): 10 <-> 20 <-> 30 <-> 40 <-> END
+front() = 10
+back()  = 40
+After pop_front & pop_back (size=2): 20 <-> 30 <-> END
+size() = 2
+```
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| `pop_front` on empty list | Undefined behavior — call `empty()` first |
+| `front()` on empty list | Undefined behavior |
+| Confuse `list` with `vector` | `vector` is dynamic array; `list` is linked nodes |
+| Expect `lst[i]` | No random access — use iterators |
+
+---
+
+### Module file map (STL)
+
+| File | Topic |
+|------|--------|
+| [i.cpp](i.cpp) | `std::list` — push, pop, size, front, back |
+| [j.cpp](j.cpp) | Iterators on `std::list` |
+
+---
+
+## Iterators in C++
+
+**Reference:** [j.cpp](j.cpp)  
+**Headers:** `#include <list>` (container) · `#include <iterator>` (utilities like `std::distance`)
+
+### Definition
+
+An **iterator** is an object that **points to one element** in a container and lets you **move** to the next (or previous) element in order — like a **`Node* temp`** walking a linked list in [a.cpp](a.cpp) `display()`, but in a **standard** form that works for `list`, `vector`, `set`, etc.
+
+| Manual linked list ([a.cpp](a.cpp)) | Iterator ([j.cpp](j.cpp)) |
+|-----------------------------------|---------------------------|
+| `Node* temp = head` | `auto it = lst.begin()` |
+| `temp != nullptr` | `it != lst.end()` |
+| `temp->data` | `*it` |
+| `temp = temp->next` | `++it` |
+
+**One-line intuition:** An iterator is a **cursor** on the container — not the whole list, just “where you are” right now.
+
+---
+
+### `begin()` and `end()`
+
+| Function | Points to |
+|----------|-----------|
+| **`begin()`** | **First** element in the container |
+| **`end()`** | **One past the last** element — sentinel, **do not** dereference |
+
+```
+  list:  10 <-> 20 <-> 30 <-> 40
+         ^                        ^
+      begin()                   end()
+      (*it works)            (stop here; no *end())
+```
+
+Loop pattern:
+
+```cpp
+for (auto it = lst.begin(); it != lst.end(); ++it) {
+    cout << *it << " ";
+}
+```
+
+Same logic as:
+
+```cpp
+for (int x : lst) {  // range-for uses iterators internally
+    cout << x << " ";
+}
+```
+
+---
+
+### Core operations
+
+| Operation | Meaning | Example |
+|-----------|---------|---------|
+| **`*it`** | Value at current position | `*it` → `20` |
+| **`++it`** | Move to **next** element | Forward one node |
+| **`--it`** | Move to **previous** (doubly linked `list`) | Back one node |
+| **`it1 == it2`** | Same position? | Compare iterators |
+| **`lst.insert(it, val)`** | Insert **before** `it` | [j.cpp](j.cpp) inserts `25` before `30` |
+| **`lst.erase(it)`** | Remove element at `it`; returns **next** iterator | Safe to continue traversal |
+
+---
+
+### Iterator type for `std::list`
+
+```cpp
+list<int> lst;
+list<int>::iterator it = lst.begin();
+```
+
+| Property | `list` iterator |
+|----------|-----------------|
+| **Category** | **Bidirectional** — `++` and `--` both work |
+| **Random access?** | **No** — cannot write `it + 3` on `list` (unlike `vector`) |
+| **Why** | Linked nodes — must follow links step by step |
+
+| Container | Iterator strength | `it + k`? |
+|-----------|-------------------|-----------|
+| **`vector`** | Random access | Yes |
+| **`list`** | Bidirectional | No — use `++it` k times or `advance(it, k)` |
+
+---
+
+### `#include <iterator>` utilities
+
+Used in [j.cpp](j.cpp) for helpers that work on many container types:
+
+| Function | Role on `list` |
+|----------|----------------|
+| **`std::distance(begin, it)`** | Count steps from `begin` to `it` — **`O(n)`** for `list` |
+| **`std::advance(it, k)`** | Move `it` forward `k` steps — **`O(k)`** for `list` |
+| **`std::next(it, k)`** | Return iterator `k` steps ahead (does not move `it` unless you assign) |
+
+You do not need `<iterator>` for a simple `begin`/`end` loop — only for these utilities and generic algorithms.
+
+---
+
+### Example ([j.cpp](j.cpp))
+
+Start: `10 <-> 20 <-> 30 <-> 40`
+
+| Step | Effect |
+|------|--------|
+| `insert(it, 25)` before `30` | `10 <-> 20 <-> 25 <-> 30 <-> 40` |
+| `erase(it)` at `20` | `10 <-> 25 <-> 30 <-> 40` |
+
+### Sample output
+
+```
+First element: 10
+Second element: 20
+Forward traversal: 10 20 30 40
+After insert(25) before 30: 10 <-> 20 <-> 25 <-> 30 <-> 40 <-> END
+After erase(20): 10 <-> 25 <-> 30 <-> 40 <-> END
+Iterator now at: 25
+distance(begin, it) = 1
+```
+
+---
+
+### Complexity notes
+
+| Action on `list` iterator | Time |
+|---------------------------|------|
+| `++it` / `--it` | `O(1)` |
+| `*it` | `O(1)` |
+| `insert` / `erase` at `it` | `O(1)` if you already have the iterator |
+| `distance(begin, it)` | `O(n)` — must walk the links |
+
+---
+
+### Pitfalls
+
+| Mistake | Problem |
+|---------|---------|
+| Dereference **`end()`** | Invalid — `end()` is not an element |
+| Use **`it + 2`** on `list` | Compile error — not random access |
+| Erase without using return value | Iterator may be invalid; `erase` returns next valid iterator |
+| Invalidate iterator after container change | Save returned iterator from `erase` ([j.cpp](j.cpp)) |
+
+---
+
+### How this module fits together
+
+| File | Idea |
+|------|------|
+| [a.cpp](a.cpp) | Manual `Node*`, `head`, `tail` |
+| [i.cpp](i.cpp) | STL `list` with `push` / `pop` / `front` / `back` |
+| [j.cpp](j.cpp) | STL **iterators** — standard way to walk and edit in the middle |
 
