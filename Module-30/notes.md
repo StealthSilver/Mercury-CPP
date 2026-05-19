@@ -1,6 +1,6 @@
 # MODULE 30 — Heaps & Priority Queue
 
-**Illustration code:** `a.cpp` (PQ demo) · `b.cpp` (STL API: push / pop / top, max vs min heap) · `c.cpp`–`z.cpp` (more)
+**Illustration code:** `a.cpp` (PQ demo) · `b.cpp` (STL API) · `c.cpp` (heap from scratch) · `d.cpp` (PQ with `Student` & `pair`) · `e.cpp`–`z.cpp` (more)
 
 ---
 
@@ -124,6 +124,175 @@ Min-heap (valid):
 |------|------|-------------------|
 | **Max-heap** | Largest | **K largest**, “best score”, Dijkstra with max? (usually min) |
 | **Min-heap** | Smallest | **K smallest**, merge K sorted lists, shortest path |
+
+---
+
+## Is this a valid heap? (worked examples)
+
+To decide if a tree is a heap, check **both** conditions:
+
+```text
+Step 1: Is it a Complete Binary Tree (CBT)?
+Step 2: Does it satisfy heap property?
+        Max-heap → parent >= children everywhere
+        Min-heap → parent <= children everywhere
+```
+
+If **either** fails → **not a heap**.
+
+---
+
+### Example 1 — Valid max-heap ✓
+
+```text
+              50
+            /    \
+          30      20
+         /  \    /
+       10   15  8
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | Yes — last level filled left to right (10, 15, 8) |
+| **Max-heap?** | 50≥30,20 · 30≥10,15 · 20≥8 |
+| **Root** | **50** = maximum ✓ |
+
+**Array:** `[50, 30, 20, 10, 15, 8]`
+
+---
+
+### Example 2 — Valid min-heap ✓
+
+```text
+              3
+            /   \
+           5     8
+          / \
+         9   6
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | Yes |
+| **Min-heap?** | 3≤5,8 · 5≤9,6 |
+| **Root** | **3** = minimum ✓ |
+
+**Array:** `[3, 5, 8, 9, 6]`
+
+---
+
+### Example 3 — NOT a heap (fails CBT) ✗
+
+```text
+        9
+       / \
+      7   6
+     /     \
+    3       4
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | **No** — level 3 has a **right** child (4) but **no left** child under 7 (gap on the left) |
+| **Heap property?** | (does not matter — already invalid) |
+
+> **Rule:** In the last level, nodes must appear **from left to right** with no holes.
+
+---
+
+### Example 4 — NOT a heap (CBT ok, breaks max-heap property) ✗
+
+```text
+              50
+            /    \
+          30      20
+         /  \    /
+       10   35  8
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | Yes |
+| **Max-heap?** | **No** — node **30** has right child **35 > 30** (in a max-heap, no child may be greater than its parent) |
+
+---
+
+### Example 5 — NOT a heap (CBT ok, breaks min-heap property) ✗
+
+```text
+              3
+            /   \
+           5     2
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | Yes |
+| **Min-heap?** | **No** — root 3 has right child **2 < 3** (parent must be ≤ children; here parent > right child) |
+
+---
+
+### Example 6 — Binary tree but NOT a heap (sorted-looking, wrong shape) ✗
+
+```text
+        1
+         \
+          2
+           \
+            3
+             \
+              4
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | **No** — only right children; not filled left-to-right on levels |
+| **Note** | Inorder is sorted (1,2,3,4) like a linked list — **sorted ≠ heap** |
+
+---
+
+### Example 7 — NOT a heap (BST ≠ heap) ✗
+
+```text
+        8
+       / \
+      3   10
+     / \    \
+    1   6    14
+```
+
+| Check | Result |
+|-------|--------|
+| **CBT?** | Yes |
+| **Max-heap?** | **No** — 8≥3,10 ✓ but 10 has child 14 and 14>10 breaks max-heap at 10 |
+| **Min-heap?** | Also **No** — 8≤3,10 fails at left child |
+
+This is a **BST** (left < node < right), not a heap.
+
+---
+
+### Quick validation checklist
+
+| Question | Max-heap | Min-heap |
+|----------|----------|----------|
+| Last level filled left → right? | Required | Required |
+| Root = global max / min? | Max at root | Min at root |
+| Every parent vs children? | parent **≥** both | parent **≤** both |
+| Same as sorted inorder? | **No** — only root is extreme; inorder is **not** fully sorted |
+
+```mermaid
+flowchart TD
+  T["Given a binary tree"] --> C{"Complete BT?"}
+  C -->|No| X["Not a heap"]
+  C -->|Yes| H{"Max or min heap?"}
+  H --> M{"All parents >= children?"}
+  H --> N{"All parents <= children?"}
+  M -->|Yes| OK1["Valid max-heap"]
+  M -->|No| X
+  N -->|Yes| OK2["Valid min-heap"]
+  N -->|No| X
+```
 
 ---
 
@@ -413,8 +582,9 @@ C++ `std::sort` is usually faster in practice (IntroSort hybrid); heap sort is s
 |-------|--------------|------|
 | PQ basics | `a.cpp` | `push`, `top`, `pop`, min vs max |
 | STL API + max/min heap | `b.cpp` | `priority_queue` operations, `greater<>` |
-| Custom comparator | `c.cpp` | Structs, pairs, `operator<` |
-| Top K problems | `c.cpp`+ | Heap size K |
+| Heap from scratch | `c.cpp` | `vector` + heapify up/down |
+| PQ with objects & pairs | `d.cpp` | `Student`, `pair`, custom `Compare` |
+| Top K problems | `e.cpp`+ | Heap size K |
 | Merge K sorted | | Min-heap |
 | Heap implementation | | Array + heapify up/down |
 
@@ -630,24 +800,219 @@ minPq.push(10);
 minPq.top();    // smallest
 ```
 
-HEAPS 
 
-we visualise hte heap as COmplete Binary tree
-inside the code we write this tree as a vector/array
-the implementation is as Priority queue
+---
 
-in max heap int eh tree the max will be the root
-in min heap in teh tree the min will be the root
+## Building the heap from scratch
 
-Heap is a Complete BT (CBT)
-• CBT is a BT where all levels are filled except maybe the last one, which is filled from left to right
-• Parent >= Children
-//Max Heap
+**Illustration code:** [`c.cpp`](c.cpp)
 
-Building the heap data structure -> c.cpp
+`std::priority_queue` hides the heap. To understand **how** it works, we implement the same API ourselves with a **`vector<int>`** — no `Node` class, no pointers.
 
-Heaps
-Building the Heap Data Structure
-• push) //insert
-• pop() //pop max or min
-• top() //get max or
+### Why `vector`, not a `Node` tree?
+
+| Approach | Problem |
+|----------|---------|
+| **`Node* left/right`** | Extra memory per node, pointer chasing, worse cache use |
+| **`vector` (level-order)** | Parent/child via index formulas in **O(1)**; swaps only on `push`/`pop` |
+
+```text
+Complete binary tree          Stored as vector (index 0 = root)
+
+        50                    [ 50 | 30 | 20 | 10 | 15 | 8 ]
+       /  \                      0    1    2    3    4   5
+     30    20
+
+parent(i)       = (i - 1) / 2
+leftChild(i)    = 2*i + 1
+rightChild(i)   = 2*i + 2
+```
+
+> Heaps are always **complete** trees, so an array never has “holes” — every index maps to one tree position.
+
+### API we implement (`MaxHeap` in `c.cpp`)
+
+| Method | Action | Time |
+|--------|--------|------|
+| **`push(x)`** | Append at end, **heapify up** (swap with parent while too large) | **O(log n)** |
+| **`top()`** | Return `arr[0]` (max in max-heap) | **O(1)** |
+| **`pop()`** | Swap root with last, remove last, **heapify down** | **O(log n)** |
+| **`empty()`**, **`size()`** | Check state | **O(1)** |
+
+For a **min-heap**, swap comparisons: heapify up while **smaller** than parent; heapify down toward **smaller** child.
+
+### `push` — heapify up
+
+```text
+Array before push(45):  [50, 30, 20, 10, 15, 8]
+Append 45:              [50, 30, 20, 10, 15, 8, 45]  (index 6)
+
+45 > parent(30) → swap → ... until parent >= 45 or i == 0
+```
+
+### `pop` — heapify down
+
+```text
+1. Save arr[0] (the max) for answer
+2. Move arr[last] to arr[0], shrink array
+3. While a child is larger than current, swap with the larger child
+```
+
+```cpp
+// Core idea (see c.cpp for full class)
+void push(int x) {
+    arr.push_back(x);
+    heapifyUp(arr.size() - 1);
+}
+void pop() {
+    arr[0] = arr.back();
+    arr.pop_back();
+    if (!arr.empty()) heapifyDown(0);
+}
+int top() { return arr[0]; }
+```
+
+### `c.cpp` vs `priority_queue`
+
+| | `c.cpp` (our `MaxHeap`) | `b.cpp` (`priority_queue`) |
+|--|-------------------------|----------------------------|
+| Storage | `vector<int> arr` | `vector` inside STL |
+| Logic | You write heapify up/down | Library does it |
+| Learning | See every swap step | Use in contests |
+
+Run: `g++ -std=c++17 -o c c.cpp && ./c`
+
+---
+
+## Priority queue for pairs and objects
+
+**Illustration code:** [`d.cpp`](d.cpp)
+
+`priority_queue<int>` is easy — the library knows how to compare integers. For **`pair`** and **your own classes** (e.g. `Student`), you must tell the heap **what “best” means**.
+
+### How `priority_queue` picks `top()`
+
+```text
+Default:  priority_queue<T>  uses  less<T>
+
+top() = element that is "largest" according to less<T>
+      = element no other element is "less than"
+```
+
+So you define priority by **`operator<`** on your class, or a **`Compare` struct** as the 3rd template argument.
+
+```cpp
+priority_queue<Student> pq;                                    // uses Student::operator<
+priority_queue<Student, vector<Student>, CompareByRoll> pq;   // custom struct
+```
+
+---
+
+### 1. `pair` in a priority queue
+
+```cpp
+priority_queue<pair<int, string>> pq;
+pq.push({5, "alpha"});
+pq.push({3, "beta"});
+```
+
+| Default `less<pair>` | Behavior |
+|----------------------|----------|
+| Compare **`.first`** | Larger integer wins |
+| Tie on `.first` | Compare **`.second`** string lexicographically |
+| `top()` | **Lexicographically largest** pair |
+
+**Min-heap on `.first` only** — custom comparator:
+
+```cpp
+struct ComparePairMinFirst {
+    bool operator()(const pair<int,string>& a, const pair<int,string>& b) const {
+        return a.first > b.first;   // smaller .first = higher priority
+    }
+};
+priority_queue<pair<int,string>, vector<pair<int,string>>, ComparePairMinFirst> pq;
+```
+
+**Common pattern:** `pair<priority, payload>` — e.g. `{marks, name}` or `{distance, nodeId}`.
+
+---
+
+### 2. `Student` class (custom object)
+
+```cpp
+class Student {
+public:
+    string name;
+    int roll;
+    int marks;
+
+    // Higher marks = higher priority (max-heap by marks)
+    bool operator<(const Student& other) const {
+        return marks < other.marks;
+    }
+};
+
+priority_queue<Student> pq;
+pq.push(Student("Ravi", 105, 92));
+pq.push(Student("Kiran", 101, 75));
+// top() → student with highest marks
+```
+
+| Goal | What to write |
+|------|----------------|
+| **Highest marks** on top | `return marks < other.marks;` in `operator<` |
+| **Lowest roll** on top | Separate struct `CompareByRoll` (see `d.cpp`) |
+| Tie-breaker | Add `if (marks == other.marks) return roll > other.roll;` |
+
+**Without changing the class** — pass a comparator struct:
+
+```cpp
+struct CompareByRoll {
+    bool operator()(const Student& a, const Student& b) const {
+        return a.roll > b.roll;   // smallest roll on top
+    }
+};
+priority_queue<Student, vector<Student>, CompareByRoll> pq;
+```
+
+---
+
+### `operator<` vs `Compare` struct
+
+| Approach | When to use |
+|----------|-------------|
+| **`operator<` inside class** | One natural ordering (e.g. by marks) |
+| **`Compare` struct** | Multiple orderings (by marks, by roll, by name) without editing the class |
+
+```text
+Remember: in priority_queue, Compare returns true if a is LOWER priority than b
+          (so "greater" comparators like greater<int> put smaller on top)
+```
+
+---
+
+### Objects vs pairs — when to use which
+
+| Use | Example |
+|-----|---------|
+| **`pair<int, string>`** | Simple (priority, label) — marks + name |
+| **`Student` object** | Many fields (name, roll, marks, dept) — clearer code |
+| **`pair<int, Student>`** | Rare; usually marks inside Student is enough |
+
+---
+
+### Summary (`d.cpp`)
+
+| Demo in `d.cpp` | Type | Top element |
+|-----------------|------|-------------|
+| Pairs default | `pair<int,string>` | Largest pair (lexicographic) |
+| Pairs custom | + `ComparePairMinFirst` | Smallest `.first` |
+| Students | `Student` + `operator<` | Highest **marks** |
+| Students custom | + `CompareByRoll` | Smallest **roll** |
+| Pairs as (marks, name) | `pair<int,string>` | Highest marks |
+
+Run: `g++ -std=c++17 -o d d.cpp && ./d`
+
+HEAP SORT -> e.cpp
+
+this is not the first priority as the TC is nlogn and the oquic and merge sort works the same way
