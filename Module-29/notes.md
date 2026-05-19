@@ -1549,37 +1549,209 @@ flowchart TD
   C --> OK
 ```
 
+---
 
-PROBLEM 1 -> r.cpp
+## Problem 1 — Range sum of BST
 
- Given the root node of a binary search tree and two integers low and
-high, return the sum of values of all nodes with a value in the inclusive range [low,
-high].
+**Illustration code:** [`r.cpp`](r.cpp) · (LeetCode 938)
 
-PROBLEM 2 -> s.cpp
+Given BST `root` and integers **`low`**, **`high`**, return the **sum** of all node values in **[low, high]** (inclusive).
 
-We have a binary search tree and a target node K. The task is to find the
-node with minimum absolute difference with given target value K.
+```text
+BST:  values 1 3 6 7 8 10 13 14
+Range [6, 10]  →  sum = 6 + 7 + 8 + 10 = 31
+```
 
-PROBLEM 3 -> t.cpp
+### Algorithm (pruned inorder — same idea as `h.cpp`)
 
-Given the root of a binary search tree, and an integer k, return the kth
-smallest value (1-indexed) of all the values of the nodes in the tree.
+1. If `root->data < low` → only **right** subtree can qualify.
+2. If `root->data > high` → only **left** subtree.
+3. Else → visit **left**, add `root->data` to sum, visit **right**.
 
+```cpp
+void rangeSum(Node* root, int low, int high, int& sum) {
+    if (!root) return;
+    if (root->data >= low) rangeSum(root->left, low, high, sum);
+    if (root->data >= low && root->data <= high) sum += root->data;
+    if (root->data <= high) rangeSum(root->right, low, high, sum);
+}
+```
 
-PROBLEM 4 -> u.cpp
+| | |
+|--|--|
+| **Time** | **O(h + k)** — `k` = nodes in range; worst **O(n)** |
+| **Space** | **O(h)** |
 
-Given two binary search trees, return True if and only if there is a node in
-the first tree and a node in the second tree whose values sum up to a given integer
-target.
+Run: `g++ -std=c++17 -o r r.cpp && ./r`
 
-PROBLEM 5 -> v.cpp
+---
 
-Given a binary tree root, return the maximum sum of all keys of any
-sub-tree which is also a Binary Search Tree (BST).
-Assume a BST is defined as follows:
-● The left subtree of a node contains only nodes with keys less than the node's
-key.
-● The right subtree of a node contains only nodes with keys greater than the
-node's key.
-● Both the left and right subtrees must also be binary search trees.
+## Problem 2 — Closest value to K in BST
+
+**Illustration code:** [`s.cpp`](s.cpp) · (LeetCode 270)
+
+Find the node value with **minimum absolute difference** from target **K**.
+
+```text
+BST: 4, 2, 5, 1, 3
+K = 3.8  →  closest is 4  (|4-3.8|=0.2)
+K = 3    →  exact 3
+```
+
+### Algorithm (BST walk)
+
+Track `closest` so far. At each node:
+
+1. Update `closest` if current node is nearer to `K`.
+2. If `K < node` → go **left** (smaller values).
+3. If `K > node` → go **right**.
+4. If equal → return immediately.
+
+```cpp
+int closest(Node* root, int k) {
+    int best = root->data;
+    while (root) {
+        if (abs(root->data - k) < abs(best - k)) best = root->data;
+        if (k < root->data) root = root->left;
+        else if (k > root->data) root = root->right;
+        else return root->data;
+    }
+    return best;
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(h)** — one path |
+| **Space** | **O(1)** |
+
+Run: `g++ -std=c++17 -o s s.cpp && ./s`
+
+---
+
+## Problem 3 — Kth smallest in BST
+
+**Illustration code:** [`t.cpp`](t.cpp) · (LeetCode 230)
+
+Return the **k-th smallest** value (**1-indexed**) in the BST.
+
+```text
+Inorder: 1 3 6 7 8 10 13 14
+k = 3  →  answer 6
+k = 1  →  answer 1
+```
+
+### Algorithm (inorder)
+
+BST **inorder** = **sorted** order. Count nodes until count == `k`.
+
+```cpp
+void kthSmallest(Node* root, int& k, int& ans) {
+    if (!root || k == 0) return;
+    kthSmallest(root->left, k, ans);
+    if (--k == 0) ans = root->data;
+    kthSmallest(root->right, k, ans);
+}
+```
+
+| | |
+|--|--|
+| **Time** | **O(h + k)** — stop early at k-th; worst **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o t t.cpp && ./t`
+
+---
+
+## Problem 4 — Two BST sum to target
+
+**Illustration code:** [`u.cpp`](u.cpp) · (LeetCode 653)
+
+Given two BSTs and integer **`target`**, return **true** if some node in tree1 + some node in tree2 == **target**.
+
+```text
+BST1: 2, 1, 3   →  inorder 1 2 3
+BST2: 7, 5, 9   →  inorder 5 7 9
+
+target = 12  →  3 + 9 = 12  →  true
+target = 4   →  no pair     →  false
+```
+
+### Algorithm (two pointers on sorted inorders)
+
+1. Inorder both trees → sorted arrays `A`, `B`.
+2. **`i = 0`**, **`j = B.size() - 1`** (smallest in A + largest in B).
+3. `sum = A[i] + B[j]`:
+   - if `sum == target` → **true**
+   - if `sum < target` → `i++` (need larger sum)
+   - else → `j--` (need smaller sum)
+
+```text
+Like "two sum" on sorted arrays — O(m+n) time
+```
+
+| | |
+|--|--|
+| **Time** | **O(m + n)** |
+| **Space** | **O(m + n)** for inorder arrays |
+
+Run: `g++ -std=c++17 -o u u.cpp && ./u`
+
+---
+
+## Problem 5 — Maximum sum BST subtree
+
+**Illustration code:** [`v.cpp`](v.cpp) · (LeetCode 1373)
+
+Given a **general binary tree**, return the **maximum sum** of node values in any **subtree** that is a valid **BST**.
+
+```text
+           1
+          / \
+         4   3
+        / \   \
+       4   2   5
+      / \
+     6   3
+
+Largest BST subtree is **{3, 5}** (right side) → sum **8**
+```
+
+### Post-order `Info` (like `m.cpp` + track max sum)
+
+For each node return:
+
+| Field | Meaning |
+|-------|---------|
+| `isBST` | Subtree valid BST? |
+| `sum` | Sum of all nodes if BST |
+| `maxSum` | Best BST sum in this subtree |
+| `minVal`, `maxVal` | Range if BST |
+
+```text
+If left & right are BST and left.max < root < right.min:
+  sum = left.sum + right.sum + root.data
+  maxSum = max(left.maxSum, right.maxSum, sum)
+Else:
+  maxSum = max(left.maxSum, right.maxSum)
+  isBST = false
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** |
+| **Space** | **O(h)** |
+
+Run: `g++ -std=c++17 -o v v.cpp && ./v`
+
+---
+
+### Problems r–v — summary
+
+| # | Problem | File | Technique |
+|---|---------|------|-----------|
+| 1 | Range sum | `r.cpp` | Pruned inorder / range walk |
+| 2 | Closest to K | `s.cpp` | BST search + track best |
+| 3 | Kth smallest | `t.cpp` | Inorder count |
+| 4 | Two BST sum | `u.cpp` | Two inorders + two pointers |
+| 5 | Max sum BST | `v.cpp` | Post-order Info |
