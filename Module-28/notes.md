@@ -1,6 +1,6 @@
 # MODULE 28 — Binary Trees
 
-**Illustration code:** `a.cpp` (build from preorder) · `b.cpp`–`e.cpp` (traversals) · `f.cpp` (height) · `g.cpp` (count nodes) · `h.cpp` (sum of nodes) · `i.cpp`–`z.cpp` (more topics)
+**Illustration code:** `a.cpp` (build from preorder) · `b.cpp`–`e.cpp` (traversals) · `f.cpp` (height) · `g.cpp` (count nodes) · `h.cpp` (sum) · `i.cpp` (diameter O(n²)) · `j.cpp` (diameter O(n)) · `k.cpp`–`z.cpp` (more topics)
 
 ---
 
@@ -1255,11 +1255,154 @@ flowchart TD
 
 All three use the same **recursive pattern**: trust answers from left and right subtrees, then combine at the current node.
 
+---
 
-DIAMETER OF A TREE -> i.cpp
+## Diameter of a binary tree
 
-No. of nodes in the longest path between 2 leaves
+The **diameter** is the length of the **longest path** between any two nodes in the tree.
 
-approach 1 -> O(n^2) -> i.cpp
+- In most problems, length is measured in **edges** (links).
+- If the question asks for **number of nodes** on that path, answer = **edges + 1**.
 
-approach 2 -> O(n) -> j.cpp
+The longest path always connects **two leaves** (or one node in a single-node tree). It passes through some **internal node** where the path goes **down the left side** and **down the right side**.
+
+Same sample tree:
+
+```text
+        1
+       / \
+      2   3
+     / \   \
+    4   5   6
+
+Longest path:  4 — 2 — 1 — 3 — 6
+               (5 nodes, 4 edges)
+
+Diameter (edges) = 4
+Diameter (nodes) = 5
+```
+
+```text
+Longest path highlighted:
+
+    4 — 2 — 1 — 3 — 6
+        ^       ^
+    through node 1 (combines left & right depths)
+```
+
+### Key idea — path through a node
+
+At node `N`, the longest path that **uses `N` as the “bend”** is:
+
+```text
+(left depth down from N) + (right depth down from N)
+
+Using height from f.cpp (empty = -1, leaf = 0):
+
+pathThrough(N) = height(left) + height(right) + 2
+```
+
+| Node | height(left) | height(right) | path through node |
+|------|--------------|---------------|-------------------|
+| 4 | -1 | -1 | 0 |
+| 5 | -1 | -1 | 0 |
+| 2 | 0 | 0 | **2** (path 4–2–5) |
+| 6 | -1 | -1 | 0 |
+| 3 | -1 | 0 | **1** (path 3–6) |
+| 1 | 1 | 1 | **4** (path 4–2–1–3–6) ← maximum |
+
+**Answer for sample tree:** diameter = **4** edges (or **5** nodes).
+
+---
+
+## Approach 1 — Brute force at every node (O(n²))
+
+**Illustration code:** [`i.cpp`](i.cpp)
+
+### Algorithm
+
+1. Define `height(node)` as in `f.cpp`.
+2. For **each** node `N` in the tree:
+   - `leftH  = height(N->left)`
+   - `rightH = height(N->right)`
+   - `through = leftH + rightH + 2`
+   - Update global `maxDiameter`.
+3. Return `maxDiameter`.
+
+```text
+For each node, run height() on left and right → expensive
+
+Node 1: height(2) scans {2,4,5}, height(3) scans {3,6}  →  through = 4
+Node 2: height(4), height(5)  →  through = 2
+... repeat for all n nodes
+```
+
+| | |
+|--|--|
+| **Time** | **O(n²)** — `n` nodes, each `height()` is **O(n)** |
+| **Space** | **O(h)** — recursion for `height` / traversal |
+
+Run: `g++ -std=c++17 -o i i.cpp && ./i`
+
+---
+
+## Approach 2 — One DFS, optimal (O(n))
+
+**Illustration code:** [`j.cpp`](j.cpp)
+
+While computing **height** bottom-up, each node already knows left and right subtree heights — **no need to re-scan**.
+
+### Algorithm
+
+Helper `solve(node, ans)`:
+
+1. If `node == nullptr` → return **-1**.
+2. `L = solve(left, ans)`
+3. `R = solve(right, ans)`
+4. `ans = max(ans, L + R + 2)`  ← diameter **through** this node
+5. Return `1 + max(L, R)`  ← height of this node (same as `f.cpp`)
+
+Call once from root; `ans` holds the final diameter.
+
+```text
+Post-order style:
+
+    solve(4) → L=-1, R=-1, ans=0, return 0
+    solve(5) → same
+    solve(2) → L=0, R=0, ans=max(0,2)=2, return 1
+    solve(6) → ...
+    solve(3) → L=-1, R=0, ans=2, return 1
+    solve(1) → L=1, R=1, ans=max(2,4)=4, return 2
+```
+
+| | |
+|--|--|
+| **Time** | **O(n)** — each node visited once |
+| **Space** | **O(h)** — recursion stack |
+
+Run: `g++ -std=c++17 -o j j.cpp && ./j`
+
+---
+
+### Diameter — approach comparison
+
+| | **Approach 1 (`i.cpp`)** | **Approach 2 (`j.cpp`)** |
+|--|--------------------------|--------------------------|
+| **Idea** | Recompute `height` at every node | Compute height once; update `ans` while returning |
+| **Time** | O(n²) | **O(n)** |
+| **Space** | O(h) | O(h) |
+| **When to use** | Learning / small trees | Interviews & production |
+
+```mermaid
+flowchart TD
+  N["Visit node N"] --> L["Get height of left subtree"]
+  N --> R["Get height of right subtree"]
+  L --> U["ans = max(ans, L + R + 2)"]
+  R --> U
+  U --> H["Return height of N upward"]
+```
+
+Both approaches give the **same answer** on the sample tree: **4 edges**, **5 nodes**.
+
+Subtree of another Tree -> j.cpp
+Return true if there is a subtree of root with the same structure and node values of subRoot and false otherwise.
