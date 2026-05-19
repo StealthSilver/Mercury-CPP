@@ -24,7 +24,7 @@ int main() {
 
     cout << "n=3, k=27 -> \"" << getSmallestString(3, 27) << "\"  (expected aay)\n";
     cout << "n=5, k=73 -> \"" << getSmallestString(5, 73) << "\"\n";
-    cout << "n=3, k=5  -> \"" << getSmallestString(3, 5) << "\"  (expected aab)\n";
+    cout << "n=3, k=5  -> \"" << getSmallestString(3, 5) << "\"  (expected aac, sum 1+1+3=5)\n";
 
     return 0;
 }

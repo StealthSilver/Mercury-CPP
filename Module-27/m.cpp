@@ -50,18 +50,9 @@ int main() {
     }
     cout << "\nk = " << k << "\n";
     cout << "minimized largest sum: " << ans << "  (expected 18)\n";
-    cout << "(split [7,2,5]=14 and [10,8]=18 -> max 18; optimal may be 14 with k=2: [7,2,5] and [10,8] -> 14)\n";
-
-    // Correct answer for [7,2,5,10,8], k=2 is 18? Let me verify
-    // split [7,2,5,10] [8] -> 18
-    // split [7,2,5] [10,8] -> max(14,18)=18
-    // split [7,2] [5,10,8] -> max(9,23)=23
-    // Actually optimal is 18 for k=2? 
-    // LC example: [7,2,5,10,8] k=2 answer 18
-    // Wait LC 410 says answer 18 for that example
 
     vector<int> nums2 = {1, 2, 3, 4, 5};
-    cout << "\nnums [1..5], k=2 -> " << splitArray(nums2, 2) << "  (expected 9)\n";
+    cout << "nums [1..5], k=2 -> " << splitArray(nums2, 2) << "  (expected 9)\n";
 
     return 0;
 }

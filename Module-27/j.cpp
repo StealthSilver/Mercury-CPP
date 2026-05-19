@@ -25,5 +25,8 @@ int main() {
     string c = "420";
     cout << "num=\"" << c << "\" -> \"" << largestOddNumber(c) << "\"  (expected \"\")\n";
 
+    string d = "35427";
+    cout << "num=\"" << d << "\" -> \"" << largestOddNumber(d) << "\"  (expected \"35427\")\n";
+
     return 0;
 }
