@@ -1,6 +1,6 @@
 # MODULE 25 — Stack
 
-**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`)
+**Illustration code:** `a.cpp` (stack + bucket model) · `b.cpp` (LIFO order trace) · `c.cpp` (stack with `std::vector`) · `d.cpp` (templated `Stack<T>`)
 
 ---
 
@@ -108,3 +108,32 @@ Instead of a **fixed-size array**, you can back the stack with a **`std::vector`
 
 Run `c.cpp` to see the same LIFO behavior with a dynamic backing store.
 
+---
+
+## Stack as a class template (`Stack<T>`)
+
+**Illustration code:** `d.cpp`
+
+In `c.cpp`, the stack is hard-coded to **`int`**. Often you want **one implementation** that works for **`double`**, **`string`**, **`char`**, or your own **`struct`**.
+
+A **class template** lets you name a **placeholder type** (usually written **`T`**) and write the class once:
+
+```cpp
+template <typename T>
+class Stack {
+    std::vector<T> data;
+    // ...
+};
+```
+
+When you write **`Stack<int>`** or **`Stack<std::string>`**, the compiler **generates** a concrete class by substituting `T` with that type. The stored type is not a “runtime variable”; it is fixed **per instantiation** at compile time.
+
+**Backing store:** Same as `c.cpp` — a **`std::vector<T>`** with **`push_back`** / **`pop_back`** / **`back`**.
+
+**Requirements:** Any type `T` you store must be **assignable** and **copyable or movable** in the ways your `Stack` uses (here: default constructible for the empty-`top()` demo path, and streamable with **`<<`** if you use `print()`). `int`, `double`, `std::string`, etc. satisfy this.
+
+`d.cpp` defines **`template <typename T> class Stack`** and in **`main`** uses **`Stack<int>`** and **`Stack<std::string>`** so you can see the same API with different element types.
+
+Run `d.cpp` to compare stacks of integers and strings built from one template.
+
+STACK USING THE LINKED LIST -> E.CPP
