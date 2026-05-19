@@ -158,6 +158,35 @@ No `capacity` field and no `reallocate` like a vector: growth is **one node per 
 
 Run `e.cpp` to see a linked-list-backed stack in action.
 
-STACK IN STL -> f.cpp
+---
 
-include hte stack header file
+## Stack in the C++ standard library (`std::stack`)
+
+**Illustration code:** `f.cpp`
+
+The language ships a ready-made adapter: **`std::stack`**, declared in the **`<stack>`** header. Include it when you want a LIFO stack without writing your own list or vector wrapper.
+
+```cpp
+#include <stack>
+```
+
+**Type:** `std::stack<T, Container>` — by default **`Container`** is **`std::deque<T>`**. You can pass a different **sequence container** that supports **`push_back`**, **`pop_back`**, and **`back`**, for example **`std::vector<T>`** or **`std::list<T>`**. The stack only exposes **top / push / pop** behavior; it does not let you iterate the middle (that is by design).
+
+**Common members:**
+
+| Member | Role |
+|--------|------|
+| **`push(x)`** | Push `x` on top |
+| **`pop()`** | Remove top (returns **`void`** — use **`top()`** first if you need the value) |
+| **`top()`** | Reference to the top element |
+| **`empty()`**, **`size()`** | Query state |
+
+There is **no** **`clear()`** member. To empty a stack, **`pop()`** in a loop or assign a **default-constructed** `std::stack` (see `f.cpp`).
+
+**When to use it:** Competitive code, prototypes, and any problem that is naturally LIFO. When you need traversal or custom allocation, use your own structure (like `e.cpp`) or a **`deque`** / **`vector`** directly.
+
+Run `f.cpp` to see **`std::stack<int>`** and **`std::stack<int, std::vector<int>>`** used from `<stack>`.
+
+PUSH AT BOTTOM OF STACK -> h.cpp
+
+psuhAtBottom(&stack, value)
