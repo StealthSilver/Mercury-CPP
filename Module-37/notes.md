@@ -1,6 +1,6 @@
 # MODULE 37 — Dynamic Programming (introduction)
 
-**Illustration code:** [`a.cpp`](a.cpp)–[`c.cpp`](c.cpp) (Fibonacci / DP types) · [`d.cpp`](d.cpp)–[`g.cpp`](g.cpp) (Climbing Stairs) · [`e.cpp`](e.cpp)–[`f.cpp`](f.cpp) (stairs variants) · [`h.cpp`](h.cpp) (0/1 Knapsack) · [`i.cpp`](i.cpp) (Unbounded Knapsack)
+**Illustration code:** [`a.cpp`](a.cpp)–[`c.cpp`](c.cpp) (Fibonacci / DP types) · [`d.cpp`](d.cpp)–[`g.cpp`](g.cpp) (Climbing Stairs) · [`e.cpp`](e.cpp)–[`f.cpp`](f.cpp) (stairs variants) · [`h.cpp`](h.cpp) (0/1 Knapsack) · [`i.cpp`](i.cpp) (Unbounded Knapsack) · [`j.cpp`](j.cpp) (Target sum subset)
 
 ---
 
@@ -458,6 +458,7 @@ return dp[n];
 | Stairs variations | `f.cpp` | **\(O(nk)\)** | k-step sum |
 | **0/1 Knapsack** | `h.cpp` | **\(O(nW)\)** | Loop **W down** |
 | **Unbounded Knapsack** | `i.cpp` | **\(O(nW)\)** | Loop **W up** |
+| **Target sum subset** | `j.cpp` | **\(O(nT)\)** | Boolean 0/1 knapsack |
 
 **Next in the course (typical):** LIS/LCS, grid DP, interval DP — same **state → recurrence → fill once** workflow.
 
@@ -1030,7 +1031,155 @@ flowchart LR
 | **Unbounded Knapsack** | `i.cpp` | **\(O(nW)\)** | **\(O(W)\)** 1D |
 | Loop direction | §16.5 vs §17.3 | — | **down** vs **up** |
 
-Target Sum Subset -> j.cpp
-Find if there is a subset of numbers which give sum equal to target
-nums[] = {4, 2, 7, 1, 3}
-target sum = 7
+---
+
+# Part VI — Target sum subset
+
+**Problem.** Given array **`nums`** and integer **`target`**, decide whether **some subset** of **`nums`** (each element used **at most once**) has sum **exactly `target`**.
+
+**Example ([`j.cpp`](j.cpp)):** `nums = {4, 2, 7, 1, 3}`, **`target = 7`** → **YES** (e.g. **`{7}`**, **`{4, 3}`**, **`{2, 1, 4}`**).
+
+```bash
+g++ -std=c++17 -o j j.cpp && ./j
+```
+
+---
+
+## 18. Target sum subset — [`j.cpp`](j.cpp)
+
+### 18.1 Problem as choices (include / exclude)
+
+For each index **`i`**, two **branches**:
+
+| Choice | Effect |
+|--------|--------|
+| **Exclude** `nums[i]` | Still need sum **`rem`** from rest |
+| **Include** `nums[i]` | Need sum **`rem - nums[i]`** from rest |
+
+\[
+\text{solve}(i, rem) = \text{solve}(i+1, rem) \;\lor\; \text{solve}(i+1, rem - nums[i])
+\]
+
+**Base:**
+
+- **`rem == 0`** → **true** (empty subset already hits target… after using some elements, “remaining 0” means success).
+- **`i == n`** or **`rem < 0`** → **false**.
+
+This is the same **take / skip** tree as 0/1 knapsack, but we only ask **yes/no**, not max value.
+
+---
+
+### 18.2 Recursion tree (small sketch)
+
+`solve(0, 7)` on `{4,2,7,1,3}`:
+
+```text
+solve(0,7)
+├── exclude 4 → solve(1,7)
+│   ├── exclude 2 → solve(2,7)
+│   │   ├── exclude 7 → ...
+│   │   └── include 7 → solve(3,0) → TRUE  ✓
+│   └── include 2 → solve(2,5) → ... may find {2,1,4}, etc.
+└── include 4 → solve(1,3) → ... may find {4,3}
+```
+
+**Overlapping states** **`(i, rem)`** appear on many paths → memo or table.
+
+---
+
+### 18.3 Memoization (top-down)
+
+**State:** **`memo[i][rem]`** ∈ `{unknown, false, true}`.
+
+```cpp
+bool solve(int i, int rem) {
+    if (rem == 0) return true;
+    if (i == n || rem < 0) return false;
+    if (memo[i][rem] known) return memo[i][rem];
+    return memo[i][rem] = solve(i+1, rem) || solve(i+1, rem - nums[i]);
+}
+```
+
+**Time** **\(O(n \cdot target)\)** · **Space** **\(O(n \cdot target)\)** memo + stack.
+
+---
+
+### 18.4 Tabulation (bottom-up)
+
+**State:** **`dp[i][s]`** = can we make sum **`s`** using the first **`i`** numbers?
+
+\[
+dp[i][s] = dp[i-1][s] \;\lor\; \bigl(s \ge nums[i-1] \land dp[i-1][s - nums[i-1]]\bigr)
+\]
+
+**Base:** **`dp[0][0] = true`**, other **`dp[0][s>0] = false`**.
+
+**Answer:** **`dp[n][target]`**.
+
+**2D trace** for the demo ([`j.cpp`](j.cpp) prints **`T`** / **`.`**):
+
+| i \\ s | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|--------|---|---|---|---|---|---|---|---|
+| 0 | T | . | . | . | . | . | . | . |
+| 1 (4) | T | . | . | . | T | . | . | . |
+| 2 (2) | T | T | T | . | T | T | . | . |
+| 3 (7) | T | T | T | . | T | T | T | **T** |
+| … | | | | | | | | **T** |
+
+**1D optimization** (same as 0/1 knapsack, boolean):
+
+```cpp
+vector<bool> dp(target + 1, false);
+dp[0] = true;
+for (int x : nums)
+    for (int s = target; s >= x; s--)
+        dp[s] = dp[s] || dp[s - x];
+return dp[target];
+```
+
+Loop **`s` downward** so each **`x`** is used **at most once** per pass.
+
+---
+
+### 18.5 Link to 0/1 knapsack ([`h.cpp`](h.cpp))
+
+| 0/1 Knapsack | Target sum subset |
+|--------------|-------------------|
+| **`wt[i] = val[i] = nums[i]`** | same |
+| Capacity **`W = target`** | same |
+| **`dp[i][w] = max(...)`** | **`dp[i][s] = dp[i-1][s] OR ...`** |
+| Answer: max value | Answer: **`dp[n][target]`** true? |
+
+So this problem **is** a **0/1 knapsack decision** (subset sum), not a separate algorithm family.
+
+---
+
+### 18.6 Time and space
+
+| Method | Time | Space |
+|--------|------|-------|
+| Naive recursion | **\(O(2^n)\)** | **\(O(n)\)** stack |
+| Memo / 2D table | **\(O(n \cdot target)\)** | **\(O(n \cdot target)\)** |
+| 1D boolean | **\(O(n \cdot target)\)** | **\(O(target)\)** |
+
+If **`target`** is huge, pseudo-polynomial DP may be infeasible; meet-in-the-middle or other tricks apply for special cases.
+
+---
+
+### 18.7 Variations
+
+| Variation | Change |
+|-----------|--------|
+| **Count subsets** | `dp[i][s] += dp[i-1][s] + dp[i-1][s-nums[i]]` |
+| **Partition equal subset sum** | Check if subset sums to **`sum(nums)/2`** |
+| **Target sum (± signs)** | Transform to subset sum (LeetCode 494) |
+| **Minimum subset sum ≥ target** | Minimize or use different state |
+
+---
+
+## Quick reference (Target sum)
+
+| Topic | File | Time | Notes |
+|-------|------|------|--------|
+| Target sum subset | `j.cpp` | **\(O(nT)\)** | Memo + 2D + 1D |
+| Same as | `h.cpp` idea | — | Boolean 0/1 knapsack |
