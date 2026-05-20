@@ -462,7 +462,7 @@ Let **`total = sum(nums)`**. We want a subset **`S`** with sum **`s`** as close 
 \min |sum(S_1) - sum(S_2)| = total - 2\cdot \max\{\,s : s \le \lfloor total/2 \rfloor,\; s \text{ achievable}\,\}
 \]
 
-**DP:** **`dp[s] = true`** if some subset sums to **`s`** (0/1 knapsack on sums, same spirit as Module 37 [`j.cpp`](../Module-37/j.cpp)).
+**DP:** **`dp[s] = true`** if some subset sums to **`s`** (0/1 knapsack on sums, same spirit as Module 37 [`j.cpp`](../37-DP_Intro/j.cpp)).
 
 ```bash
 g++ -std=c++17 -o j j.cpp && ./j
@@ -765,7 +765,7 @@ g++ -std=c++17 -o t t.cpp && ./t
 ## 23. Compile all
 
 ```bash
-cd Module-39
+cd 39-DP_Advanced
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

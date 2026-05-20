@@ -375,7 +375,7 @@ g++ -std=c++17 -o l l.cpp && ./l
 ## 19. Compile all
 
 ```bash
-cd Module-40
+cd 40-SegTree
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

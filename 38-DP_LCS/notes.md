@@ -83,7 +83,7 @@ for (int c : coins)           // outer: coin TYPES (combinations)
 g++ -std=c++17 -o a a.cpp && ./a
 ```
 
-**Link to Module 37:** same as **unbounded knapsack — count ways** ([`i.cpp`](../Module-37/i.cpp)), with **coins outer** to avoid permutation double-counting.
+**Link to Module 37:** same as **unbounded knapsack — count ways** ([`i.cpp`](../37-DP_Intro/i.cpp)), with **coins outer** to avoid permutation double-counting.
 
 ---
 
@@ -422,7 +422,7 @@ g++ -std=c++17 -o h h.cpp && ./h
 ## 8. Compile all
 
 ```bash
-cd Module-38
+cd 38-DP_LCS
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

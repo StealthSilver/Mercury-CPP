@@ -287,7 +287,7 @@ Use a **trie** when you need **prefix** operations. Use a **hash map** when you 
 | [`j.cpp`](j.cpp) | **Longest word built step-by-step** | Sort + `buildable` set of prefixes |
 
 ```bash
-cd Module-32
+cd 32-Tries
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

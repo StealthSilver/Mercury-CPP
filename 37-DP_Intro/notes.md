@@ -297,7 +297,7 @@ flowchart TB
 ## 8. Run the demos
 
 ```bash
-cd Module-37
+cd 37-DP_Intro
 g++ -std=c++17 -o a a.cpp && ./a   # naive vs memo vs tab (all in one)
 g++ -std=c++17 -o b b.cpp && ./b   # memoization + cache hits/misses
 g++ -std=c++17 -o c c.cpp && ./c   # tabulation step-by-step table fill

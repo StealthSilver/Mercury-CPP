@@ -406,7 +406,7 @@ Run: `g++ -std=c++17 -o i i.cpp && ./i`
 ## 8. Compile all
 
 ```bash
-cd Module-36
+cd 36-Paths_MST
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

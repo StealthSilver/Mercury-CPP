@@ -340,7 +340,7 @@ Number of simple paths can grow **exponentially** in **\(V\)** (complete DAG–l
 ## Compile all illustrations
 
 ```bash
-cd Module-34
+cd 34-Graph_Algo
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

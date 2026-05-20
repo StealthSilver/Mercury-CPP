@@ -290,7 +290,7 @@ Both are standard; **Course Schedule** problems map very naturally to **Kahn** b
 ## Compile all
 
 ```bash
-cd Module-35
+cd 35-Topo_Sort
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
 g++ -std=c++17 -o c c.cpp && ./c

@@ -367,8 +367,8 @@ Each recursive step cuts the search range **roughly in half**, same as standard 
 
 | Module | Connection |
 |--------|------------|
-| **Module 20** — [p.cpp](../Module-20/p.cpp) | Ordinary binary search on a **fully** sorted array; one comparison tells you left vs right. |
-| **Module 12** — [h.cpp](../Module-12/h.cpp) | Same problem, often shown with an **iterative** while-loop version. |
+| **Module 20** — [p.cpp](../20-Recursion/p.cpp) | Ordinary binary search on a **fully** sorted array; one comparison tells you left vs right. |
+| **Module 12** — [h.cpp](../12-Arrays_Adv/h.cpp) | Same problem, often shown with an **iterative** while-loop version. |
 | **This module** — [c.cpp](c.cpp) | Same logic as **divide and conquer** / recursive binary search. |
 
 ---
