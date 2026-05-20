@@ -1,6 +1,6 @@
 # MODULE 40 — Segment trees
 
-**Illustration code:** [`a.cpp`](a.cpp) (range sum + point update) · [`b.cpp`](b.cpp) (node count, levels, structure)
+**Illustration code:** [`a.cpp`](a.cpp)–[`b.cpp`](b.cpp) (overview) · [`c.cpp`](c.cpp)–[`e.cpp`](e.cpp) (sum: build / query / update) · [`g.cpp`](g.cpp)–[`i.cpp`](i.cpp) (max) · [`j.cpp`](j.cpp)–[`l.cpp`](l.cpp) (lazy range add + sum)
 
 ---
 
@@ -239,49 +239,174 @@ g++ -std=c++17 -o b b.cpp && ./b
 
 ---
 
-## 11. Compile all
+# Part V — Sum tree: build, query, update (`c`–`e`)
+
+## 12. Create with `vector` — [`c.cpp`](c.cpp)
+
+**Steps:**
+
+1. **`n = arr.size()`**
+2. **`tree.assign(4 * n, 0)`** — 1-indexed heap, safe size
+3. **`build(1, 0, n-1, arr)`** — fill leaves, combine upward
+
+```cpp
+vector<long long> tree;
+int n = arr.size();
+tree.assign(4 * n, 0);
+build(1, 0, n - 1, arr);
+```
+
+**Time:** **\(O(n)\)** · **Space:** **`tree`** size **\(O(n)\)**.
+
+```bash
+g++ -std=c++17 -o c c.cpp && ./c
+```
+
+---
+
+## 13. Range query — three cases — [`d.cpp`](d.cpp)
+
+**Query** **`Q[l, r]`** (example **`Qi = 2`**, **`Qj = 5`**) on node interval **`[start, end]`**:
+
+| Case | Condition | Return |
+|------|-----------|--------|
+| **No overlap** | `r < start` or `end < l` | neutral (**0** for sum) |
+| **Complete overlap** | `l ≤ start` and `end ≤ r` | **`tree[node]`** |
+| **Partial overlap** | otherwise | **query(left) + query(right)** |
+
+**Steps:**
+
+1. Start at root **`node = 1`**, **`[0, n-1]`**.
+2. Classify current node vs **`Q[Qi, Qj]`** (see trace in [`d.cpp`](d.cpp)).
+3. On partial overlap, recurse only into children that intersect **`Q`**.
+
+**Time:** **\(O(\log n)\)** nodes visited.
+
+```bash
+g++ -std=c++17 -o d d.cpp && ./d
+```
+
+**Demo:** **`{2,1,5,3,4,6,2,7}`**, **`Q[2,5]`** → **18**.
+
+---
+
+## 14. Point update — [`e.cpp`](e.cpp)
+
+**Update** **`arr[idx] = val`**:
+
+1. Descend to leaf **`[idx, idx]`** (go left if **`idx ≤ mid`**, else right).
+2. Set **`tree[node] = val`** at leaf.
+3. While unwinding: **`tree[node] = tree[left] + tree[right]`**.
+
+**Time:** **\(O(\log n)\)**.
+
+```bash
+g++ -std=c++17 -o e e.cpp && ./e
+```
+
+---
+
+# Part VI — Max segment tree (`g`–`i`)
+
+Same structure as sum; **combine** = **`max`**, neutral for query = **`INT_MIN`**.
+
+| File | Operation |
+|------|-----------|
+| [`g.cpp`](g.cpp) | **Create** — **`tree.assign(4*n,0)`**, build with **`max`** |
+| [`h.cpp`](h.cpp) | **Range max query** — same three overlap cases |
+| [`i.cpp`](i.cpp) | **Point update** — set one index, recompute **`max`** up |
+
+```bash
+g++ -std=c++17 -o g g.cpp && ./g
+g++ -std=c++17 -o h h.cpp && ./h
+g++ -std=c++17 -o i i.cpp && ./i
+```
+
+**Demo:** **`arr = {3,1,4,1,5,9,2,6}`**, **`rangeMax(2,5) = 9`**.
+
+---
+
+# Part VII — Lazy propagation (`j`–`l`)
+
+**Problem:** **Range add** **`+v` on `[l,r]`** and **range sum query** — point update is a range add of length 1.
+
+**Extra array:** **`lazy[node]`** = pending value to add to **every** index in that node’s interval (not yet pushed to children).
+
+### 15. Create — [`j.cpp`](j.cpp)
+
+```cpp
+tree.assign(4 * n, 0);
+lazy.assign(4 * n, 0);
+build(1, 0, n - 1, arr);
+```
+
+### 16. `push(node, start, end)`
+
+When visiting a node, **apply** pending tag:
+
+1. **`tree[node] += lazy[node] * (end - start + 1)`**
+2. If not leaf: **`lazy[child] += lazy[node]`**
+3. **`lazy[node] = 0`**
+
+### 17. Range query — [`k.cpp`](k.cpp)
+
+**`rangeSum`:** call **`push`** first, then same three cases as sum tree.
+
+### 18. Range update — [`l.cpp`](l.cpp)
+
+**`rangeAdd(l, r, v)`:**
+
+- **Complete overlap:** **`lazy[node] += v`**, then **`push`**
+- **Partial:** recurse to children, then fix **`tree[node]`**
+
+```bash
+g++ -std=c++17 -o j j.cpp && ./j
+g++ -std=c++17 -o k k.cpp && ./k
+g++ -std=c++17 -o l l.cpp && ./l
+```
+
+| Operation | Time |
+|-----------|------|
+| Build | **\(O(n)\)** |
+| Range add / range sum | **\(O(\log n)\)** |
+
+---
+
+## 19. Compile all
 
 ```bash
 cd Module-40
 g++ -std=c++17 -o a a.cpp && ./a
 g++ -std=c++17 -o b b.cpp && ./b
+g++ -std=c++17 -o c c.cpp && ./c
+g++ -std=c++17 -o d d.cpp && ./d
+g++ -std=c++17 -o e e.cpp && ./e
+g++ -std=c++17 -o g g.cpp && ./g
+g++ -std=c++17 -o h h.cpp && ./h
+g++ -std=c++17 -o i i.cpp && ./i
+g++ -std=c++17 -o j j.cpp && ./j
+g++ -std=c++17 -o k k.cpp && ./k
+g++ -std=c++17 -o l l.cpp && ./l
 ```
 
 ---
 
 ## Quick reference
 
-| Topic | File | Build | Query | Update | Space |
-|-------|------|-------|-------|--------|-------|
-| Range sum + point set | `a.cpp` | **\(O(n)\)** | **\(O(\log n)\)** | **\(O(\log n)\)** | **\(O(n)\)** |
-| Node count & levels | `b.cpp` | — | — | — | — |
+| Topic | File | Build | Query | Update |
+|-------|------|-------|-------|--------|
+| Sum (all-in-one) | `a.cpp` | **\(O(n)\)** | **\(O(\log n)\)** | point **\(O(\log n)\)** |
+| Structure / levels | `b.cpp` | — | — | — |
+| Sum create | `c.cpp` | **\(O(n)\)** | — | — |
+| Sum query (3 cases) | `d.cpp` | — | **\(O(\log n)\)** | — |
+| Sum point update | `e.cpp` | — | — | **\(O(\log n)\)** |
+| Max create | `g.cpp` | **\(O(n)\)** | — | — |
+| Max range query | `h.cpp` | — | **\(O(\log n)\)** | — |
+| Max point update | `i.cpp` | — | — | **\(O(\log n)\)** |
+| Lazy create | `j.cpp` | **\(O(n)\)** | — | — |
+| Lazy range sum | `k.cpp` | — | **\(O(\log n)\)** | — |
+| Lazy range add | `l.cpp` | — | — | **\(O(\log n)\)** |
 
-**Generalization (later modules):** lazy propagation (range update), min/max trees, coordinate compression, persistent / 2D segment trees.
+**Space (all variants):** **`O(n)`** for **`tree`** (size **`4n`**) + **`O(n)`** for **`lazy`** when used.
 
-**Combine must be associative** for the standard segment tree; with a custom “segment beats” or monoid, variants extend to harder range updates.
-
-
-creating a segment tree using vecotr -> c.cpp
-
-resize 4n and then building
-
-Queries on Segment Tree -> d.cpp
-Qi = 2, Qj = 5
-
-no overlap
-
-complete overlap
-
-partial overlap
-
-
-updates on the segment tree -> e.cpp
-
-update at any idx
-
-max segment tree
-
-cration -> g.cpp 
- , range max queries -> h.cpp
- update in max segment tree -> i.cpp
-
+**Later topics:** persistent / 2D segment trees, segment tree beats, coordinate compression.
