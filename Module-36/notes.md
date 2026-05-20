@@ -1,6 +1,6 @@
 # MODULE 36 — Shortest paths (Dijkstra, Bellman–Ford) & minimum spanning trees (Prim, Kruskal)
 
-**Illustration code:** [`a.cpp`](a.cpp) · [`b.cpp`](b.cpp) · [`g.cpp`](g.cpp) · [`c.cpp`](c.cpp) · [`d.cpp`](d.cpp) · [`h.cpp`](h.cpp) · [`e.cpp`](e.cpp) · [`f.cpp`](f.cpp) · [`i.cpp`](i.cpp)
+**Illustration code:** [`a.cpp`](a.cpp) · [`b.cpp`](b.cpp) · [`g.cpp`](g.cpp) · [`c.cpp`](c.cpp) · [`d.cpp`](d.cpp) · [`h.cpp`](h.cpp) · [`e.cpp`](e.cpp) · [`f.cpp`](f.cpp) · [`i.cpp`](i.cpp) · [`j.cpp`](j.cpp)–[`s.cpp`](s.cpp) *(Part IV)*
 
 ---
 
@@ -458,7 +458,7 @@ g++ -std=c++17 -o s s.cpp && ./s
 
 # Part IV — Extended practice (LeetCode-style)
 
-The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement classic graph / scheduling puzzles. Each subsection states the **idea**, **algorithm steps**, **complexity**, and a bit of **why the math works**.
+The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement classic **graph traversals**, **union–find**, **greedy scheduling**, and **state-space BFS**. For each problem, the notes give: **what structure is being modeled**, **the step-by-step algorithm**, **time and space**, and a short **mathematical justification** (graph facts, exchange arguments, or product constructions).
 
 ---
 
@@ -470,6 +470,8 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Approach — DSU.** Scan edges **in order**. If **`find(u) ≠ find(v)`**, **`unite(u,v)`**. Otherwise this edge **closes a cycle** → set **`ans = [u,v]`** and keep overwriting so **`ans`** is the **last** redundant edge in input order.
 
+**Correctness / tie-break.** In a connected graph with \(|V|=n\) and \(|E|=n\), **deleting any edge on the unique simple cycle** yields a tree. While scanning `edges`, the first time an endpoint pair is already connected, that edge completes a cycle built from **earlier** edges alone, hence lies on that cycle. If several edges are removable (they all lie on the cycle), overwriting **`ans`** on **every** failed **`unite`** returns the one that appears **last** in the array — matching the problem statement.
+
 **Time / space.** **`O(n · α(n)) ≈ O(n)`**, **`O(n)`** arrays.
 
 ---
@@ -480,7 +482,9 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Algorithm.** Count **`fresh`**. Queue all **2**s. Repeatedly process the queue in **level-sized** chunks; each **1** neighbor becomes **2** and enters the queue. Increment **`minutes`** only when a level actually rots something.
 
-**Time / space.** **`O(m·n)`** each.
+**Discrete-time view.** Model only edges between **fresh** and **rotten** (and **rotten**–**rotten** for propagation). After \(t\) integer minutes, every cell that is rotten has **graph distance** \(\le t\) from **some** initial rotten cell **through** cells that were fresh at the time of propagation — equivalent to **layered BFS** where each “wave” pushes the frontier one step. The answer is the **smallest** \(t\) such that no **1** remains, i.e. the **maximum** shortest-path distance from any **1** to the multi-source set **if** all **1**s are in the same finite component as some rotten cell; otherwise **`-1`**.
+
+**Time / space.** **`O(m·n)`** each (each cell enters the queue a constant number of times).
 
 ---
 
@@ -490,7 +494,9 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Algorithm.** DFS/BFS from each unvisited **1**; mark visited (**0** or a flag); track **`max`** area.
 
-**Time / space.** **`O(m·n)`** time; stack **`O(m·n)`** worst case.
+**Graph theory.** The grid is the **Cartesian product** of two paths (**\(P_m \square P_n\)**); restricting to **1**-cells gives an induced subgraph. Each island is a **connected component**; **area** = **\(|V(C)|\)**. Unweighted shortest-path BFS from an arbitrary cell in \(C\) visits exactly \(|V(C)|\) vertices.
+
+**Time / space.** **`O(m·n)`** time; DFS stack **`O(m·n)`** in the worst “snake” pattern.
 
 ---
 
@@ -500,13 +506,17 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Algorithm.** BFS from **`beginWord`**; **`depth`** = number of words on path (**including** endpoints). For each word, try **`26 × L`** letter flips; use a hash set for **`O(1)`** membership and **remove** words when enqueued so each word is processed once.
 
-**Complexity.** **`O(N · L · 26)`** relaxations with **`N = |wordList|`**, **`L`** = length; string comparisons add another **`L`** factor in theory — often written **`O(N L²)`**.
+**Implicit graph size.** Hamming distance defines edges. Out-degree of a word is at most **`L · (26-1)`** in the full cube \(\{\texttt{a}..\texttt{z}\}^L\); intersecting with **`wordList`** is done by **generating** neighbors and testing membership (not by precomputing all pairs, which would be **`O(N²)`**).
+
+**Complexity.** Each word is dequeued at most once; per dequeue **`O(26·L)`** neighbor attempts × **`O(L)`** string compare/hash → often stated **`O(N·L²·26)`** time and **`O(N·L)`** space for the dictionary set and queue.
 
 ---
 
 ## 9.5 Redundant Connection II (directed) — [`n.cpp`](n.cpp)
 
-**Two cases.** (1) Some node has **two parents** — store indices of both incoming edges. Try removing the **later** edge; if the undirected **underlying** graph still has a cycle (DSU), remove the **earlier** one instead. (2) **No** double parent: the extra edge completes a **directed** cycle; finding the last edge that fails **`unite(u,v)`** on the **undirected** view matches the required removal order.
+**Two cases.** (1) Some node has **two parents** — store indices of both incoming edges. Try removing the **later** edge; if the undirected **underlying** graph still has a cycle (DSU), remove the **earlier** one instead. (2) **No** double parent: the extra edge completes a **directed** cycle without breaking the “≤1 parent” rule; then the redundant arc is exactly the **last** edge that fails **`unite(u,v)`** if every edge is treated as **undirected** in DSU (same logic as [`j.cpp`](j.cpp)).
+
+**Structure theorem.** A functional digraph where every vertex has indegree \(\le 1\) is a **rooted forest**; adding one parent edge either creates **one** vertex of indegree **2** (two candidates) **or** closes a **single** directed cycle off the tree.
 
 **Time / space.** **`O(n · α(n))`**, **`O(n)`**.
 
@@ -516,7 +526,9 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Encoding.** Couple id = **`person / 2`**. For each pair of seats **`(2i, 2i+1)`**, **`unite(row[2i]/2, row[2i+1]/2)`**.
 
-**Formula.** Minimum swaps \(= n_{\text{couples}} - \#\text{DSU components}\). Intuition: wrong placements link couple-ids; each **swap** can increase merged components by at most **1**; **`n - c`** swaps are both necessary and sufficient (**\(c\)** = components).
+**Formula.** Minimum swaps \(= n_{\text{couples}} - \#\text{DSU components}\). Here **`n_couples = row.size()/2`**.
+
+**Why the formula holds.** Ideal seating partitions people into pairs **\(\{2k,2k+1\}\)**. Actual adjacent pairs **\((row[2i], row[2i+1])`** merge the couple-ids **`⌊id/2⌋`** in DSU. Wrong placements create **cycles** in the permutation that maps “who should sit with whom” vs “who actually sits together”; each **swap** can increase the number of merged couple-components by **at most** **1**, and a careful greedy (or this global DSU count) shows the minimum number of swaps to reach **\(n\)** disjoint couples equals **\(n - c\)** where **`c`** is the number of components after those **`n`** unions.
 
 **Time / space.** **`O(n · α(n))`**, **`O(n)`**.
 
@@ -526,19 +538,19 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Greedy.** Sort by **`lastDay`** ascending. Accumulate **`duration`**. If **`time > lastDay`**, **drop** the **longest** course taken so far (**max-heap** of durations).
 
-**Why.** Among schedules that respect a prefix of deadlines, if you must drop one course when late, dropping the **longest** **frees the most days** while losing only **one** course — an **exchange argument** shows this cannot hurt optimality of the **count** for deadline-constrained interval scheduling.
+**Exchange / optimality.** Fix the order of deadlines. Suppose after processing prefix by **`lastDay`**, total duration exceeds **`lastDay_k`**. Any feasible **\(k\)**-course schedule must drop **at least** one course among those taken; replacing the dropped course with a **shorter** one only helps deadlines. Dropping the **current longest** minimizes the new sum \(\sum \text{duration}\) after one removal, so it is the best single step. Iterating yields the classical **maximum jobs with deadlines** variant for **one processor** and **non-preemptive** jobs of lengths **`duration_i`** windows **`(−∞, lastDay_i]`**.
 
-**Time / space.** **`O(n log n)`**, heap **`O(n)`**.
+**Time / space.** **`O(n log n)`** (sort + heap), **`O(n)`** heap storage.
 
 ---
 
 ## 9.8 Alien Dictionary — [`q.cpp`](q.cpp)
 
-**Constraints.** For adjacent words, first differing letters **\(a \neq b\)** imply **\(a\)** before **\(b\)** → directed edge **`a → b`**. If a **longer** word is a prefix of a **shorter** earlier word, impossible.
+**Constraints.** For adjacent words, first differing letters **\(a \neq b\)** imply **\(a\)** before **\(b\)** → directed edge **`a → b`**. If a **longer** word appears **before** a **shorter** word while the shorter is a **prefix** of the longer, the dictionary order is **unsatisfiable** (no total order puts the longer word first).
 
-**Algorithm.** Topological sort (Kahn); cycle ⇒ **`""`**.
+**Algorithm.** Topological sort (Kahn); cycle ⇒ **`""`**. Unique solution is **not** guaranteed — any valid topological order of the **constraint digraph** is a legal alphabet.
 
-**Time / space.** Linear in total characters + **`O(26²)`** edges worst case.
+**Time / space.** **`O(|V| + |E|)`** with **\(|V| \le 26\)**, **\(|E|\le\)** total length of word comparisons — linear in input size.
 
 ---
 
@@ -548,7 +560,9 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 **Algorithm.** DFS/flood all **border `0`** into water, then count **`0`**-components in the interior (second DFS). Same as: first delete every land cell connected to the grid border, then count connected components of what remains.
 
-**Sample.** LeetCode Example 1 is **5×8** — use the grid in [`r.cpp`](r.cpp); an extra sixth row changes geometry and the answer.
+**Equivalence.** A **closed** island cannot touch the boundary \(\partial [0,m{-}1]\times[0,n{-}1]\) in 4-neighbor topology; erasing all **0**s **connected** to \(\partial\) removes exactly the **non-closed** land. The remaining **0**s are **interior** and **surrounded by 1**.
+
+**Sample.** LeetCode **Example 1** is the **5×8** grid printed in [`r.cpp`](r.cpp) (answer **2**). A common mis-copy adds a **sixth** row and can change the count.
 
 **Time / space.** **`O(m·n)`**.
 
@@ -556,11 +570,13 @@ The following ten programs ([`j.cpp`](j.cpp)–[`s.cpp`](s.cpp)) implement class
 
 ## 9.10 Shortest Path with Alternating Colors — [`s.cpp`](s.cpp)
 
-**State graph.** **`dist[v][c]`** = shortest walk to **`v`** where **`c ∈ {0,1}`** encodes **last edge color**. Initialize **`dist[0][0] = dist[0][1] = 0`** so the first step may be **red** or **blue**. Transition: from **`(u, last)`** follow edges of color **`1 - last`**.
+**State graph (product construction).** Build **\(G' = G \times \{0,1\}\)** (two copies of the vertex set). Directed edge **`((u, c) → (v, 1-c))`** iff \(G\) has an edge **\(u \to v\)** of color **`1-c`** (so colors along the original walk **alternate**). Shortest path lengths in **\(G'\)** from **`{(0,0),(0,1)}\`** yield the answer.
+
+**Implementation.** BFS with **`dist[v][c]`** as above; initialize **`dist[0][0]=dist[0][1]=0`** so the first traversed edge may be either color.
 
 **Answer.** **`min(dist[x][0], dist[x][1])`**, or **`-1`** if both ∞.
 
-**Time / space.** BFS on **\(2n\)** states, **`O(|V|+|E|)`** edges from both color lists.
+**Time / space.** States **\(2n\)**, each directed edge of \(G\) scanned once per compatible predecessor color → **`O(n + |R| + |B|)`** time, **`O(n)`** distance table.
 
 ---
 

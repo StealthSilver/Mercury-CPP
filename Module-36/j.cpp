@@ -29,9 +29,7 @@ vector<int> findRedundantConnection(const vector<vector<int>>& edges) {
     for (const auto& e : edges) {
         int u = e[0], v = e[1];
         if (!dsu.unite(u, v))
-            ans = e;  // last edge in input that closes a cycle (overwrite each time)
-        // If only one redundant edge exists, a single assignment suffices; keeping
-        // the last failure handles inputs where multiple edges lie on the same cycle.
+            ans = e;  // tree + one chord ⇒ this edge lies on the unique cycle; keep last in input
     }
     return ans;
 }

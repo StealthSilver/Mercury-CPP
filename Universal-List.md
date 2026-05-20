@@ -1,5 +1,7 @@
 # Universal list — data structures & algorithms
 
+Reference tables for structures and algorithms used across the Mercury-CPP notes. The **Algorithms** half merges **core ideas** (searching, sorting, baseline graphs) with an **extended set**: classic DP problems, advanced graph matchings/cuts/connectivity, string construction algorithms, extra number theory / geometry / selection / heuristics, and expression parsing—organized so simpler topics precede the specialized ones they build on.
+
 ## Data structures
 
 ### Arrays
@@ -249,6 +251,11 @@
 | **Tree Sort** | Insert all elements into BST then inorder traversal yields sorted order. |
 | **Bitonic Sort** | Compare-exchange network producing a bitonic sequence then merging halves (parallel-friendly). |
 | **External Sort** | Sort data larger than memory using multiway merge of sorted runs on disk. |
+| **Median of Medians** | Pivot choice groups of five guaranteeing partition balance—worst-case **O(n)** deterministic select (Blum–Floyd–Pratt–Rivest–Tarjan). |
+| **Patience Sorting** | Pile cards with patience rules—number of piles equals **LIS length**; with binary search yields O(n log n) LIS recovery. |
+| **Counting Inversions (Merge Sort)** | During merge step count cross-inversions when right element moves before leftovers of left—O(n log n). |
+| **K-way Merge** | Combine k sorted lists using min-heap of size k—O(N log k) for total N elements (multiway merge sort run merging). |
+| **Introselect (BFPRT Select)** | Median-of-medians selection to guarantee linear-time nth-element in worst case (cousin of IntroSort’s hybrid spirit). |
 
 ### Array / prefix / window
 
@@ -299,6 +306,13 @@
 | **SPFA** | Queue-based Bellman–Ford variant relaxing only vertices whose distance recently improved. |
 | **0-1 BFS** | Shortest path on graph with edge weights 0 or 1 using deque (push front for 0, back for 1). |
 | **A* Search Algorithm** | Best-first search from start to goal using cost-so-far plus heuristic estimate to goal. |
+| **Shortest Path in DAG** | Single-source: relax edges once in topological order in O(V+E); weights can be negative if no cycle. |
+| **Longest Path in DAG** | Negate weights and run shortest, or DP with topo order for longest weighted path (NP-hard on general graphs). |
+| **Multi-source BFS** | Initialize queue with several sources; first hit layers give distance to nearest source in O(V+E) unweighted. |
+| **Multi-source Dijkstra** | Super-source connecting to all starts with zero edge—one Dijkstra for nearest-facility distances (non-negative weights). |
+| **Bidirectional BFS** | Search forward from start and backward from goal meeting in middle cuts branching factor ~`b^(d/2)` on unweighted graphs. |
+| **Bidirectional Dijkstra** | Two priority queues from both ends until fronts meet—useful on road networks with non-negative weights. |
+| **Dial’s Algorithm (Bucket Dijkstra)** | Dijkstra for small integer weights W: buckets modulo `(W·V)` give O(W·V+E) like radix heap level 0 (also “Dial’s IMP” variant). |
 
 ### Minimum spanning tree
 
@@ -314,6 +328,8 @@
 |------|------------|
 | **Kosaraju’s Algorithm** | Two DFS passes: order by finish time on G, then DFS on transpose to peel SCCs. |
 | **Tarjan’s Algorithm** | One DFS with lowlink numbers to find SCCs and articulation points in single pass. |
+| **Condensation Graph Construction** | Contract each strongly connected component to one vertex of the **condensation DAG** (DAG of SCCs) for acyclic reachability problems. |
+| **Bridge Tree / Block-Cut Tree** | Compress 2-edge-connected components separated by bridges (and analogously articulation points) into a tree or cactus-style structure for path queries. |
 
 ### Flow / matching
 
@@ -325,6 +341,23 @@
 | **Push Relabel Algorithm** | Preflow with height labels and local pushes/relabels for fast max flow in practice. |
 | **Hopcroft Karp Algorithm** | BFS layering plus DFS matching for bipartite maximum matching in O(E√V). |
 | **Hungarian Algorithm** | Polynomial algorithm for assignment problem (minimum weight perfect matching in bipartite graphs). |
+| **Min-Cost Max-Flow (MCMF)** | Augment flow along cheapest residual paths (possibly with potentials) until max flow reached—minimizes total cost for fixed flow value. |
+| **Successive Shortest Augmenting Path** | MCMF variant: repeatedly send flow along shortest-path (by cost) in residual graph with Johnson-style potentials for non-negative reduced costs. |
+
+### Advanced graph algorithms (paths, matchings, cuts, connectivity)
+
+| Term | Definition |
+|------|------------|
+| **Hierholzer’s Algorithm** | Builds Eulerian circuit/cycle by greedily extending a trail and splicing loops, in O(E) for Eulerian graphs. |
+| **Kuhn’s Algorithm** | DFS augmenting-path algorithm for **maximum bipartite matching** (alternating paths from unmatched left vertices), O(VE) typical. |
+| **Edmonds’ Blossom Algorithm** | Shrinks odd-length blossoms to find **maximum matching in general (non-bipartite) graphs** in polynomial time. |
+| **Chu-Liu / Edmonds’ Algorithm** | **Directed MST (arborescence)**: minimum-cost rooted spanning tree in a directed graph—contract cycles and recurse. |
+| **Karger’s Minimum Cut** | Randomly contract edges until two vertices remain; repeat for high success probability—Monte Carlo global min-cut in near-quadratic randomized time. |
+| **Gabow’s Algorithms** | Family including **scaling max-flow** / matching improvements (Gabow 1985) and efficient data structures for network algorithms—context-specific “Gabow” usually means a scaling or disjoint-set technique in that paper lineage. |
+| **Tarjan’s Offline LCA** | Answer batch LCA queries in O(V+E+q·α(V)) using **union-find** on DFS traversal (`+1` queries) or Tarjan–Vishkin variations. |
+| **Euler Tour + RMQ LCA** | Record Euler tour of tree with depth; LCA = shallowest node between u,v in tour interval → ±1 RMQ or sparse table O(1) query after O(n log n) prep. |
+| **DSU Rollback (Undo Union–Find)** | Maintain stack of union operations to **pop/rollback** for divide-and-conquer or offline queries—store merged root’s previous parent. |
+| **Offline Dynamic Connectivity** | Answer connectivity queries over time by **divide-and-conquer on time** segments with DSU rollback, or Link–Cut Tree for fully online variant. |
 
 ### Tree algorithms
 
@@ -338,6 +371,10 @@
 | **Morris Traversal** | Inorder binary tree traversal in O(1) extra space by temporarily threading right pointers. |
 | **Tree Flattening** | Map subtree to contiguous array index range via Euler tour for static or dynamic queries. |
 | **Rerooting DP** | Dynamic programming on tree computing answer for every root by propagating reroot transitions. |
+| **DSU on Tree (Sack Technique)** | For subtree frequency queries: small-to-large merge of child frequency maps so each vertex contributes O(log n) amortized—answers many “color count in subtree” offline queries. |
+| **Small-to-Large Merging** | Heuristic merging smaller map/set into larger to bound total O(n log n) work (same principle as DSU on tree for Mo’s on tree variants). |
+| **Tree Diameter Algorithm** | Two BFS/DFS from arbitrary farthest, then again from that farthest—tree’s diameter length (pairs of furthest nodes). |
+| **Tree Isomorphism** | Decide if two unrooted trees are structurally identical—canonical forms via AHU hashing, centroid rooting, or pruning leaves iteratively. |
 
 ### String algorithms
 
@@ -352,6 +389,17 @@
 | **Kasai Algorithm** | Builds LCP array from suffix array in linear time using height trick on suffix ranks. |
 | **Ukkonen’s Algorithm** | Online linear-time construction of suffix tree incrementally extending the active point. |
 | **Prefix Function Algorithm** | Computes π for KMP: length of longest proper prefix of prefix that is also a suffix. |
+| **Suffix Automaton Construction** | Incremental linear-time build of minimal DFA for all substrings—extend with `last`, `clone`, and transition copying (Maxlen, link). |
+| **Suffix Array Construction (Prefix Doubling)** | Sort cyclic ranks, double length each phase O(n log n); with radix sort O(n log n) or O(n) on integers after refinement tricks. |
+| **Suffix Array Construction (SA-IS)** | Induced sorting **linear-time** SA for integer alphabets (Nong–Zhang–Chan algorithm class). |
+| **Suffix Array Construction (DC3 / Skew)** | Divide sample suffixes modulo 3, recurse, merge—O(n) for integer/ranked alphabet in theory. |
+| **Eertree (Palindromic Tree)** | Online structure for distinct palindromes with `fail` link like Aho–Corasick—counts/each palindrome in amortized O(1) per char. |
+| **Duval’s Algorithm** | **Lyndon factorization** of a string into nonincreasing lexicographic Lyndon words in O(n) with three-pointer scan. |
+| **Lyndon Factorization** | Unique decomposition `s = w₁ w₂ … wₖ` where each `wᵢ` is strictly smallest among its rotations (Lyndon word). |
+| **Booth’s Algorithm** | Lexicographically **minimal string rotation** in O(n) via failure-function style on doubled string. |
+| **Boyer–Moore–Horspool Algorithm** | Simplified Boyer–Moore using only **bad-character** on pattern’s last character per shift—simple and fast in practice. |
+| **Shift-And / Bitap Algorithm** | Bit-parallel exact matching for short patterns—mask shifts AND/OR with alphabet bitmasks, O(⌈m/w⌉·n) machine words `w`. |
+| **Rope Concatenation / Split** | Balanced-tree (e.g. treap, B-tree) of chunks for O(log n) split/concat and indexed access—text-editor ropes. |
 
 ### Dynamic programming
 
@@ -368,6 +416,25 @@
 | **Knuth Optimization** | Speeds interval DP when quadrangle inequality and monotonicity of argmin split points hold. |
 | **Convex Hull Trick** | Maintain lower hull of lines to query min/max at x for linear transition functions in amortized log or deque. |
 | **Matrix Exponentiation DP** | Represent linear recurrence or small state machine as matrix power for fast nth term. |
+| **0/1 Knapsack** | Each item used at most once: DP `dp[i][w]` or space-optimized 1D over weights—maximize value with capacity constraint. |
+| **Unbounded Knapsack** | Unlimited copies per item: recurrence allows `dp[w-a_i]` same layer; sometimes solvable as complete knapsack with monotonic queue tricks. |
+| **Bounded Knapsack** | Each item has a count limit: binary splitting into 0/1 items, monotone queue optimization, or DP on multiplicity. |
+| **Subset Sum** | Decide or count ways to hit exact sum using bitset or boolean DP over items (special knapsack with value=weight). |
+| **Partition Equal Subset Sum** | Split multiset into two equal-sum parts ⇔ subset sum to half of total; pseudo-polynomial in sum. |
+| **Coin Change (Minimum Coins)** | Unbounded or bounded coins: minimize number of coins to reach amount (BFS on amounts or DP min coins). |
+| **Coin Change (Number of Ways)** | Count combinations/orderings depending on statement—classically combinations via DP `ways[sum] += ways[sum-c]`. |
+| **Longest Increasing Subsequence (LIS)** | `dp[i]` length ending at i gives O(n²); patience sorting / binary search on tails gives O(n log n). |
+| **Longest Common Subsequence (LCS)** | Classic 2D DP on two sequences comparing last characters; also derivable from LCS DAG. |
+| **Longest Common Substring** | Contiguous match: DP with reset when chars differ; or rolling hash + binary search on length. |
+| **Edit Distance (Levenshtein)** | Minimum insert/delete/replace to transform string A into B; 2-row or full matrix DP. |
+| **Matrix Chain Multiplication** | Order of parentheses minimizing scalar multiplies: interval DP on chain of matrix dimensions. |
+| **Rod Cutting** | Unbounded lengths with prices: unbounded knapsack–style maximize revenue for rod length `n`. |
+| **Egg Dropping** | Minimize worst-case trials with `e` eggs and `f` floors: DP on (eggs, floors) or optimized monotonic search. |
+| **Weighted Interval Scheduling** | Jobs with start, end, weight—sort by end time, DP with binary search on last non-overlapping predecessor. |
+| **Palindrome Partitioning DP** | Min cuts or count ways to partition string into palindromes using palindrome preprocessing + interval/cuts DP. |
+| **Interval DP** | Optimal cost on segment `[l,r]` by merging or splitting at `k`—matrix chain, optimal BST, burst balloons style. |
+| **DAG DP** | Process vertices in topological order so all predecessors resolved—shortest/longest path, paths count in DAG. |
+| **Catalan DP** | Count structures obeying Catalan recurrence (balanced parentheses, BST shapes, convex polygon triangulation counts)—closed form or tabulated `C_n`. |
 
 ### Greedy
 
@@ -392,6 +459,19 @@
 | **Miller Rabin Primality Test** | Probabilistic compositeness test using modular squaring and witness checks for large primes. |
 | **Pollard Rho Algorithm** | Randomized factor finding using Floyd cycle detection on pseudo-random polynomial mod n. |
 | **Lucas Theorem** | Relates binomial coefficients modulo prime p to base-p digits of n and k for combinatorics mod p. |
+| **Sieve of Atkin** | Alternative prime sieve using modulo-60 wheel and flip rules—O(n / log log n) time and lower constants controversy vs Eratosthenes in practice. |
+| **Wheel Factorization** | Skip multiples of first k primes using modular arithmetic pattern (wheel) to speed trial division or segmented sieving. |
+| **Baby-Step Giant-Step** | Discrete log in group: find `x` with `a^x = b` using `O(√m)` space/time meet-in-the-middle (Shanks). |
+| **Tonelli–Shanks Algorithm** | Finds square roots modulo **odd prime** `p` when they exist—used in quadratic residue computations and some cryptosystems. |
+| **Berlekamp–Massey Algorithm** | Finds **shortest linear recurrence** satisfied by a given sequence over a field—minimal polynomial for linear-feedback shift register. |
+| **Möbius Inversion** | Invert sums over divisors: `g(n)=Σ_{d\|n} f(d)` ⇔ `f(n)=Σ_{d\|n} μ(d)g(n/d)` for arithmetic functions; basis for inclusion–exclusion on divisors. |
+| **Fast Zeta Transform (FZT)** | On subset lattice: compute `g[S]=Σ_{T⊆S} f[T]` for all `S` in O(k·2^k) by SOS-style DP (supersum / subset sum transforms). |
+| **Fast Möbius Transform (FMT)** | Inverse of subset zeta: recover `f` from `g` via Möbius on subsets—used in subset convolutions. |
+| **Primitive Root Finding** | Generator `g` of multiplicative group mod `p` (cyclic)—factor `p−1`, test candidates with `gcd` conditions; used in NTT primitive roots analogs. |
+| **Legendre’s Formula** | Exponent of prime `p` in `n!`: `e_p(n!)=Σ_{i≥1} ⌊n/p^i⌋`—factorials, binomial valuations, trailing zeros. |
+| **Pollard Rho Variants** | Floyd/Brent cycle detection, random `f(x)=x²+c mod n`, batch GCD—tuning for 64-bit factorization in contests. |
+| **Trial Division** | Test divisibility up to `√n` (or with wheel)—baseline factorization and small prime checks. |
+| **Prime Factorization by Sieve** | Precompute **smallest prime factor (SPF)** for each integer up to N in O(N log log N), then factor each query in O(log n). |
 
 ### Mathematics
 
@@ -417,6 +497,14 @@
 | **Sweep Line Algorithm** | Process geometric events in sorted order (e.g. vertical line) to count intersections or build structures. |
 | **Closest Pair of Points** | Divide plane, recurse, merge checking only strip near split line in O(n log n). |
 | **Line Intersection Algorithm** | Solve two linear equations or parametric forms to find intersection point of two lines/segments. |
+| **Bentley–Ottmann Sweep Line** | Report **all k segment intersections** in O((n+k) log n) by sweeping vertical line with AVL of active segments and event queue. |
+| **Half-Plane Intersection** | Intersection of many half-planes is a (possibly empty) convex polygon—incremental or divide-and-conquer clipping. |
+| **Minkowski Sum** | `{a+b : a∈A, b∈B}` of polygons—vertex walk on two convex boundaries for robot obstacles swollen by shape. |
+| **Point in Polygon (Ray Casting)** | Cast ray from point, count odd/even crossings with polygon edges—works for simple polygons. |
+| **Point in Polygon (Winding Number)** | Signed angle / turn summation around point; robust for non-simple cases with careful epsilon rules. |
+| **Convex Polygon Intersection** | Intersect two convex polygons in O(n+m) by rotating calipers or incremental clipping (Sutherland–Hodgman style). |
+| **Polygon Area (Shoelace Formula)** | `A = ½ |Σ (x_i y_{i+1} - x_{i+1} y_i)|` for simply connected polygon vertices in order. |
+| **Polygon Triangulation** | Partition simple polygon into triangles in O(n) (Chazelle) or practical ear-clipping O(n²)—used in rendering and area integrals. |
 
 ### Range query
 
@@ -453,6 +541,10 @@
 | **Randomized Select** | Quickselect with random pivot for expected linear kth element selection. |
 | **Monte Carlo Algorithm** | Randomized algorithm that may be wrong with small bounded probability but always fast. |
 | **Las Vegas Algorithm** | Randomized algorithm that always returns correct answer but runtime is random (e.g. quickselect worst case rare). |
+| **Randomized Contraction (Karger–style)** | Edge contraction at random toward min-cut certificate—same family as Karger’s min-cut (see Advanced graph algorithms). |
+| **Beam Search** | Pruned best-first search keeping only top-β candidates per depth—common in decoding and heuristic planning. |
+| **Iterative Deepening A* (IDA*)** | Repeated depth-limited search with increasing `f = g+h` threshold—A* memory savings for huge branching factor. |
+| **Monte Carlo Tree Search (MCTS)** | UCT-style random playouts with tree policy updating visit/win counts—used in games (Go, chess engines) and planning. |
 
 ### Compression
 
@@ -497,3 +589,21 @@
 | **Binary Search on Answer** | Monotone predicate on integer/real answer: binary search smallest/largest feasible value. |
 | **Bitmasking** | Represent small sets as integers with bitwise AND/OR/XOR for combinatorial enumeration. |
 | **Meet in the Middle** | Split a set into two halves, enumerate subset sums of each half, then combine with sorting or hashing for exact targets. |
+
+### Parsing, expressions, and streaming selection
+
+| Term | Definition |
+|------|------------|
+| **Shunting Yard Algorithm** | Dijkstra’s two-stack method converts **infix** expressions with parentheses and precedence to **RPN** (postfix) in one linear scan. |
+| **Reverse Polish Notation Conversion** | Output of shunting yard or recursive descent: operators follow operands—easy to evaluate with a stack. |
+| **Expression Evaluation** | Typically RPN stack evaluation or recursive descent with precedence climbing for infix—combines lexical tokens and operator semantics. |
+| **Top-k via Heap** | Maintain **min-heap** of size k while streaming: yields k largest; **max-heap** variant for k smallest—O(n log k) time. |
+| **Reservoir Sampling Variants** | Vitter’s algorithm, stratified streams—uniform k-sample from unknown-length stream in one pass; weighted extensions for unequal probabilities. |
+
+---
+
+## How to use this extended list
+
+- **Order inside `## Algorithms`:** generic patterns appear first **(Searching → Sorting → …)**; **foundational graph flows** (BFS variants, DAG shortest paths) sit with **Shortest path**; **matchings, cuts, Euler tours, and offline connectivity** are grouped under **Advanced graph algorithms**; **classic DP knapsacks and sequence DP** extend **Dynamic programming** without duplicating paradigm definitions above.
+- **Structures vs algorithms:** where a topic is primarily a **data structure** (e.g. **Euler Tour Tree**, **Suffix Automaton**), you will also find a **construction or usage** row under **String** / **Tree** / **Data structures** elsewhere in this file.
+- **Duplicates consolidated:** **Karger’s min-cut**, **Tarjan offline LCA**, and **Euler tour / RMQ** appear once in the most natural subsection; cross-reference mentally with **Tree algorithms** when solving LCA batch problems.
