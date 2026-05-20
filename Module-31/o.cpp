@@ -1,79 +1,48 @@
-// MODULE 31 — Itinerary from plane tickets (use every ticket exactly once)
+// MODULE 31 — Longest subarray with sum 0 (prefix sum + hash map)
 
-#include <algorithm>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
 using namespace std;
 
-string findStartCity(const vector<pair<string, string>>& tickets) {
-    unordered_map<string, int> balance;
-    for (const auto& t : tickets) {
-        balance[t.first]--;
-        balance[t.second]++;
-    }
-    for (const auto& t : tickets) {
-        if (balance[t.first] < 0) {
-            return t.first;
-        }
-    }
-    return tickets[0].first;
-}
+int longestZeroSumSubarray(const vector<int>& arr) {
+    unordered_map<int, int> firstIndex;
+    firstIndex[0] = -1;
 
-vector<string> buildItinerary(vector<pair<string, string>> tickets) {
-    string start = findStartCity(tickets);
+    int prefix = 0;
+    int maxLen = 0;
 
-    unordered_map<string, vector<string>> graph;
-    for (const auto& t : tickets) {
-        graph[t.first].push_back(t.second);
-    }
-    for (auto& p : graph) {
-        sort(p.second.begin(), p.second.end());
-    }
+    for (int i = 0; i < static_cast<int>(arr.size()); i++) {
+        prefix += arr[i];
 
-    vector<string> route;
-    vector<string> stack = {start};
-
-    while (!stack.empty()) {
-        string city = stack.back();
-        if (graph[city].empty()) {
-            route.push_back(city);
-            stack.pop_back();
+        if (firstIndex.count(prefix)) {
+            maxLen = max(maxLen, i - firstIndex[prefix]);
         } else {
-            string next = graph[city].back();
-            graph[city].pop_back();
-            stack.push_back(next);
+            firstIndex[prefix] = i;
         }
     }
-
-    reverse(route.begin(), route.end());
-    return route;
+    return maxLen;
 }
 
 int main() {
-    cout << "Module 31 — Itinerary from Tickets (o.cpp)\n";
-    cout << "==========================================\n\n";
+    cout << "Module 31 — Longest Subarray with Sum 0 (o.cpp)\n";
+    cout << "================================================\n\n";
 
-    vector<pair<string, string>> tickets = {
-        {"Chennai", "Bengaluru"},
-        {"Mumbai", "Delhi"},
-        {"Goa", "Chennai"},
-        {"Delhi", "Goa"},
-    };
+    vector<int> arr1 = {15, -2, 2, -8, 1, 7, 10, 23};
+    cout << "   arr = 15 -2 2 -8 1 7 10 23\n";
+    cout << "   longest zero-sum length = " << longestZeroSumSubarray(arr1) << "\n";
+    cout << "   (subarray: -2, 2, -8, 1, 7)\n\n";
 
-    cout << "   Tickets:\n";
-    for (const auto& t : tickets) {
-        cout << "     " << t.first << " -> " << t.second << "\n";
-    }
-    cout << "\n   Route: ";
-    vector<string> route = buildItinerary(tickets);
-    for (size_t i = 0; i < route.size(); i++) {
-        if (i) cout << " -> ";
-        cout << route[i];
-    }
-    cout << "\n\n";
+    vector<int> arr2 = {1, -1, 3, 4, -1};
+    cout << "   arr = 1 -1 3 4 -1\n";
+    cout << "   longest zero-sum length = " << longestZeroSumSubarray(arr2) << "\n\n";
 
-    cout << "Graph + iterative DFS (Hierholzer) uses each edge once.\n";
-    cout << "Time: O(E log E) with sorting   Space: O(E)\n";
+    vector<int> arr3 = {5, 1, 2};
+    cout << "   arr = 5 1 2\n";
+    cout << "   longest zero-sum length = " << longestZeroSumSubarray(arr3) << "\n\n";
+
+    cout << "Key: equal prefix sums at i and j  =>  subarray (i+1..j) sums to 0.\n";
+    cout << "Store first index of each prefix sum in unordered_map.\n";
+    cout << "Time: O(n) avg   Space: O(n)\n";
     return 0;
 }

@@ -879,7 +879,7 @@ flowchart TB
 | `i.cpp` | `map` | sorted key → value, BST, `lower_bound` |
 | `j.cpp` | `set` | sorted unique keys, BST |
 
-## Practice problems — `k.cpp`–`o.cpp`
+## Practice problems — `k.cpp`–`u.cpp`
 
 Hash-table problems using **`unordered_map`** and **`unordered_set`**.
 
@@ -889,7 +889,13 @@ Hash-table problems using **`unordered_map`** and **`unordered_set`**.
 | [`l.cpp`](l.cpp) | Valid Anagram | `unordered_map<char,int>` |
 | [`m.cpp`](m.cpp) | Count Distinct | `unordered_set` |
 | [`n.cpp`](n.cpp) | Union & Intersection | `unordered_set` |
-| [`o.cpp`](o.cpp) | Itinerary from Tickets | `unordered_map` + graph DFS |
+| [`o.cpp`](o.cpp) | Longest subarray with sum 0 | `unordered_map` (prefix sum) |
+| [`p.cpp`](p.cpp) | Subarray sum equals K | `unordered_map` (prefix count) |
+| [`q.cpp`](q.cpp) | Itinerary from Tickets | `unordered_map` + graph DFS |
+| [`r.cpp`](r.cpp) | Bottom view of binary tree | `map` (HD → node) |
+| [`s.cpp`](s.cpp) | Two Sum | `unordered_map` |
+| [`t.cpp`](t.cpp) | Sort by frequency | `unordered_map` |
+| [`u.cpp`](u.cpp) | Bulls & Cows | `unordered_map` (digit freq) |
 
 ---
 
@@ -1077,7 +1083,7 @@ Run: `g++ -std=c++17 -o n n.cpp && ./n`
 
 ---
 
-## Itinerary from Tickets — `o.cpp`
+## Itinerary from Tickets — `q.cpp`
 
 **Task:** You are given plane tickets as pairs **`<from, to>`**. Use **every ticket exactly once** to form one continuous route. Return the cities in order.
 
@@ -1141,11 +1147,110 @@ Stack DFS from Mumbai:
 | **Time** | **O(E log E)** if sorting destinations; **O(E)** without sort |
 | **Space** | **O(E)** for graph + stack |
 
+Run: `g++ -std=c++17 -o q q.cpp && ./q`
+
+---
+
+## Longest subarray with sum 0 — `o.cpp`
+
+**Task:** Given an integer array, find the **length of the longest contiguous subarray** whose elements **sum to 0**.
+
+**Sample:** `arr = [15, -2, 2, -8, 1, 7, 10, 23]` → answer **5** (subarray `[-2, 2, -8, 1, 7]`).
+
+### Prefix sum idea
+
+Define **`prefix[i]`** = sum of `arr[0..i]`.
+
+```text
+Subarray arr[l..r] has sum 0  ⟺  prefix[r] = prefix[l - 1]
+
+  arr:   15  -2   2  -8   1   7  10  23
+  pref:  15  13  15   7   8  15  25  48
+   ↑                           ↑
+ index 0                   index 5
+ both prefix = 15  →  subarray index 1..5 has sum 0  →  length 5
+```
+
+### Steps (hash map of first prefix index)
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_map<int,int> firstIndex`; set `firstIndex[0] = -1` (empty prefix before array) |
+| 2 | Walk array, update `prefix += arr[i]` |
+| 3 | If `prefix` seen before → length = `i - firstIndex[prefix]`; update `maxLen` |
+| 4 | Else store `firstIndex[prefix] = i` (**first** occurrence only — we want longest) |
+| 5 | Return `maxLen` |
+
+```mermaid
+flowchart LR
+  A["Scan array, build prefix"] --> B{"prefix in map?"}
+  B -->|Yes| C["maxLen = i - firstIndex[prefix]"]
+  B -->|No| D["firstIndex[prefix] = i"]
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** average |
+| **Space** | **O(n)** for the map |
+
+**Brute force:** check every subarray — **O(n²)** time.
+
 Run: `g++ -std=c++17 -o o o.cpp && ./o`
 
 ---
 
-### `k.cpp`–`o.cpp` — summary
+## Subarray sum equals K — `p.cpp`
+
+**Task:** Count how many **contiguous subarrays** have sum **exactly `K`**. (Includes negative numbers.)
+
+**Sample:** `arr = [1, 1, 1]`, `K = 2` → **2** subarrays: `[1,1]` at indices `0..1` and `1..2`.
+
+### Prefix sum + frequency map
+
+```text
+sum(arr[l..r]) = K  ⟺  prefix[r] - prefix[l-1] = K
+                  ⟺  prefix[l-1] = prefix[r] - K
+```
+
+At index `r`, add **`count[prefix[r] - K]`** to the answer (how many earlier prefixes match).
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_map<long long,int> prefixCount`; `prefixCount[0] = 1` |
+| 2 | For each element, `prefix += arr[i]` |
+| 3 | `count += prefixCount[prefix - K]` |
+| 4 | `prefixCount[prefix]++` |
+| 5 | Return `count` |
+
+**Example trace:** `arr = [1, 2, 3]`, `K = 3`
+
+| i | prefix | need prefix−K | count | map after |
+|---|--------|---------------|-------|-----------|
+| 0 | 1 | −2 → 0 | 0 | {0:1, 1:1} |
+| 1 | 3 | 0 → 1 | 1 | {0:1, 1:1, 3:1} |
+| 2 | 6 | 3 → 1 | 2 | {0:1, 1:1, 3:1, 6:1} |
+
+Answer: **2** (`[3]` and `[1,2]`).
+
+```text
+Difference of prefix sums:
+
+  prefix[r] ──────────────── prefix[l-1] = K
+              subarray l..r
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** average |
+| **Space** | **O(n)** |
+
+**Note:** Use `long long` for prefix if values are large (avoid overflow).
+
+Run: `g++ -std=c++17 -o p p.cpp && ./p`
+
+---
+
+### `k.cpp`–`q.cpp` — summary
 
 | File | Technique | Time | Space |
 |------|-----------|------|-------|
@@ -1153,4 +1258,193 @@ Run: `g++ -std=c++17 -o o o.cpp && ./o`
 | `l.cpp` | Char frequency map | O(n) | O(1)–O(k) |
 | `m.cpp` | `unordered_set` | O(n) | O(n) |
 | `n.cpp` | Two hash sets | O(n+m) | O(n+m) |
-| `o.cpp` | Graph + Eulerian DFS | O(E log E) | O(E) |
+| `o.cpp` | Prefix sum + first index map | O(n) | O(n) |
+| `p.cpp` | Prefix sum + prefix count map | O(n) | O(n) |
+| `q.cpp` | Graph + Eulerian DFS | O(E log E) | O(E) |
+
+---
+
+## Bottom view of binary tree — `r.cpp`
+
+**Task:** Print the **bottom view** of a binary tree — the nodes you see when looking **from below**. For each vertical column (**horizontal distance / HD**), the **deepest** node is visible.
+
+> **Note:** Some problem statements say “top view” by mistake. **Top view** keeps the **first** (topmost) node per HD; **bottom view** keeps the **last** (deepest) node per HD. This file implements **bottom view**.
+
+**Sample tree:**
+
+```text
+           1(0)
+          /    \
+      2(-1)    3(1)
+      /  \       \
+  4(-2) 5(0)    6(2)
+```
+
+**Bottom view (left → right by HD):** `4  2  5  3  6`  
+(At HD `0`, node **5** is below **1**, so bottom view shows **5** not **1**.)
+
+### Horizontal distance (HD)
+
+| Rule | HD |
+|------|-----|
+| Root | `0` |
+| Left child | parent HD − 1 |
+| Right child | parent HD + 1 |
+
+### Steps
+
+| Step | Action |
+|------|--------|
+| 1 | BFS (level order) from root with `(node, HD)` |
+| 2 | `map<int,int> bottom` — for each HD, store the **latest** node value seen |
+| 3 | Every visit: `bottom[hd] = node->data` (**overwrite** → deepest wins) |
+| 4 | Print `bottom` in increasing HD order |
+
+```text
+BFS order visits HD 0 twice: first 1, then 5  →  bottom[0] = 5
+
+Top view (first wins):     4  2  1  3  6
+Bottom view (last wins):   4  2  5  3  6
+```
+
+| | |
+|---|---|
+| **Time** | **O(n log n)** with `map` (or O(n) with `unordered_map` + sort HD keys) |
+| **Space** | **O(n)** |
+
+Run: `g++ -std=c++17 -o r r.cpp && ./r`
+
+---
+
+## Two Sum — `s.cpp`
+
+**Task:** Given array `nums` and integer `target`, return **indices** of two distinct elements that sum to `target`. Exactly one solution exists.
+
+**Sample:** `nums = [2, 7, 11, 15]`, `target = 9` → **`[0, 1]`** (because `2 + 7 = 9`).
+
+### Steps (hash map — one pass)
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_map<int,int> valueToIndex` |
+| 2 | For each index `i`, `need = target - nums[i]` |
+| 3 | If `need` is already in map → return `{valueToIndex[need], i}` |
+| 4 | Else `valueToIndex[nums[i]] = i` |
+| 5 | Continue until pair found |
+
+```text
+nums = [2, 7, 11, 15],  target = 9
+
+i=0: need=7, map empty     → map {2→0}
+i=1: need=2, map has 2     → answer [0, 1]
+```
+
+```mermaid
+flowchart LR
+  A["nums[i]"] --> B["need = target - nums[i]"]
+  B --> C{"need in map?"}
+  C -->|Yes| D["return indices"]
+  C -->|No| E["map[nums[i]] = i"]
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** average |
+| **Space** | **O(n)** |
+
+**Brute force:** all pairs — **O(n²)** time, **O(1)** space.
+
+Run: `g++ -std=c++17 -o s s.cpp && ./s`
+
+---
+
+## Sort by frequency — `t.cpp`
+
+**Task:** Given string `s`, rearrange characters so **higher frequency** comes first (decreasing frequency). If frequencies tie, any order is fine (we break ties by character for stable demos).
+
+**Samples:**
+
+| Input | Output (example) |
+|-------|------------------|
+| `"tree"` | `"eert"` |
+| `"cccaaa"` | `"aaaccc"` or `"cccaaa"` |
+
+### Steps
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_map<char,int> freq` — count each character |
+| 2 | Copy map entries into `vector<pair<char,int>>` |
+| 3 | Sort pairs by **frequency descending** |
+| 4 | Append each character `freq` times to result string |
+
+```text
+"tree"  →  t:1  r:1  e:2
+sort by freq  →  e:2, r:1, t:1
+result  →  "eert"
+```
+
+| | |
+|---|---|
+| **Time** | **O(n + k log k)** — `n` = string length, `k` = distinct chars |
+| **Space** | **O(k)** |
+
+Run: `g++ -std=c++17 -o t t.cpp && ./t`
+
+---
+
+## Bulls & Cows — `u.cpp`
+
+**Task:** Compare `secret` and `guess` (same length). Return hint **`"xAyB"`**:
+
+| Symbol | Meaning |
+|--------|---------|
+| **Bulls (x)** | Same digit in the **same position** |
+| **Cows (y)** | Digit appears in both strings but in **wrong position** (after removing bulls) |
+
+**Sample:** `secret = "1807"`, `guess = "7810"` → **`"1A3B"`** (1 bull, 3 cows).
+
+### Steps
+
+| Step | Action |
+|------|--------|
+| 1 | Scan index by index: if `secret[i] == guess[i]` → **bull++** |
+| 2 | Else add `secret[i]` and `guess[i]` to separate frequency maps |
+| 3 | For each digit `d` in guess map: `cows += min(guessFreq[d], secretFreq[d])` |
+| 4 | Return `to_string(bulls) + "A" + to_string(cows) + "B"` |
+
+```text
+secret = 1 8 0 7
+guess  = 7 8 1 0
+         ✗ ✓ ✗ ✗   →  1 bull (the 8)
+
+Non-bull digits:
+  secret: 1, 0, 7
+  guess:  7, 1, 0
+  match pairs: 1↔1, 0↔0, 7↔7  →  3 cows
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** — at most 10 digits |
+
+Run: `g++ -std=c++17 -o u u.cpp && ./u`
+
+---
+
+### `k.cpp`–`u.cpp` — full summary
+
+| File | Technique | Time | Space |
+|------|-----------|------|-------|
+| `k.cpp` | Frequency map / Boyer–Moore II | O(n) | O(n) or O(1) |
+| `l.cpp` | Char frequency map | O(n) | O(1)–O(k) |
+| `m.cpp` | `unordered_set` | O(n) | O(n) |
+| `n.cpp` | Two hash sets | O(n+m) | O(n+m) |
+| `o.cpp` | Prefix sum + first index map | O(n) | O(n) |
+| `p.cpp` | Prefix sum + prefix count map | O(n) | O(n) |
+| `q.cpp` | Graph + Eulerian DFS | O(E log E) | O(E) |
+| `r.cpp` | BFS + HD map (bottom view) | O(n log n) | O(n) |
+| `s.cpp` | Complement in hash map | O(n) | O(n) |
+| `t.cpp` | Frequency + sort | O(n + k log k) | O(k) |
+| `u.cpp` | Digit frequency (bulls/cows) | O(n) | O(1) |
