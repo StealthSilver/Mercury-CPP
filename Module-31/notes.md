@@ -878,3 +878,279 @@ flowchart TB
 |------|-----------|----------|
 | `i.cpp` | `map` | sorted key → value, BST, `lower_bound` |
 | `j.cpp` | `set` | sorted unique keys, BST |
+
+## Practice problems — `k.cpp`–`o.cpp`
+
+Hash-table problems using **`unordered_map`** and **`unordered_set`**.
+
+| File | Problem | Container |
+|------|---------|-----------|
+| [`k.cpp`](k.cpp) | Majority Element (> n/3) | `unordered_map` (+ voting) |
+| [`l.cpp`](l.cpp) | Valid Anagram | `unordered_map<char,int>` |
+| [`m.cpp`](m.cpp) | Count Distinct | `unordered_set` |
+| [`n.cpp`](n.cpp) | Union & Intersection | `unordered_set` |
+| [`o.cpp`](o.cpp) | Itinerary from Tickets | `unordered_map` + graph DFS |
+
+---
+
+## Majority Element (> n/3) — `k.cpp`
+
+**Task:** Given an array of size `n`, return **every** value that appears **more than `n/3` times**. (At most **two** such values can exist.)
+
+**Sample:** `nums = [1, 1, 1, 3, 3, 2, 2, 2]`, `n = 8` → **`1`** and **`2`** (each appears 3 times; `3 > 8/3`).
+
+### Why at most two answers?
+
+If three different values each appeared more than `n/3` times, their total count would exceed `n` — impossible.
+
+```text
+n = 9  →  threshold = 3
+Max from three values each > 3:  4 + 4 + 4 = 12 > 9  ✗
+So at most 2 values can pass the test.
+```
+
+### Approach 1 — Hash map (primary for Module 31)
+
+| Step | Action |
+|------|--------|
+| 1 | Create `unordered_map<int,int> freq` |
+| 2 | For each `nums[i]`, do `freq[nums[i]]++` |
+| 3 | Scan the map; if `freq[key] > n/3`, add `key` to answer |
+
+```text
+[1, 1, 1, 3, 3, 2, 2, 2]
+
+freq:  1→3   3→2   2→3
+n/3 = 2  →  keep 1 and 2
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** average |
+| **Space** | **O(n)** for the map |
+
+### Approach 2 — Extended Boyer–Moore voting (`k.cpp`)
+
+Same cancellation idea as majority **> n/2**, but maintain **two** candidates.
+
+| Phase | Action |
+|-------|--------|
+| **Pass 1** | Track `cand1`, `cand2` and counts; cancel triples of distinct values |
+| **Pass 2** | Count real frequencies of `cand1` and `cand2`; keep if `count > n/3` |
+
+```text
+[1,1,1,3,3,2,2,2]  →  candidates 1 and 2 survive → verify → both valid
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** |
+| **Space** | **O(1)** |
+
+Run: `g++ -std=c++17 -o k k.cpp && ./k`
+
+---
+
+## Valid Anagram — `l.cpp`
+
+**Task:** Two strings `s` and `t` are **anagrams** if they use the **same characters** with the **same frequencies** (order may differ).
+
+**Sample:** `"listen"` and `"silent"` → **true**.
+
+### Steps
+
+| Step | Action |
+|------|--------|
+| 1 | If `s.length() != t.length()` → **false** |
+| 2 | `unordered_map<char,int> freq` — for each char in `s`, `freq[c]++` |
+| 3 | For each char `c` in `t`, `freq[c]--`; if any becomes **negative** → **false** |
+| 4 | Otherwise → **true** |
+
+```text
+s = "listen"     t = "silent"
+
+After s:  e→1 i→1 l→1 n→1 s→1 t→1
+Walk t:  each -- hits 0  →  anagram
+```
+
+```mermaid
+flowchart LR
+  S["Scan s: build freq map"] --> T["Scan t: decrement"]
+  T --> OK{"Any count < 0?"}
+  OK -->|No| YES["Anagram"]
+  OK -->|Yes| NO["Not anagram"]
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** where `n` = string length |
+| **Space** | **O(1)** for lowercase English (26 letters); **O(k)** for `k` unique characters |
+
+Run: `g++ -std=c++17 -o l l.cpp && ./l`
+
+---
+
+## Count Distinct — `m.cpp`
+
+**Task:** Count how many **unique** values appear in an array.
+
+**Sample:** `[4, 1, 2, 1, 5, 2]` → **4** distinct values (`4, 1, 2, 5`).
+
+### Steps
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_set<int> seen` |
+| 2 | For each `x` in array, `seen.insert(x)` (duplicates ignored) |
+| 3 | Return `seen.size()` |
+
+```text
+4 → {4}
+1 → {4,1}
+2 → {4,1,2}
+1 → duplicate, ignored
+5 → {4,1,2,5}
+2 → duplicate
+
+answer = 4
+```
+
+| | |
+|---|---|
+| **Time** | **O(n)** average |
+| **Space** | **O(n)** |
+
+**Alternative:** sort + scan — **O(n log n)** time, **O(1)** extra if in-place.
+
+Run: `g++ -std=c++17 -o m m.cpp && ./m`
+
+---
+
+## Union and Intersection — `n.cpp`
+
+Given two arrays **A** and **B**, find:
+
+| Set | Meaning |
+|-----|---------|
+| **Union** | All **unique** elements that appear in **A or B** (or both) |
+| **Intersection** | All **unique** elements that appear in **both** A and B |
+
+**Sample:** `A = [1,2,3,4,5]`, `B = [3,4,5,6,7]`
+
+| Result | Values |
+|--------|--------|
+| Union | `1 2 3 4 5 6 7` |
+| Intersection | `3 4 5` |
+
+### Union — steps
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_set<int> u` — insert all elements of **A** |
+| 2 | Insert all elements of **B** |
+| 3 | Copy set into result vector |
+
+### Intersection — steps
+
+| Step | Action |
+|------|--------|
+| 1 | Put all elements of **B** into `unordered_set<int> setB` |
+| 2 | For each `x` in **A**, if `setB.count(x)`, add `x` to `common` set (avoids duplicates) |
+| 3 | Return `common` as vector |
+
+```text
+A: 1 2 3 4 5          B: 3 4 5 6 7
+         \___________/
+              3 4 5  ← intersection
+
+Union = everything in either circle:
+
+    A ∪ B = {1,2,3,4,5,6,7}
+```
+
+| Operation | Time (avg) | Space |
+|-----------|------------|-------|
+| Union | O(n + m) | O(n + m) |
+| Intersection | O(n + m) | O(n + m) |
+
+Run: `g++ -std=c++17 -o n n.cpp && ./n`
+
+---
+
+## Itinerary from Tickets — `o.cpp`
+
+**Task:** You are given plane tickets as pairs **`<from, to>`**. Use **every ticket exactly once** to form one continuous route. Return the cities in order.
+
+**Sample tickets:**
+
+| From | To |
+|------|-----|
+| Chennai | Bengaluru |
+| Mumbai | Delhi |
+| Goa | Chennai |
+| Delhi | Goa |
+
+**Route:** `Mumbai → Delhi → Goa → Chennai → Bengaluru`
+
+### Model as a graph
+
+- Each **city** = **vertex**
+- Each **ticket** = one **directed edge** `from → to`
+
+```text
+Mumbai ──► Delhi ──► Goa ──► Chennai ──► Bengaluru
+```
+
+You need an **Eulerian trail** that uses **every edge once** — here a simple path (no repeated cities).
+
+### Find the starting city
+
+Count **outgoing** and **incoming** edges per city:
+
+| City | Out | In | Out − In |
+|------|-----|-----|----------|
+| Mumbai | 1 | 0 | **−1** |
+| Delhi | 1 | 1 | 0 |
+| Goa | 1 | 1 | 0 |
+| Chennai | 1 | 1 | 0 |
+| Bengaluru | 0 | 1 | +1 |
+
+The **start** has **one more outgoing** edge than incoming → **`Mumbai`**.
+
+(`balance[city] = in − out`; start city has `balance < 0`.)
+
+### Build the route — Hierholzer / iterative DFS
+
+| Step | Action |
+|------|--------|
+| 1 | `unordered_map<string, vector<string>> graph` — adjacency lists |
+| 2 | Sort each city’s destination list (lexicographic tie-break when needed) |
+| 3 | DFS from start: while edges remain from current city, walk to next city and **remove used edge** |
+| 4 | When stuck, **push city to route**; reverse at end |
+
+```text
+Stack DFS from Mumbai:
+
+  Mumbai → Delhi → Goa → Chennai → Bengaluru (no more edges)
+  unwind: Bengaluru, Chennai, Goa, Delhi, Mumbai
+  reverse → Mumbai … Bengaluru
+```
+
+| | |
+|---|---|
+| **Time** | **O(E log E)** if sorting destinations; **O(E)** without sort |
+| **Space** | **O(E)** for graph + stack |
+
+Run: `g++ -std=c++17 -o o o.cpp && ./o`
+
+---
+
+### `k.cpp`–`o.cpp` — summary
+
+| File | Technique | Time | Space |
+|------|-----------|------|-------|
+| `k.cpp` | Frequency map / Boyer–Moore II | O(n) | O(n) or O(1) |
+| `l.cpp` | Char frequency map | O(n) | O(1)–O(k) |
+| `m.cpp` | `unordered_set` | O(n) | O(n) |
+| `n.cpp` | Two hash sets | O(n+m) | O(n+m) |
+| `o.cpp` | Graph + Eulerian DFS | O(E log E) | O(E) |
